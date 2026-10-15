@@ -1,0 +1,31 @@
+node_modules/
+.pnpm-store/
+
+# env
+.env
+.env.*
+!.env.example
+.dev.vars
+!.dev.vars.example
+
+# strapi
+apps/cms/.tmp/
+apps/cms/.cache/
+apps/cms/build/
+apps/cms/dist/
+apps/cms/public/uploads/*
+!apps/cms/public/uploads/.gitkeep
+apps/cms/types/generated/
+
+# next / opennext
+apps/web/.next/
+apps/web/.open-next/
+apps/web/.wrangler/
+apps/web/next-env.d.ts
+apps/web/cloudflare-env.d.ts
+
+# misc
+.DS_Store
+*.log
+coverage/
+infra/backups/

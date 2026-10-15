@@ -1,0 +1,16 @@
+{
+  "name": "azway",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:cms": "pnpm --filter @azway/cms develop",
+    "dev:web": "pnpm --filter @azway/web dev",
+    "build:cms": "pnpm --filter @azway/cms build",
+    "build:web": "pnpm --filter @azway/web build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint"
+  }
+}
