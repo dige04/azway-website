@@ -1,8 +1,6 @@
 /**
  * Hand-written types for the Strapi 5 REST API (flattened responses, no
- * `attributes` wrapper). Collection types and components follow the schemas on
- * branch wp-02/content-types; site-setting, homepage and redirect follow
- * docs/TASKS.md M2 until their schemas land (marked SCHEMA-PENDING).
+ * `attributes` wrapper), following apps/cms/src/{api,components} schemas.
  * Relations and media are only present when populated, hence optional.
  */
 
@@ -208,8 +206,6 @@ export interface Feedback extends Document {
   album?: Media[];
   tour?: Tour | null;
 }
-
-// SCHEMA-PENDING (WP-03): re-check field names against the real schemas.
 
 export interface SiteSetting extends Document {
   hotline: string | null;

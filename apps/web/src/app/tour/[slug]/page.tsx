@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getTourBySlug } from '@/lib/cms';
+import { formatPrice, isStrapiSlug } from '@/lib/present';
 
 // Temporary page (WP-05) proving cache tags end to end: rendered on first
 // request, then served from the ISR cache until the webhook revalidates
@@ -7,15 +8,9 @@ import { getTourBySlug } from '@/lib/cms';
 export const revalidate = 3600;
 export const generateStaticParams = async (): Promise<{ slug: string }[]> => [];
 
-// Characters a Strapi uid field accepts (A-Za-z0-9-_.~), with a generous
-// length cap; anything else 404s without a CMS call or a cache entry.
-const SLUG = /^[A-Za-z0-9\-_.~]{1,256}$/;
-
-const vnd = new Intl.NumberFormat('vi-VN');
-
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (!SLUG.test(slug)) notFound();
+  if (!isStrapiSlug(slug)) notFound();
   const tour = await getTourBySlug(slug);
   if (!tour) notFound();
   const destinations = tour.destinations?.map((destination) => destination.name) ?? [];
@@ -25,9 +20,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       <p className="text-sm text-muted">{tour.code}</p>
       <h1 className="text-h2 font-bold text-navy">{tour.name}</h1>
       {destinations.length > 0 && <p className="mt-3 text-muted">{destinations.join(' · ')}</p>}
-      <p className="mt-4 font-bold text-red">
-        {tour.priceFrom ? `${vnd.format(tour.priceFrom)} đ/khách` : 'Liên hệ báo giá'}
-      </p>
+      <p className="mt-4 font-bold text-red">{formatPrice(tour.priceFrom)}</p>
     </main>
   );
 }

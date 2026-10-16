@@ -36,7 +36,13 @@ describe('cache tags', () => {
     ['getArticles', () => cms.getArticles({ category: 'c' }), ['article', 'article-category']],
     ['getArticleBySlug', () => cms.getArticleBySlug('x'), ['article', 'article-category', 'article:x', 'cruise', 'tour']],
     ['getFeedbacks', () => cms.getFeedbacks(), ['feedback', 'tour']],
-    ['getHomepage', () => cms.getHomepage(), ['article', 'cruise', 'destination', 'homepage', 'tour']],
+    ['getCruises', () => cms.getCruises(), ['cruise', 'destination']],
+    ['getTeambuildings', () => cms.getTeambuildings(), ['teambuilding']],
+    ['getDestinations', () => cms.getDestinations(), ['destination']],
+    ['getArticleCategories', () => cms.getArticleCategories(), ['article-category']],
+    ['getArticleCategoryBySlug', () => cms.getArticleCategoryBySlug('x'), ['article-category', 'article-category:x']],
+    ['getSiteSetting', () => cms.getSiteSetting(), ['site-setting']],
+    ['getHomepage', () => cms.getHomepage(), ['article', 'article-category', 'cruise', 'destination', 'homepage', 'tour']],
     ['getRedirect', () => cms.getRedirect('/a'), ['redirect']],
   ] as const)('%s', async (_name, call, expected) => {
     await call();
@@ -96,20 +102,28 @@ describe('Strapi query contract', () => {
 
 describe('missing content', () => {
   const respond = (body: unknown, status = 200) =>
-    fetchMock.mockImplementation(async () => (status === 200 ? Response.json(body) : new Response('', { status })));
+    fetchMock.mockImplementation(async () => Response.json(body, { status }));
+  const notFoundError = { data: null, error: { status: 404, name: 'NotFoundError', message: 'Not Found' } };
 
   it('an unknown slug is null, a single type never saved is null', async () => {
     respond({ data: [] });
     await expect(cms.getTourBySlug('missing')).resolves.toBeNull();
     await expect(cms.getRedirect('/missing')).resolves.toBeNull();
-    respond(null, 404);
+    respond(notFoundError, 404);
     await expect(cms.getHomepage()).resolves.toBeNull();
+  });
+
+  // Only Strapi's NotFoundError means "single type not saved yet"; a bare 404
+  // (proxy, wrong base path) is a misconfiguration.
+  it('a 404 without NotFoundError on a single type is an error', async () => {
+    respond(null, 404);
+    await expect(cms.getSiteSetting()).rejects.toThrow('CMS responded 404');
   });
 
   // A 404 on a collection means a wrong CMS_URL or route: it must not be
   // cached as "no content" (notFound) for an hour.
   it('a 404 on a collection endpoint is an error', async () => {
-    respond(null, 404);
+    respond(notFoundError, 404);
     await expect(cms.getTourBySlug('x')).rejects.toThrow('CMS responded 404');
     await expect(cms.getRedirect('/x')).rejects.toThrow('CMS responded 404');
     await expect(cms.getTours()).rejects.toThrow('CMS responded 404');
