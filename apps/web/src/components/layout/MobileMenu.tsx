@@ -36,8 +36,9 @@ export function MobileMenu({ contacts }: { contacts: Contacts | null }) {
     const desktop = window.matchMedia(DESKTOP);
     const onWiden = () => desktop.matches && close(false);
     const overflow = document.body.style.overflow;
+    // Only elements this menu makes inert, so closing leaves others' inert alone.
     const behind = [...document.body.children].filter(
-      (element): element is HTMLElement => element instanceof HTMLElement && !element.contains(drawer.current),
+      (element): element is HTMLElement => element instanceof HTMLElement && !element.inert && !element.contains(drawer.current),
     );
 
     document.body.style.overflow = 'hidden';

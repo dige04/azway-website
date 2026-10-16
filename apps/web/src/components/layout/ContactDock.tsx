@@ -1,5 +1,3 @@
-'use client';
-
 import { safeHref, telHref } from '@/lib/present';
 import type { TrackEvent } from '@/lib/track';
 import { type Contacts, ContactLink } from './ContactLink';

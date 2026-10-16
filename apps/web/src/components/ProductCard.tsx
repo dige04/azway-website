@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Cruise, Media, Teambuilding, Tour, TourCategory } from '@/lib/cms-types';
 import { imageProps } from '@/lib/media';
-import { formatDuration, formatPrice, hasContent } from '@/lib/present';
+import { formatDuration, formatPrice, groupSize, hasContent } from '@/lib/present';
 
 /** FR-PRD-01: what every product card shows, whatever the product type. */
 export interface ProductCardData {
@@ -72,13 +72,6 @@ const TOUR_TYPE: Record<TourCategory, string> = {
   quoc_te: 'Tour nước ngoài',
   trai_nghiem_hoc_tap: 'Trải nghiệm học tập',
 };
-
-function groupSize(min: number | null, max: number | null): string | null {
-  if (min && max) return `${min}–${max} khách`;
-  if (min) return `Từ ${min} khách`;
-  if (max) return `Đến ${max} khách`;
-  return null;
-}
 
 export function tourCard(tour: Tour): ProductCardData {
   return {

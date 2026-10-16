@@ -6,13 +6,15 @@ import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { ProductCard, tourCard } from '@/components/ProductCard';
 import { Show } from '@/components/Show';
+import { ContactLink } from '@/components/layout/ContactLink';
 import { Itinerary } from '@/components/tour/Itinerary';
 import { type GalleryImage, TourGallery } from '@/components/tour/TourGallery';
-import { getSiteSetting, getTourBySlug, getTours } from '@/lib/cms';
+import { getTourBySlug, getTours } from '@/lib/cms';
 import type { Media, TextItem, Tour } from '@/lib/cms-types';
 import { mediaUrl } from '@/lib/media';
-import { formatDuration, formatPrice, hasContent, isStrapiSlug, safeHref, telHref } from '@/lib/present';
+import { formatDuration, formatPrice, groupSize, hasContent, isStrapiSlug, safeHref, telHref } from '@/lib/present';
 import { pickRelated } from '@/lib/related';
+import { loadSiteSetting } from '@/lib/site-setting';
 
 // ISR (NFR-03, D4): each tour is rendered on its first request, then served
 // from cache until the webhook revalidates `tour:<slug>` or a type it shows.
@@ -36,7 +38,7 @@ export default async function Page({ params }: Props) {
   const tour = await loadTour((await params).slug);
   const destination = tour.destinations?.[0]?.slug;
   const [setting, sameDestination, sameType] = await Promise.all([
-    getSiteSetting().catch(() => null),
+    loadSiteSetting(),
     destination ? getTours({ destination, pageSize: 5 }) : null,
     getTours({ category: tour.category, pageSize: 6 }),
   ]);
@@ -80,7 +82,7 @@ export default async function Page({ params }: Props) {
 
           <Show when={galleryImages(tour)}>{(images) => <TourGallery images={images} title={tour.name} />}</Show>
 
-          <Show when={textItems(tour.highlights)}>
+          <Show when={tour.highlights}>
             {(items) => (
               <Block title="Điểm nổi bật">
                 <ul className="grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
@@ -105,14 +107,14 @@ export default async function Page({ params }: Props) {
 
           {(hasContent(tour.inclusions) || hasContent(tour.exclusions)) && (
             <div className="grid gap-8 md:grid-cols-2">
-              <Show when={textItems(tour.inclusions)}>
+              <Show when={tour.inclusions}>
                 {(items) => (
                   <Block title="Giá bao gồm">
                     <TextList items={items} icon={<Check className="mt-1 text-success" />} />
                   </Block>
                 )}
               </Show>
-              <Show when={textItems(tour.exclusions)}>
+              <Show when={tour.exclusions}>
                 {(items) => (
                   <Block title="Giá không bao gồm">
                     <TextList items={items} icon={<span aria-hidden="true" className="mt-0.5 font-bold text-red">–</span>} />
@@ -158,14 +160,14 @@ export default async function Page({ params }: Props) {
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               {tel && (
-                <a href={tel} className="inline-flex min-h-12 items-center rounded-button bg-red px-5 font-bold hover:bg-red-hover">
+                <ContactLink href={tel} event="click_call" className="inline-flex min-h-12 items-center rounded-button bg-red px-5 font-bold hover:bg-red-hover">
                   Gọi {setting?.hotline}
-                </a>
+                </ContactLink>
               )}
               {zalo && (
-                <a href={zalo} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center rounded-button bg-white px-5 font-bold text-navy">
+                <ContactLink href={zalo} event="click_zalo" className="inline-flex min-h-12 items-center rounded-button bg-white px-5 font-bold text-navy">
                   Nhắn Zalo
-                </a>
+                </ContactLink>
               )}
             </div>
           </section>
@@ -256,15 +258,6 @@ function Check({ className = '' }: { className?: string }) {
       <path d="m5 12 5 5 9-10" />
     </svg>
   );
-}
-
-const textItems = (items: TextItem[] | undefined) => (items ?? []).filter((item) => hasContent(item.text));
-
-function groupSize(min: number | null, max: number | null): string | null {
-  if (min && max) return `${min}–${max} khách`;
-  if (min) return `Từ ${min} khách`;
-  if (max) return `Đến ${max} khách`;
-  return null;
 }
 
 /** Thumbnail first, then the gallery, each photo once. */
