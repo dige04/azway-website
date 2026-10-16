@@ -24,9 +24,12 @@ apps/web/.open-next/
 apps/web/.wrangler/
 apps/web/next-env.d.ts
 apps/web/cloudflare-env.d.ts
+# written by `next dev` when it detects a coding agent
+apps/web/AGENTS.md
 
 # misc
 .DS_Store
 *.log
 coverage/
+*.tsbuildinfo
 infra/backups/

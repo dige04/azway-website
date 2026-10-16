@@ -40,6 +40,8 @@ flowchart LR
 | Strapi + PostgreSQL 16 | VPS Long Vân 1 core / 2 GB / 50 GB, Docker Compose | Swap 2 GB; Caddy làm reverse proxy + TLS cho `cms.<domain>` |
 | Next.js | Cloudflare Workers | Deploy bằng `wrangler` trong GitHub Actions |
 | Ảnh | R2 bucket `azway-media` (public qua custom domain `media.<domain>`) | Provider `@strapi/provider-upload-aws-s3` với endpoint R2 |
+| Cache ISR của web | R2 bucket `azway-web-opennext-cache` + D1 `azway-web-tag-cache` | OpenNext: R2 giữ dữ liệu ISR, D1 giữ trạng thái `revalidateTag`. Tạo ở M8 |
+| Tối ưu ảnh | Cloudflare Images (binding `IMAGES`) | `/_next/image` resize + AVIF/WebP trên Workers (NFR-02); không cần sharp |
 | Backup | R2 bucket `azway-backups` | `pg_dump` + gzip mỗi đêm, giữ 7 bản |
 | Uptime | Cloudflare Health Check hoặc UptimeRobot free | NFR-11 |
 
@@ -71,7 +73,7 @@ flowchart LR
 | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | `https://<domain>` |
 | `CMS_URL` | `https://cms.<domain>` |
-| `CMS_MEDIA_URL` | `https://media.<domain>` (allowlist cho ảnh) |
+| `CMS_MEDIA_URL` | `https://media.<domain>` (allowlist cho ảnh). Cùng `CMS_URL`, phải có lúc build vì `images.remotePatterns` đọc lúc build |
 | `LEAD_INGEST_TOKEN` | Giống bên CMS |
 | `REVALIDATE_SECRET` | Giống bên CMS |
 | `NEXT_PUBLIC_GA_ID` | GA4 |

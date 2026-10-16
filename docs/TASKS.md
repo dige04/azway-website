@@ -61,12 +61,12 @@ Nhánh: `m3/lead-pipeline`
 
 Nhánh: `m4/web-scaffold`
 
-- [ ] `apps/web`: Next.js **16.4.x**, App Router, TypeScript strict, `@opennextjs/cloudflare` **1.20.x**, wrangler 4. Package `@azway/web`.
-- [ ] `wrangler.jsonc` + `open-next.config.ts`; scripts `dev`, `build`, `preview` (`opennextjs-cloudflare build && preview`), `deploy`.
-- [ ] Styling: Tailwind CSS 4, design tokens trong `src/styles/tokens.css` (navy–đỏ từ thiết kế đã duyệt; tạm dùng placeholder nếu chưa có source).
-- [ ] `src/lib/cms.ts`: client REST có kiểu (types sinh tay từ schema M2), `fetch` với `next: { tags, revalidate: 3600 }`, hàm `getTours(filters)`, `getTourBySlug`, `getCruises`, …, `getSiteSetting`, `getRedirect(path)`.
-- [ ] `src/lib/media.ts`: chuẩn hoá URL ảnh; `next.config` `images.remotePatterns` theo `CMS_MEDIA_URL`; loader phù hợp Workers.
-- [ ] `app/api/revalidate/route.ts`: kiểm secret, `revalidateTag` từng tag.
+- [x] `apps/web`: Next.js **16.4.x**, App Router, TypeScript strict, `@opennextjs/cloudflare` **1.20.x**, wrangler 4. Package `@azway/web`.
+- [x] `wrangler.jsonc` + `open-next.config.ts`; scripts `dev`, `build` (`next build`), `build:worker` (`opennextjs-cloudflare build`), `preview` (`opennextjs-cloudflare build && preview`), `deploy`.
+- [x] Styling: Tailwind CSS 4, design tokens trong `src/styles/tokens.css` (navy–đỏ từ thiết kế đã duyệt, nguồn trong `design/`).
+- [x] `src/lib/cms.ts`: client REST có kiểu (types sinh tay từ schema M2), `fetch` với `next: { tags, revalidate: 3600 }`, hàm `getTours(filters)`, `getTourBySlug`, `getCruises`, …, `getSiteSetting`, `getRedirect(path)`. Type của `site-setting`, `homepage`, `redirect` đánh dấu `SCHEMA-PENDING` đến khi có schema.
+- [x] `src/lib/media.ts`: chuẩn hoá URL ảnh; `next.config` `images.remotePatterns` theo `CMS_MEDIA_URL`; loader phù hợp Workers (loader mặc định của Next, `/_next/image` chạy qua binding Cloudflare Images).
+- [x] `app/api/revalidate/route.ts`: kiểm secret, `revalidateTag` từng tag.
 - [ ] Seed script `apps/cms/scripts/seed.mjs`: 10 tour (đủ loại, có 1 tour "trải nghiệm học tập" dựa trên lịch trình Hà Nội – Bạch Đằng Giang – Hạ Long 2N1Đ), 3 du thuyền, 2 teambuilding, 5 điểm đến, 5 bài viết, cấu hình chung. Dữ liệu là mẫu, ghi rõ trong README.
 
 **Xong khi:** `pnpm --filter @azway/web build` và `preview` chạy local đọc được dữ liệu seed từ Strapi local.
@@ -130,8 +130,8 @@ Nhánh: `m8/infra`
 - [ ] `infra/docker-compose.yml`: `strapi`, `postgres:16-alpine` (volume), `caddy` (TLS tự động cho `CMS_DOMAIN`); healthcheck; `restart: unless-stopped`; giới hạn RAM Strapi ~1.2 GB.
 - [ ] `infra/backup.sh` + systemd timer/cron: `pg_dump | gzip` → R2 qua `rclone` hoặc `aws s3 --endpoint-url`, giữ 7 bản; `infra/restore.md` có lệnh khôi phục đã thử (NFR-09).
 - [ ] `infra/bootstrap-vps.md`: tạo swap 2 GB, cài Docker, firewall 22/80/443, user deploy.
-- [x] `.github/workflows/ci.yml`: install, typecheck, test, build cả hai app trên PR (hiện build `apps/cms`; thêm bước `pnpm build:web` khi có `apps/web`).
-- [ ] `.github/workflows/deploy-web.yml`: trên push `main` đổi `apps/web/**` → `opennextjs-cloudflare build` + `wrangler deploy` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). Preview deploy cho PR (tên worker `azway-web-pr-<n>`), dọn khi đóng PR.
+- [x] `.github/workflows/ci.yml`: install, typecheck, test, build cả hai app trên PR (build `apps/cms` và bundle Workers của `apps/web`).
+- [ ] `.github/workflows/deploy-web.yml`: tạo R2 bucket + D1 cache theo `apps/web/wrangler.jsonc` (điền `database_id`), bật Cloudflare Images cho binding `IMAGES`, đặt `CMS_URL`/`CMS_MEDIA_URL` khi build. Trên push `main` đổi `apps/web/**` → `opennextjs-cloudflare build` + `wrangler deploy` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). Preview deploy cho PR (tên worker `azway-web-pr-<n>`), dọn khi đóng PR.
 - [ ] `.github/workflows/deploy-cms.yml`: build image → GHCR → SSH vào VPS `docker compose pull strapi && docker compose up -d` (secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`).
 
 **Xong khi:** CI xanh trên PR; `docker compose up` chạy local với Postgres và seed; tài liệu đủ để người khác dựng lại VPS từ đầu.

@@ -40,5 +40,7 @@ jobs:
 
       - run: pnpm test
 
-      # One step per app; add `pnpm build:web` when apps/web lands.
       - run: pnpm build:cms
+
+      # Next build + OpenNext Workers bundle (catches Node-only APIs).
+      - run: pnpm build:web

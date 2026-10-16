@@ -1,0 +1,39 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white font-sans text-ink antialiased;
+    line-height: 1.55;
+  }
+  ::selection {
+    @apply bg-red text-white;
+  }
+  :focus-visible {
+    outline: 3px solid #ff8090;
+    outline-offset: 3px;
+  }
+  @media (max-width: 680px) {
+    :root {
+      --spacing-gutter: 15px;
+    }
+  }
+  @media (max-width: 900px) {
+    :root {
+      --spacing-header: 72px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@utility shell {
+  width: min(calc(100% - 2 * var(--spacing-gutter)), var(--container-site));
+  margin-inline: auto;
+}

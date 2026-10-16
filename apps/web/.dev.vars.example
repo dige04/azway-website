@@ -1,0 +1,15 @@
+# Copy to .dev.vars for `pnpm preview` (wrangler) and .env.local for `pnpm dev`.
+# On Cloudflare: plain vars in the dashboard / wrangler, secrets via `wrangler secret put`.
+
+# Public site URL, e.g. https://<domain>
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+# Strapi base URL (no trailing slash), e.g. https://cms.<domain>
+CMS_URL=http://localhost:1337
+# Public media origin (R2 custom domain), e.g. https://media.<domain>. Empty -> Strapi local /uploads
+CMS_MEDIA_URL=
+# Shared secret with the CMS (secret)
+LEAD_INGEST_TOKEN=
+# Shared secret for POST /api/revalidate, same as the CMS (secret)
+REVALIDATE_SECRET=
+# GA4 measurement id
+NEXT_PUBLIC_GA_ID=

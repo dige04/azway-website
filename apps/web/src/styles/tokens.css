@@ -1,0 +1,77 @@
+/*
+ * Design tokens from the approved design (design/css/web-chinh.css :root and
+ * repeated values). Tailwind 4 turns each into utilities, e.g. --color-navy ->
+ * bg-navy, --text-h2 -> text-h2, --radius-card -> rounded-card.
+ */
+@theme {
+  /* Brand */
+  --color-red: #e8213a;
+  --color-red-hover: #f12b43;
+  --color-red-dark: #c61630;
+  --color-red-soft: #fff0f2;
+  --color-red-on-navy: #ff7282; /* kicker / accents on navy backgrounds */
+  --color-navy: #0d1f49;
+  --color-navy-2: #172d5b;
+  --color-navy-3: #243c6b;
+  --color-navy-deep: #091731; /* footer */
+  --color-navy-mist: #c9d4ed; /* body text on navy */
+
+  /* Neutrals */
+  --color-ink: #111827;
+  --color-ink-2: #344054;
+  --color-label: #475467;
+  --color-muted: #667085;
+  --color-line: #dfe5ef;
+  --color-paper: #f5f7fb;
+  --color-cream: #fbf8f4;
+  --color-success: #17653a;
+  --color-success-soft: #eaf8ef;
+
+  /* Type: the design uses system fonts only (no web fonts to license). */
+  --font-sans: Arial, 'Helvetica Neue', 'Segoe UI', 'Noto Sans', sans-serif;
+
+  --text-kicker: 12px;
+  --text-kicker--letter-spacing: 0.16em;
+  --text-lead: clamp(17px, 1.4vw, 21px);
+  --text-lead--line-height: 1.7;
+  --text-card-title: 20px;
+  --text-card-title--line-height: 1.34;
+  --text-card-title--letter-spacing: -0.025em;
+  --text-h3: clamp(22px, 2.1vw, 32px);
+  --text-h3--line-height: 1.1;
+  --text-h3--letter-spacing: -0.035em;
+  --text-h2: clamp(34px, 4.15vw, 60px);
+  --text-h2--line-height: 1.08;
+  --text-h2--letter-spacing: -0.05em;
+  --text-display: clamp(45px, 5.15vw, 78px);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.052em;
+
+  /* Layout */
+  --container-site: 1380px;
+  --spacing-gutter: 24px; /* each side; 15px under 681px, see globals.css */
+  --spacing-section: clamp(92px, 9vw, 138px);
+  --spacing-header: 82px; /* 72px under 901px */
+
+  /* Shape */
+  --radius-sm: 8px;
+  --radius-control: 10px; /* inputs, tabs, header CTA */
+  --radius-button: 12px;
+  --radius-card: 18px;
+  --radius-panel: 24px;
+  --radius-xl: 30px;
+
+  --shadow-sm: 0 12px 32px rgba(13, 31, 73, 0.1);
+  --shadow-card: 0 24px 70px rgba(13, 31, 73, 0.14);
+  --shadow-red: 0 13px 26px rgba(232, 33, 58, 0.25);
+
+  --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* The design's max-width breakpoints (450/680/900/1180) as min-width. */
+  --breakpoint-*: initial;
+  --breakpoint-xs: 451px;
+  --breakpoint-sm: 681px;
+  --breakpoint-md: 901px;
+  --breakpoint-lg: 1181px;
+  --breakpoint-xl: 1381px;
+}
