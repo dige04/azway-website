@@ -77,12 +77,12 @@ Nhánh: `m4/web-scaffold`
 
 Nhánh: `m5/pages`
 
-- [ ] Layout: header, menu mobile, footer, breadcrumb, **contact dock** (gọi, Zalo, Messenger; bắn sự kiện AN-03).
-- [ ] `/` trang chủ: hero carousel, sản phẩm nổi bật, điểm đến, feedback, bài mới.
+- [x] Layout: header, menu mobile, footer, breadcrumb, **contact dock** (gọi, Zalo, Messenger; bắn sự kiện AN-03).
+- [x] `/` trang chủ: hero carousel, sản phẩm nổi bật, điểm đến, feedback, bài mới.
 - [ ] `/tour`, `/du-thuyen`, `/teambuilding`, `/diem-den`, `/cam-nang` (+ `/cam-nang/danh-muc/[slug]`) danh sách; `/tour/[slug]` … chi tiết.
 - [ ] Bộ lọc tour: loại, khu vực (qua điểm đến), cửa khẩu, thời lượng, quy mô đoàn; sắp xếp giá/thời lượng; tìm tên/mã; **state trên URL**; trạng thái rỗng FR-SRC-05; sự kiện AN-04.
 - [ ] Chi tiết tour: gallery + lightbox, điểm nổi bật, **lịch trình theo ngày/mốc giờ**, bao gồm / không bao gồm, hoàn huỷ, FOC, quy mô, giá (FR-PRD-03), sản phẩm liên quan (FR-PRD-06), bài liên quan.
-- [ ] Mọi khối có dữ liệu rỗng thì không render (FR-PRD-05) — viết helper chung, có test.
+- [x] Mọi khối có dữ liệu rỗng thì không render (FR-PRD-05) — viết helper chung, có test.
 - [ ] Bài viết: mục lục tự sinh từ heading, thời gian đọc, khối sản phẩm liên quan.
 - [ ] `/lien-he`, `/tim-kiem`, `not-found` (ô tìm + sản phẩm nổi bật, SEO-08).
 - [ ] Render rich text bằng `@strapi/blocks-react-renderer`.

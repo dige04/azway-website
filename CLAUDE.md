@@ -18,7 +18,7 @@ docs/        spec, kiến trúc, kế hoạch, hướng dẫn
 design/      source thiết kế đã duyệt (khi khách giao)
 ```
 
-pnpm workspace, Node 22. Lệnh từ root: `pnpm dev:cms`, `pnpm dev:web`, `pnpm build:cms`, `pnpm build:web`, `pnpm typecheck`, `pnpm -r test`.
+pnpm workspace, Node 22. Lệnh từ root: `pnpm dev:cms`, `pnpm dev:web`, `pnpm build:cms`, `pnpm build:web`, `pnpm typecheck`, `pnpm -r test`. Smoke Playwright (375/1440px, các route trong `apps/web/e2e/routes.ts`): bật `pnpm --filter @azway/web preview` với Strapi đã seed, rồi `pnpm --filter @azway/web smoke`.
 
 ## Quy ước
 
