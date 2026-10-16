@@ -51,6 +51,8 @@ export const LISTS: Partial<Record<string, { cards?: string[] }>> = {
 
 /** Text each route must show in <main> (seed data), so a page is never empty. */
 export const TEXTS: Partial<Record<string, string[]>> = {
+  // Seed feedback of this tour (FR-GEN-03).
+  '/tour/ha-noi-bach-dang-giang-ha-long-2n1d': ['Đoàn mẫu: Tour trong nước'],
   '/du-thuyen/ambassador': ['Vé du ngoạn trong ngày', 'Du thuyền ăn tối', 'Thuê nguyên tàu'],
   '/diem-den': ['Hạ Long', 'Đông Hưng'],
   '/diem-den/ha-long': ['Tour đi Hạ Long', 'Du thuyền Hạ Long'],

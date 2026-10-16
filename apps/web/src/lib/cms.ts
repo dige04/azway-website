@@ -181,7 +181,6 @@ export const getTourBySlug = (slug: string) =>
     // ArticleCard: category chip and reading time, as on the home page.
     articles: { fields: ['title', 'slug', 'excerpt', 'readingMinutes'], populate: { cover: true, category: card } },
     teambuildings: card,
-    feedbacks: { populate: { album: true } },
     seo,
   });
 

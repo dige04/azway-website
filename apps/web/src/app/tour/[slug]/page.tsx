@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArticleCard } from '@/components/ArticleCard';
+import { FeedbackCard } from '@/components/feedback/FeedbackCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { LeadForm } from '@/components/lead/LeadForm';
 import { Block, Check, DetailSection, Inclusions, PriceBox, RequestBlock } from '@/components/product/Detail';
@@ -10,7 +11,7 @@ import { ProductCard, tourCard } from '@/components/ProductCard';
 import { Show } from '@/components/Show';
 import { Itinerary } from '@/components/tour/Itinerary';
 import { cancellationWindows } from '@/lib/cancellation';
-import { getTourBySlug, getTourCatalog } from '@/lib/cms';
+import { getFeedbacks, getTourBySlug, getTourCatalog } from '@/lib/cms';
 import type { Tour } from '@/lib/cms-types';
 import { galleryImages } from '@/lib/gallery';
 import { formatDuration, groupSize, isStrapiSlug } from '@/lib/present';
@@ -26,6 +27,9 @@ export const revalidate = 3600;
 export const generateStaticParams = async (): Promise<{ slug: string }[]> => [];
 
 type Props = { params: Promise<{ slug: string }> };
+
+/** Feedback groups shown on a tour: the newest few, each brings its whole album into every rebuild. */
+const FEEDBACKS = 8;
 
 async function loadTour(slug: string): Promise<Tour> {
   const tour = isStrapiSlug(slug) ? await getTourBySlug(slug) : null;
@@ -53,7 +57,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const tour = await loadTour((await params).slug);
-  const [setting, catalog] = await Promise.all([loadSiteSetting(), catalogForRelated(getTourCatalog(), 'tour catalog')]);
+  const [setting, catalog, feedbacks] = await Promise.all([
+    loadSiteSetting(),
+    catalogForRelated(getTourCatalog(), 'tour catalog'),
+    catalogForRelated(getFeedbacks({ tour: tour.slug, pageSize: FEEDBACKS }).then((res) => res.data), 'tour feedback'),
+  ]);
   const related = relatedFromCatalog(tour, catalog, (item) => item.category === tour.category);
   const facts = [
     { label: 'Mã tour', value: tour.code },
@@ -167,6 +175,18 @@ export default async function Page({ params }: Props) {
           </Show>
         </aside>
       </div>
+
+      <Show when={feedbacks}>
+        {(feedbacks) => (
+          <DetailSection title="Đoàn đã đi tour này">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {feedbacks.map((feedback) => (
+                <FeedbackCard key={feedback.documentId} feedback={feedback} linkTour={false} />
+              ))}
+            </div>
+          </DetailSection>
+        )}
+      </Show>
 
       <Show when={related}>
         {(tours) => (

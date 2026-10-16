@@ -1,16 +1,15 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArticleCard } from '@/components/ArticleCard';
 import { DestinationCard } from '@/components/DestinationCard';
+import { FeedbackCard } from '@/components/feedback/FeedbackCard';
 import { HeroCarousel, type Slide } from '@/components/home/HeroCarousel';
 import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
 import { Show } from '@/components/Show';
 import { renderPerRequestWithoutCms } from '@/lib/build';
 import { getDestinations, getFeedbacks, getHomepage } from '@/lib/cms';
-import type { Feedback } from '@/lib/cms-types';
-import { imageProps, mediaUrl } from '@/lib/media';
+import { mediaUrl } from '@/lib/media';
 import { pageMetadata } from '@/lib/seo';
 import { SITE_NAME } from '@/lib/site';
 import { loadSiteSetting } from '@/lib/site-setting';
@@ -37,7 +36,7 @@ export default async function Page() {
 
   const slides: Slide[] = (homepage?.heroSlides ?? []).flatMap(({ image, title, subtitle, ctaLabel, ctaUrl }) => {
     const src = mediaUrl(image?.url);
-    return src ? [{ src, alt: image?.alternativeText ?? title ?? '', title, subtitle, ctaLabel, ctaUrl }] : [];
+    return src ? [{ src, alt: image?.alternativeText?.trim() || title || '', title, subtitle, ctaLabel, ctaUrl }] : [];
   });
   // Destinations with a photo first; the grid shows one large and four small.
   const shownDestinations = [...destinations].sort((a, b) => Number(!a.image) - Number(!b.image)).slice(0, 5);
@@ -163,35 +162,4 @@ function Section({
 
 function ProductGrid({ children }: { children: ReactNode }) {
   return <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{children}</div>;
-}
-
-const dateFormat = new Intl.DateTimeFormat('vi-VN', { month: '2-digit', year: 'numeric' });
-
-/** FR-GEN-03: one group, its note and its photo album. */
-function FeedbackCard({ feedback }: { feedback: Feedback }) {
-  const photos = (feedback.album ?? []).flatMap((media) => imageProps(media, feedback.groupName) ?? []).slice(0, 4);
-  return (
-    <article className="flex flex-col overflow-hidden rounded-card border border-line bg-white">
-      <Show when={photos}>
-        {(items) => (
-          <div className="grid grid-cols-2 gap-0.5">
-            {items.map((photo) => (
-              <Image key={photo.src} {...photo} width={photo.width ?? 400} height={photo.height ?? 300} sizes="(min-width: 1181px) 170px, 50vw" className="aspect-[4/3] w-full object-cover" />
-            ))}
-          </div>
-        )}
-      </Show>
-      <div className="flex flex-1 flex-col gap-2 p-5">
-        {feedback.date && <p className="text-sm font-bold text-red">{dateFormat.format(new Date(feedback.date))}</p>}
-        <h3 className="text-lg font-bold leading-snug text-navy">{feedback.groupName}</h3>
-        {feedback.organization && <p className="text-sm text-label">{feedback.organization}</p>}
-        {feedback.description && <p className="text-sm text-muted">{feedback.description}</p>}
-        {feedback.tour && (
-          <Link href={`/tour/${feedback.tour.slug}`} className="mt-auto pt-2 text-sm font-bold text-navy underline underline-offset-4 hover:text-red">
-            {feedback.tour.name}
-          </Link>
-        )}
-      </div>
-    </article>
-  );
 }

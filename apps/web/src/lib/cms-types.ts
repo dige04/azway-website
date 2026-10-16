@@ -130,7 +130,6 @@ export interface Tour extends Document {
   destinations?: Destination[];
   articles?: Article[];
   teambuildings?: Teambuilding[];
-  feedbacks?: Feedback[];
   seo?: Seo | null;
 }
 
