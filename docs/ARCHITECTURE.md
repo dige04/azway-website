@@ -69,7 +69,7 @@ flowchart LR
 
 ### `apps/web` (`.dev.vars` cho `preview`, `.env.local` cho `dev`)
 
-"Build" = phải có trong môi trường chạy `next build` (CI, deploy): giá trị được nhúng vào bundle. "Runtime" = đọc khi chạy trên Worker: biến không bí mật khai ở `vars` trong `wrangler.jsonc` (để `wrangler deploy` không xoá), bí mật qua `wrangler secret put`.
+"Build" = phải có trong môi trường chạy `next build` (CI, deploy; local là `.env.local`, kể cả bước build của `preview`): giá trị được nhúng vào bundle. "Runtime" = đọc khi chạy trên Worker: biến không bí mật khai ở `vars` trong `wrangler.jsonc` với giá trị thật (M8; `wrangler deploy` ghi đè biến trên dashboard bằng `vars` và xoá biến không khai), bí mật qua `wrangler secret put`.
 
 | Biến | Khi nào | Mô tả |
 | --- | --- | --- |

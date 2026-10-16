@@ -32,10 +32,10 @@ type QueryValue = string | number | boolean | null | undefined | QueryValue[] | 
 type Query = Record<string, QueryValue>;
 
 /**
- * Relation fields per content type (schemas in apps/cms/src/api). Keep in sync
- * when a relation is added: an unknown populated field would go untagged.
+ * Relation fields per content type, checked against apps/cms/src/api/*
+ * schemas by cms.test.ts: a relation missing here would go untagged.
  */
-const RELATIONS: Record<string, Record<string, string>> = {
+export const RELATIONS: Record<string, Record<string, string>> = {
   tour: { destinations: 'destination', articles: 'article', teambuildings: 'teambuilding', feedbacks: 'feedback' },
   cruise: { destinations: 'destination', articles: 'article' },
   teambuilding: { tours: 'tour' },
@@ -87,8 +87,8 @@ function toQueryString(query: Query): string {
 }
 
 interface RequestOptions {
-  /** One document is asked for: 404 means "not found" (null), not an error. */
-  one?: boolean;
+  /** Single types answer 404 until their first save: treat it as "no data". */
+  allow404?: boolean;
   /** Adds the `<type>:<slug>` tag. */
   slug?: string;
 }
@@ -102,7 +102,7 @@ async function request<T>(type: string, path: string, query: Query, options: Req
     next: { tags, revalidate: REVALIDATE_SECONDS },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
-  if (res.status === 404 && options.one) return null;
+  if (res.status === 404 && options.allow404) return null;
   if (!res.ok) throw new Error(`CMS responded ${res.status} for /api/${path}`);
   return (await res.json()) as T;
 }
@@ -116,14 +116,14 @@ async function findBySlug<T>(type: string, plural: string, slug: string, populat
     type,
     plural,
     { filters: { slug: { $eq: slug } }, populate, pagination: { pageSize: 1 } },
-    { one: true, slug },
+    { slug },
   );
+  // A missing slug is `200 { data: [] }`; any non-2xx is a misconfiguration.
   return res?.data[0] ?? null;
 }
 
-/** Single types answer 404 until their first save. */
 async function findSingle<T>(type: string, populate: Query): Promise<T | null> {
-  return (await request<SingleResponse<T>>(type, type, { populate }, { one: true }))?.data ?? null;
+  return (await request<SingleResponse<T>>(type, type, { populate }, { allow404: true }))?.data ?? null;
 }
 
 const pagination = (page = 1, pageSize = DEFAULT_PAGE_SIZE) => ({ page, pageSize });
@@ -310,7 +310,6 @@ export async function getRedirect(path: string): Promise<Redirect | null> {
     'redirect',
     'redirects',
     { filters: { from: { $eq: path } }, pagination: { pageSize: 1 } },
-    { one: true },
   );
   return res?.data[0] ?? null;
 }

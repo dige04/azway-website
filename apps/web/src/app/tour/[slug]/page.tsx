@@ -7,17 +7,23 @@ import { getTourBySlug } from '@/lib/cms';
 export const revalidate = 3600;
 export const generateStaticParams = async (): Promise<{ slug: string }[]> => [];
 
+// Strapi uid shape; anything else 404s without a CMS call or a cache entry.
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 const vnd = new Intl.NumberFormat('vi-VN');
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
-  const tour = await getTourBySlug((await params).slug);
+  const { slug } = await params;
+  if (slug.length > 120 || !SLUG.test(slug)) notFound();
+  const tour = await getTourBySlug(slug);
   if (!tour) notFound();
+  const destinations = tour.destinations?.map((destination) => destination.name) ?? [];
 
   return (
     <main className="shell py-section">
       <p className="text-sm text-muted">{tour.code}</p>
       <h1 className="text-h2 font-bold text-navy">{tour.name}</h1>
-      <p className="mt-3 text-muted">{tour.destinations?.map((destination) => destination.name).join(' · ')}</p>
+      {destinations.length > 0 && <p className="mt-3 text-muted">{destinations.join(' · ')}</p>}
       <p className="mt-4 font-bold text-red">
         {tour.priceFrom ? `${vnd.format(tour.priceFrom)} đ/khách` : 'Liên hệ báo giá'}
       </p>

@@ -131,7 +131,7 @@ Nhánh: `m8/infra`
 - [ ] `infra/backup.sh` + systemd timer/cron: `pg_dump | gzip` → R2 qua `rclone` hoặc `aws s3 --endpoint-url`, giữ 7 bản; `infra/restore.md` có lệnh khôi phục đã thử (NFR-09).
 - [ ] `infra/bootstrap-vps.md`: tạo swap 2 GB, cài Docker, firewall 22/80/443, user deploy.
 - [x] `.github/workflows/ci.yml`: install, typecheck, test, build cả hai app trên PR (build `apps/cms` và bundle Workers của `apps/web`).
-- [ ] `.github/workflows/deploy-web.yml`: tạo R2 bucket + D1 cache theo `apps/web/wrangler.jsonc` (điền `database_id`), bật Cloudflare Images cho binding `IMAGES`, đặt `CMS_URL`/`CMS_MEDIA_URL` khi build. Trên push `main` đổi `apps/web/**` → `opennextjs-cloudflare build` + `wrangler deploy` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). Preview deploy cho PR (tên worker `azway-web-pr-<n>`), dọn khi đóng PR.
+- [ ] `.github/workflows/deploy-web.yml`: tạo R2 bucket + D1 cache theo `apps/web/wrangler.jsonc` (điền `database_id`), bật Cloudflare Images cho binding `IMAGES`, đặt `CMS_URL`/`CMS_MEDIA_URL`/`NEXT_PUBLIC_SITE_URL` khi build; thêm `vars` `CMS_URL`/`CMS_MEDIA_URL` giá trị thật vào `wrangler.jsonc` (không để rỗng). Trên push `main` đổi `apps/web/**` → `opennextjs-cloudflare build` + `wrangler deploy` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). Preview deploy cho PR (tên worker `azway-web-pr-<n>`), dọn khi đóng PR.
 - [ ] `.github/workflows/deploy-cms.yml`: build image → GHCR → SSH vào VPS `docker compose pull strapi && docker compose up -d` (secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`).
 
 **Xong khi:** CI xanh trên PR; `docker compose up` chạy local với Postgres và seed; tài liệu đủ để người khác dựng lại VPS từ đầu.

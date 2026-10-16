@@ -1,7 +1,9 @@
-# Copy to .dev.vars for `pnpm preview` (wrangler) and .env.local for `pnpm dev`.
-# Build = needed by `next build` (CI/deploy env), inlined into the bundle.
-# Runtime = read on the Worker: plain values in wrangler.jsonc `vars`,
-# secrets via `wrangler secret put`. Here they all live in one local file.
+# Copy to BOTH .env.local and .dev.vars:
+# - .env.local (or the shell) feeds `next build`, including the build step of
+#   `pnpm preview`, and `pnpm dev`. [build] variables are read only there.
+# - .dev.vars feeds the Worker at runtime in `pnpm preview` (wrangler).
+# On Cloudflare: [build] in the build environment, plain runtime values in
+# wrangler.jsonc `vars` (M8), secrets via `wrangler secret put`.
 
 # [build, required for production builds] Public site URL, e.g. https://<domain>
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
