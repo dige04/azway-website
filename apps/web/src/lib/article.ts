@@ -1,4 +1,5 @@
 import type { BlocksContent } from './cms-types';
+import { PAGE_IDS } from './page-ids';
 import { slugify } from './text';
 
 export interface TocEntry {
@@ -6,9 +7,6 @@ export interface TocEntry {
   text: string;
   level: 2 | 3;
 }
-
-/** Ids the page already uses: skip-link target, mobile menu, the article page's own sections. */
-const RESERVED_IDS = ['main', 'mobile-drawer', 'san-pham-lien-quan', 'bai-lien-quan'];
 
 type InlineNode = { type?: string; text?: string; children?: InlineNode[] };
 
@@ -23,7 +21,7 @@ function plainText(nodes: InlineNode[] | undefined): string {
  * same; repeated headings are numbered ("-2", "-3").
  */
 export function prepareArticle(content: BlocksContent | null | undefined): { blocks: BlocksContent; toc: TocEntry[] } {
-  const used = new Set(RESERVED_IDS);
+  const used = new Set<string>(Object.values(PAGE_IDS));
   const toc: TocEntry[] = [];
   const blocks = (content ?? []).map((block) => {
     if (block.type === 'heading') {

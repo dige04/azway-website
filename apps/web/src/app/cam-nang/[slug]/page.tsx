@@ -13,6 +13,7 @@ import { prepareArticle } from '@/lib/article';
 import { getArticleBySlug, getArticles } from '@/lib/cms';
 import type { Article, SiteSetting } from '@/lib/cms-types';
 import { imageProps, mediaUrl } from '@/lib/media';
+import { PAGE_IDS } from '@/lib/page-ids';
 import { isStrapiSlug, safeHref, telHref } from '@/lib/present';
 import { pickRelated } from '@/lib/related';
 import { loadSiteSetting } from '@/lib/site-setting';
@@ -117,8 +118,8 @@ export default async function Page({ params }: Props) {
 
           <Show when={products}>
             {(items) => (
-              <section aria-labelledby="san-pham-lien-quan" className="mt-12 border-t-2 border-navy pt-6">
-                <h2 id="san-pham-lien-quan" className="mb-6 font-serif text-[27px] font-bold leading-snug text-navy">
+              <section aria-labelledby={PAGE_IDS.relatedProducts} className="mt-12 border-t-2 border-navy pt-6">
+                <h2 id={PAGE_IDS.relatedProducts} className="mb-6 font-serif text-[27px] font-bold leading-snug text-navy">
                   Sản phẩm liên quan
                 </h2>
                 <div className="grid gap-6 sm:grid-cols-2">
@@ -142,15 +143,16 @@ export default async function Page({ params }: Props) {
         </article>
 
         {/* Only the TOC sticks, and it stops above the fixed contact dock (bottom
-            right, ~15rem tall); the contact card closes the column at the end of
-            the article and pushes the TOC up as it comes in. */}
+            right, ~15rem tall), but keeps at least 12rem on a short window; the
+            contact card closes the column at the end of the article and pushes
+            the TOC up as it comes in. */}
         <aside className="hidden flex-col gap-7 self-stretch lg:flex">
           <div className="flex-1">
             <Show when={toc}>
               {(entries) => (
                 <nav
                   aria-label="Mục lục"
-                  className="sticky top-[calc(var(--spacing-header)+22px)] max-h-[calc(100dvh-var(--spacing-header)-22px-15rem)] overflow-y-auto rounded-sm border border-line p-5"
+                  className="sticky top-[calc(var(--spacing-header)+22px)] max-h-[max(12rem,calc(100dvh-var(--spacing-header)-22px-15rem))] overflow-y-auto rounded-sm border border-line p-5"
                 >
                   <TableOfContents entries={entries} />
                 </nav>
@@ -163,8 +165,8 @@ export default async function Page({ params }: Props) {
 
       <Show when={related}>
         {(articles) => (
-          <section aria-labelledby="bai-lien-quan" className="mt-14 border-t-2 border-navy pt-6">
-            <h2 id="bai-lien-quan" className="mb-6 font-serif text-[27px] font-bold leading-snug text-navy">
+          <section aria-labelledby={PAGE_IDS.relatedArticles} className="mt-14 border-t-2 border-navy pt-6">
+            <h2 id={PAGE_IDS.relatedArticles} className="mb-6 font-serif text-[27px] font-bold leading-snug text-navy">
               Có thể bạn cũng quan tâm
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

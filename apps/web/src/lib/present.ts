@@ -69,6 +69,17 @@ export function safeHref(url: string | null | undefined): string | null {
   return url && /^(https?:\/\/|tel:)/i.test(url.trim()) ? url.trim() : null;
 }
 
+/**
+ * A rich-text link that may go in href: http(s), tel, mailto or a path on
+ * this site. Rejects "//host" and "/\host" (browsers read both as another
+ * host) and control characters, which browsers drop ("/<tab>/host" is "//host").
+ */
+export function linkHref(url: string): string | null {
+  const value = url.trim();
+  if (/[\u0000-\u001f\u007f]/.test(value)) return null;
+  return /^(https?:\/\/|tel:|mailto:)/i.test(value) || /^\/(?![/\\])/.test(value) ? value : null;
+}
+
 /** "033.202.8585" -> "tel:0332028585"; null when there is no number. */
 export function telHref(hotline: string | null | undefined): string | null {
   const digits = hotline?.replace(/[^\d+]/g, '');

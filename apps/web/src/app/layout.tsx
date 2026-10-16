@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ContactDock } from '@/components/layout/ContactDock';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
+import { PAGE_IDS } from '@/lib/page-ids';
 import { loadSiteSetting } from '@/lib/site-setting';
 import '@/styles/globals.css';
 
@@ -23,11 +24,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="vi">
       <body className="pb-[82px] sm:pb-0">
-        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-70 focus:rounded-control focus:bg-white focus:p-3">
+        <a href={`#${PAGE_IDS.main}`} className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-70 focus:rounded-control focus:bg-white focus:p-3">
           Bỏ qua menu
         </a>
         <SiteHeader contacts={contacts} />
-        <main id="main">{children}</main>
+        <main id={PAGE_IDS.main}>{children}</main>
         <SiteFooter setting={setting} />
         <ContactDock contacts={contacts} />
       </body>
