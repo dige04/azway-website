@@ -177,3 +177,11 @@ export const redirects = [
   { from: '/tour-ha-long-1-ngay.html', to: '/tour/ha-noi-ha-long-1-ngay', statusCode: 301 },
   { from: '/khuyen-mai-mua-he', to: '/', statusCode: 302 },
 ];
+
+// Covers and related products for the guide articles in guide.json.
+export const articleLinks = {
+  'ha-long-2n1d': { tours: ['ha-noi-ha-long-1-ngay', 'ha-noi-bach-dang-giang-ha-long-2n1d'], cruises: ['ambassador', 'luna'] },
+  'tour-trung-quoc-cua-khau': { cover: 'chongqing', tours: ['kien-thuy-mong-tu-3n2d-lc2', 'dong-hung-2n1d-mc3', 'ha-noi-trung-khanh-city-tour-4n3d-1-shopping'] },
+  'du-thuyen-trong-ngay-hay-nghi-dem': { cruises: ['sea-octopus', 'saquila', 'tau-48-cho'] },
+  'checklist-teambuilding': { cover: 'tb-1' },
+};
