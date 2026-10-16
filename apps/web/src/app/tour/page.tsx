@@ -53,9 +53,27 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           <h1 className="text-[32px] font-bold leading-[1.08] tracking-[-0.05em] text-navy sm:text-[clamp(30px,3.1vw,44px)]">
             Tìm tour phù hợp với đoàn của bạn
           </h1>
-          <div className="mt-7 rounded-panel border border-line bg-white p-[18px] shadow-sm sm:p-6">
-            <TourFilterForm key={href} query={query} gates={gates} />
-          </div>
+          {/*
+            Phones: a closed <details>, so the first screen reaches the results
+            (the active chips stay in the result bar). From 640px the panel is
+            always open; browsers without ::details-content keep the toggle.
+            Keyed by the URL: fields show what the list shows, and the panel
+            closes again after a filter is applied.
+          */}
+          <details
+            key={href}
+            className="group mt-7 rounded-panel border border-line bg-white shadow-sm sm:[&::details-content]:block sm:[&::details-content]:[content-visibility:visible]"
+          >
+            <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between px-[18px] font-bold text-navy supports-[selector(::details-content)]:sm:hidden [&::-webkit-details-marker]:hidden">
+              Bộ lọc{Object.keys(labels).length > 0 && ` (${Object.keys(labels).length})`}
+              <span aria-hidden="true" className="text-sm transition-transform group-open:rotate-180">
+                ▾
+              </span>
+            </summary>
+            <div className="px-[18px] pb-[18px] sm:p-6">
+              <TourFilterForm query={query} gates={gates} />
+            </div>
+          </details>
         </div>
       </section>
 

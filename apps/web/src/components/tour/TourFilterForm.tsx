@@ -29,16 +29,13 @@ function useSubmitToUrl() {
   };
 }
 
-/**
- * Filter fields (FR-SRC-01, FR-SRC-03). Keyed by the page on the current
- * URL, so the fields always show what the list shows.
- */
+/** Filter fields (FR-SRC-01, FR-SRC-03); the page keys them by the current URL. */
 export function TourFilterForm({ query, gates }: { query: TourQuery; gates: { value: string; label: string }[] }) {
   const onSubmit = useSubmitToUrl();
   return (
     <form id={FORM_ID} action="/tour" method="get" onSubmit={onSubmit} role="search" aria-label="Lọc tour">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(5,1fr)_auto] lg:items-end">
-        <Field label="Tên hoặc mã tour" htmlFor="tour-q" className="sm:col-span-2 lg:col-span-1">
+      <div className="grid grid-cols-2 items-end gap-3 lg:grid-cols-[1.4fr_repeat(5,1fr)_auto]">
+        <Field label="Tên hoặc mã tour" htmlFor="tour-q" className="col-span-2 lg:col-span-1">
           <input id="tour-q" name="q" type="search" defaultValue={query.q} placeholder="VD: Hạ Long hoặc mã tour" maxLength={100} className={control} />
         </Field>
         <Select label="Loại tour" name="loai" value={query.category} all="Tất cả loại" options={CATEGORIES} />
@@ -49,7 +46,10 @@ export function TourFilterForm({ query, gates }: { query: TourQuery; gates: { va
           <input id="tour-group" name="so-khach" type="number" inputMode="numeric" min={1} max={10000} defaultValue={query.groupSize} placeholder="VD: 30" className={control} />
         </Field>
         {/* The sort select lives in the result bar; it belongs to this form via `form`. */}
-        <button type="submit" className="min-h-[52px] rounded-button bg-red px-6 font-bold text-white shadow-red hover:bg-red-hover sm:col-span-2 lg:col-span-1">
+        <button
+          type="submit"
+          className={`min-h-[52px] rounded-button bg-red px-6 font-bold text-white shadow-red hover:bg-red-hover lg:col-span-1 ${gates.length > 0 ? '' : 'col-span-2'}`}
+        >
           Lọc tour
         </button>
       </div>
