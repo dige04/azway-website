@@ -34,9 +34,9 @@ for (const route of ROUTES) {
     if (list) {
       const cards = page.locator('main article');
       await expect(cards.first(), `cards on ${route}`).toBeVisible();
-      if (list.codes) {
-        await expect(cards, `cards on ${route}`).toHaveCount(list.codes.length);
-        await expect(cards, `card order on ${route}`).toContainText(list.codes);
+      if (list.cards) {
+        await expect(cards, `cards on ${route}`).toHaveCount(list.cards.length);
+        await expect(cards, `card order on ${route}`).toContainText(list.cards);
       }
     }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

@@ -2,15 +2,20 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ArticleCard } from '@/components/ArticleCard';
 import { ArticleBody } from '@/components/article/ArticleBody';
 import { TableOfContents } from '@/components/article/TableOfContents';
 import { Breadcrumb, type Crumb } from '@/components/Breadcrumb';
+import { ContactLink } from '@/components/layout/ContactLink';
 import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
 import { Show } from '@/components/Show';
 import { prepareArticle } from '@/lib/article';
-import { getArticleBySlug } from '@/lib/cms';
+import { getArticleBySlug, getArticles } from '@/lib/cms';
+import type { Article, SiteSetting } from '@/lib/cms-types';
 import { imageProps, mediaUrl } from '@/lib/media';
-import { isStrapiSlug } from '@/lib/present';
+import { isStrapiSlug, safeHref, telHref } from '@/lib/present';
+import { pickRelated } from '@/lib/related';
+import { loadSiteSetting } from '@/lib/site-setting';
 
 // Static + ISR (NFR-03, D4): rendered on first request, then served from the
 // cache until the webhook revalidates `article:<slug>` or a type it shows.
@@ -39,11 +44,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/**
+ * FR-BLG-04: other articles of the same category first, then the newest
+ * (the seed has one article per category). Optional: a failure hides the block.
+ */
+async function relatedArticles(article: Article): Promise<Article[]> {
+  const [sameCategory, newest] = await Promise.all([
+    article.category ? getArticles({ category: article.category.slug, pageSize: 4 }).then((res) => res.data) : [],
+    getArticles({ pageSize: 4 }).then((res) => res.data),
+  ]).catch(() => [[], []]);
+  return pickRelated(article.documentId, sameCategory, newest, 3);
+}
+
 const date = new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' });
 
 /** FR-BLG-02..03: cover, author, reading time, table of contents, content, hand-picked products. */
 export default async function Page({ params }: Props) {
   const article = await load(params);
+  const [setting, related] = await Promise.all([loadSiteSetting(), relatedArticles(article)]);
   const { blocks, toc } = prepareArticle(article.content);
   const cover = imageProps(article.cover, article.title);
   const products = [...(article.tours ?? []).map(tourCard), ...(article.cruises ?? []).map(cruiseCard)];
@@ -127,8 +145,24 @@ export default async function Page({ params }: Props) {
               </nav>
             )}
           </Show>
+          <ContactCard setting={setting} />
         </aside>
       </div>
+
+      <Show when={related}>
+        {(articles) => (
+          <section aria-labelledby="bai-lien-quan" className="mt-14 border-t-2 border-navy pt-6">
+            <h2 id="bai-lien-quan" className="mb-6 font-serif text-[27px] font-bold leading-snug text-navy">
+              Có thể bạn cũng quan tâm
+            </h2>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {articles.map((item) => (
+                <ArticleCard key={item.documentId} article={item} />
+              ))}
+            </div>
+          </section>
+        )}
+      </Show>
     </div>
   );
 }
@@ -161,4 +195,28 @@ function initials(name: string): string {
   const first = words[0] ?? '';
   const last = words.at(-1) ?? '';
   return (words.length > 1 ? first.charAt(0) + last.charAt(0) : first.slice(0, 2)).toUpperCase();
+}
+
+/** The design's `.contact-card`: call or Zalo from beside the article. */
+function ContactCard({ setting }: { setting: SiteSetting | null }) {
+  const tel = telHref(setting?.hotline);
+  const zalo = safeHref(setting?.zaloUrl);
+  if (!tel && !zalo) return null;
+  return (
+    <div className="relative overflow-hidden rounded-sm bg-navy p-6 text-white">
+      <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-red-on-navy">Đi cùng AZway</p>
+      <p className="mb-3 mt-2.5 font-serif text-[26px] font-bold leading-[1.25]">Chuyến đi của bạn. Cách đi của bạn.</p>
+      <p className="text-[13px] leading-[1.8] text-navy-mist">Chia sẻ điểm đến, ngày dự kiến và số khách. AZway cùng bạn chọn hành trình phù hợp.</p>
+      {zalo && (
+        <ContactLink href={zalo} event="click_zalo" className="mt-5 flex min-h-12 items-center justify-center rounded-button bg-red px-5 font-bold hover:bg-red-hover">
+          Tư vấn qua Zalo
+        </ContactLink>
+      )}
+      {tel && (
+        <ContactLink href={tel} event="click_call" className="mt-4 block text-center text-xl font-extrabold">
+          {setting?.hotline}
+        </ContactLink>
+      )}
+    </div>
+  );
 }
