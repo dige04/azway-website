@@ -7,14 +7,15 @@ import { getTourBySlug } from '@/lib/cms';
 export const revalidate = 3600;
 export const generateStaticParams = async (): Promise<{ slug: string }[]> => [];
 
-// Strapi uid shape; anything else 404s without a CMS call or a cache entry.
-const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+// Characters a Strapi uid field accepts (A-Za-z0-9-_.~), with a generous
+// length cap; anything else 404s without a CMS call or a cache entry.
+const SLUG = /^[A-Za-z0-9\-_.~]{1,256}$/;
 
 const vnd = new Intl.NumberFormat('vi-VN');
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (slug.length > 120 || !SLUG.test(slug)) notFound();
+  if (!SLUG.test(slug)) notFound();
   const tour = await getTourBySlug(slug);
   if (!tour) notFound();
   const destinations = tour.destinations?.map((destination) => destination.name) ?? [];

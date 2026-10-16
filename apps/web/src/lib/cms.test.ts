@@ -26,18 +26,29 @@ afterEach(() => {
 describe('cache tags', () => {
   // The webhook only revalidates the changed document's `<type>` and
   // `<type>:<slug>`, so a page's tags must cover every type it shows.
-  it('adds the type of every populated relation, nested ones included', async () => {
-    await cms.getTourBySlug('x');
-    expect(lastCall().tags).toEqual(['article', 'destination', 'feedback', 'teambuilding', 'tour', 'tour:x']);
-
-    await cms.getHomepage(); // featuredTours -> destinations
-    expect(lastCall().tags).toEqual(['article', 'cruise', 'destination', 'homepage', 'tour']);
+  // Explicit per getter so a typo in a populate key (untagged relation) fails.
+  it.each([
+    ['getTours', () => cms.getTours(), ['destination', 'tour']],
+    ['getTourBySlug', () => cms.getTourBySlug('x'), ['article', 'destination', 'feedback', 'teambuilding', 'tour', 'tour:x']],
+    ['getCruiseBySlug', () => cms.getCruiseBySlug('x'), ['article', 'cruise', 'cruise:x', 'destination']],
+    ['getTeambuildingBySlug', () => cms.getTeambuildingBySlug('x'), ['teambuilding', 'teambuilding:x', 'tour']],
+    ['getDestinationBySlug', () => cms.getDestinationBySlug('x'), ['cruise', 'destination', 'destination:x', 'tour']],
+    ['getArticles', () => cms.getArticles({ category: 'c' }), ['article', 'article-category']],
+    ['getArticleBySlug', () => cms.getArticleBySlug('x'), ['article', 'article-category', 'article:x', 'cruise', 'tour']],
+    ['getFeedbacks', () => cms.getFeedbacks(), ['feedback', 'tour']],
+    ['getHomepage', () => cms.getHomepage(), ['article', 'cruise', 'destination', 'homepage', 'tour']],
+    ['getRedirect', () => cms.getRedirect('/a'), ['redirect']],
+  ] as const)('%s', async (_name, call, expected) => {
+    await call();
+    expect(lastCall().tags).toEqual([...expected].sort());
   });
 
   it('RELATIONS lists exactly the relations in the CMS schemas', () => {
     const apiDir = fileURLToPath(new URL('../../../cms/src/api/', import.meta.url));
     const fromSchemas: Record<string, Record<string, string>> = {};
-    for (const name of readdirSync(apiDir)) {
+    for (const entry of readdirSync(apiDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const name = entry.name;
       const schema = JSON.parse(readFileSync(join(apiDir, name, 'content-types', name, 'schema.json'), 'utf8'));
       fromSchemas[schema.info.singularName] = Object.fromEntries(
         Object.entries(schema.attributes as Record<string, { type: string; target?: string }>)
