@@ -6,7 +6,7 @@
     "title": { "type": "string" },
     "subtitle": { "type": "string" },
     "ctaLabel": { "type": "string" },
-    "ctaUrl": { "type": "string" }
+    "ctaUrl": { "type": "string", "regex": "^(/(?![/\\\\])[^\\s\\\\]*|https://[^\\s\\\\]+)$" }
   },
   "config": {
     "metadatas": {
@@ -14,7 +14,7 @@
       "title": { "edit": { "label": "Tiêu đề" } },
       "subtitle": { "edit": { "label": "Dòng phụ" } },
       "ctaLabel": { "edit": { "label": "Chữ trên nút" } },
-      "ctaUrl": { "edit": { "label": "Link của nút", "description": "Đường dẫn trong site, ví dụ /tour/ha-long-2n1d" } }
+      "ctaUrl": { "edit": { "label": "Link của nút", "description": "Đường dẫn trong site bắt đầu bằng / (ví dụ /tour/ha-long-2n1d) hoặc link ngoài bắt đầu bằng https://" } }
     }
   }
 }

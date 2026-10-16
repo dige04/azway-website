@@ -26,7 +26,7 @@
       "author": { "edit": { "label": "Tác giả" } },
       "excerpt": { "edit": { "label": "Tóm tắt", "description": "Hiện trên thẻ bài viết, tối đa 300 ký tự" } },
       "content": { "edit": { "label": "Nội dung", "description": "Dùng Heading 2, 3 để mục lục tự sinh" } },
-      "readingMinutes": { "edit": { "label": "Thời gian đọc (phút)", "description": "Tự tính khi lưu, không cần nhập" } },
+      "readingMinutes": { "edit": { "label": "Thời gian đọc (phút)", "description": "Tự tính khi lưu (200 từ/phút)", "editable": false } },
       "tours": { "edit": { "label": "Tour liên quan", "description": "Hiện ở khối \"Sản phẩm liên quan\" cuối bài" } },
       "cruises": { "edit": { "label": "Du thuyền liên quan", "description": "Hiện ở khối \"Sản phẩm liên quan\" cuối bài" } },
       "seo": { "edit": { "label": "SEO" } }
