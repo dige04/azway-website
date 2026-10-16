@@ -1,5 +1,5 @@
 import { factories } from '@strapi/strapi';
 
-// No controller or routes on purpose: leads are personal data and must never be
-// reachable through the generic REST API (only the custom ingest route in M3).
+// No core router: leads are personal data and must never be reachable through
+// the generic REST API. The only route is POST /api/leads/submit (routes/submit.ts).
 export default factories.createCoreService('api::lead.lead');

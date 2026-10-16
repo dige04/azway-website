@@ -15,8 +15,8 @@
     "productType": { "type": "enumeration", "enum": ["tour", "cruise", "teambuilding"] },
     "productCode": { "type": "string" },
     "productName": { "type": "string" },
-    "sourcePage": { "type": "string" },
-    "landingPage": { "type": "string" },
+    "sourcePage": { "type": "text" },
+    "landingPage": { "type": "text" },
     "utm_source": { "type": "string" },
     "utm_medium": { "type": "string" },
     "utm_campaign": { "type": "string" },
@@ -25,6 +25,7 @@
     "sheetsAttempts": { "type": "integer", "required": true, "default": 0, "min": 0 },
     "sheetsError": { "type": "text" },
     "notifiedAt": { "type": "datetime" },
+    "notifyAttempts": { "type": "integer", "required": true, "default": 0, "min": 0 },
     "ipHash": { "type": "string", "private": true }
   },
   "config": {
@@ -50,6 +51,7 @@
       "sheetsAttempts": { "edit": { "label": "Số lần đẩy Sheets" } },
       "sheetsError": { "edit": { "label": "Lỗi Sheets gần nhất" } },
       "notifiedAt": { "edit": { "label": "Đã gửi email thông báo lúc" } },
+      "notifyAttempts": { "edit": { "label": "Số lần gửi email thông báo lỗi", "description": "10 = đã dừng gửi (lỗi 10 lần hoặc quá 24 giờ)" } },
       "ipHash": { "edit": { "label": "IP (đã băm)", "visible": false } }
     }
   }

@@ -928,13 +928,22 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
         number
       >;
     ipHash: Schema.Attribute.String & Schema.Attribute.Private;
-    landingPage: Schema.Attribute.String;
+    landingPage: Schema.Attribute.Text;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::lead.lead'> &
       Schema.Attribute.Private;
     need: Schema.Attribute.Text;
     note: Schema.Attribute.Text;
     notifiedAt: Schema.Attribute.DateTime;
+    notifyAttempts: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     organization: Schema.Attribute.String;
     phone: Schema.Attribute.String & Schema.Attribute.Required;
     productCode: Schema.Attribute.String;
@@ -958,7 +967,7 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'pending'>;
-    sourcePage: Schema.Attribute.String;
+    sourcePage: Schema.Attribute.Text;
     travelDate: Schema.Attribute.Date;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

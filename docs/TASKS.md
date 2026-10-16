@@ -44,14 +44,14 @@ Nhánh: `m2/content-model`
 
 Nhánh: `m3/lead-pipeline`
 
-- [ ] Route `POST /api/leads/submit`, `auth: false`, policy kiểm `X-Lead-Token === LEAD_INGEST_TOKEN` (so sánh timing-safe).
-- [ ] Service `lead.submit`: validate lại phía server, chuẩn hoá SĐT, lưu `pending`, trả `{ id }`, rồi `setImmediate` chạy notify + sync.
-- [ ] `src/services/google-sheets.ts`: JWT RS256 bằng `node:crypto`, cache access token tới khi hết hạn, `values:append` với `valueInputOption=USER_ENTERED`. Cột theo ARCHITECTURE.md.
-- [ ] Retry 3 lần (1s, 3s, 9s). Thiếu cấu hình Google → `skipped`. Thất bại → `failed` + email `ALERT_EMAILS`.
-- [ ] `src/services/mailer.ts`: Resend qua `fetch`; người nhận = `site-setting.leadNotifyEmails`, fallback env.
-- [ ] Cron (`config/cron-tasks.ts`) mỗi 10 phút đồng bộ lại lead `failed` / `pending` > 5 phút, tối đa 10 lần thử.
-- [ ] Document middleware: publish / unpublish / delete (và update với type không D&P như `redirect`, `site-setting`) → `POST WEB_REVALIDATE_URL` body `{ tags: [<uid ngắn>, "<uid>:<slug>"] }` header `x-revalidate-secret`. Lỗi webhook chỉ log, không chặn thao tác.
-- [ ] Unit test (vitest) cho: ký JWT, chuẩn hoá SĐT, logic retry/trạng thái (mock `fetch`).
+- [x] Route `POST /api/leads/submit`, `auth: false`, policy kiểm `X-Lead-Token === LEAD_INGEST_TOKEN` (so sánh timing-safe).
+- [x] Service `lead.submit`: validate lại phía server, chuẩn hoá SĐT, lưu `pending`, trả `{ id }`, rồi `setImmediate` chạy notify + sync.
+- [x] `src/services/google-sheets.ts`: JWT RS256 bằng `node:crypto`, cache access token tới khi hết hạn, `values:append` với `valueInputOption=USER_ENTERED`. Cột theo ARCHITECTURE.md.
+- [x] Retry 3 lần (1s, 3s, 9s). Thiếu cấu hình Google → `skipped`. Thất bại → `failed` + email `ALERT_EMAILS`.
+- [x] `src/services/mailer.ts`: Resend qua `fetch`; người nhận = `site-setting.leadNotifyEmails`, fallback env.
+- [x] Cron (`config/cron-tasks.ts`) mỗi 10 phút đồng bộ lại lead `failed` / `pending` > 5 phút, tối đa 10 lần thử.
+- [x] Document middleware: publish / unpublish / delete (và update với type không D&P như `redirect`, `site-setting`) → `POST WEB_REVALIDATE_URL` body `{ tags: [<uid ngắn>, "<uid>:<slug>"] }` header `x-revalidate-secret`. Lỗi webhook chỉ log, không chặn thao tác.
+- [x] Unit test (vitest) cho: ký JWT, chuẩn hoá SĐT, logic retry/trạng thái (mock `fetch`).
 
 **Xong khi:** test pass; `curl` không token → 401; có token → 201 và lead xuất hiện trong admin; mock Sheets lỗi → `failed` + log email cảnh báo (AC-10, AC-11 ở mức unit/integration).
 

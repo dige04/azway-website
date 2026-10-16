@@ -1,25 +1,38 @@
-// AC-05 against a real Strapi (temporary sqlite): the public REST API must
-// never return drafts, whatever the query says. Guards against Strapi
-// upgrades silently disabling src/setup/published-only.ts.
+// The public REST API against a real Strapi (temporary sqlite), so Strapi
+// upgrades cannot silently break it:
+// - AC-05: never returns drafts, whatever the query says (src/setup/published-only.ts);
+// - M3: lead ingest is token-protected, stores the lead, and the background
+//   email/Sheets job runs (src/api/lead, src/services/lead-pipeline.ts).
 import { randomBytes } from 'node:crypto';
 import { rmSync } from 'node:fs';
+import { createServer, type Server } from 'node:http';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import type { Core } from '@strapi/strapi';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 // Strapi is CommonJS; loading it through Vite's ESM interop fails.
 const { compileStrapi, createStrapi } = createRequire(__filename)('@strapi/strapi') as typeof import('@strapi/strapi');
 
-const dbFile = `.tmp/test-drafts-${process.pid}.db`;
+const dbFile = `.tmp/test-api-${process.pid}.db`;
+const LEAD_TOKEN = randomBytes(32).toString('hex');
 let strapi: Core.Strapi;
 let base: string;
 let secretTourId: string;
 let publicTourId: string;
 let apiToken: string;
 let adminToken: string;
+// Stand-in for the Resend API: answers 500 and counts the calls.
+let resend: Server;
+let resendCalls = 0;
 
 beforeAll(async () => {
+  resend = createServer((_req, res) => {
+    resendCalls++;
+    res.writeHead(500).end('{"message":"mock"}');
+  });
+  await new Promise<void>((resolve) => resend.listen(0, '127.0.0.1', resolve));
+
   const secret = () => randomBytes(16).toString('base64');
   Object.assign(process.env, {
     NODE_ENV: 'test',
@@ -34,6 +47,16 @@ beforeAll(async () => {
     DATABASE_CLIENT: 'sqlite',
     DATABASE_FILENAME: dbFile,
     CRON_ENABLED: 'false',
+    LEAD_INGEST_TOKEN: LEAD_TOKEN,
+    LEAD_NOTIFY_EMAILS: 'sales@example.com',
+    RESEND_API_URL: `http://127.0.0.1:${(resend.address() as { port: number }).port}`,
+    // Set (even empty) so a developer's apps/cms/.env cannot fill them in.
+    RESEND_API_KEY: '',
+    MAIL_FROM: '',
+    GOOGLE_SA_EMAIL: '',
+    GOOGLE_SA_PRIVATE_KEY: '',
+    GOOGLE_SHEET_ID: '',
+    WEB_REVALIDATE_URL: '',
   });
   strapi = await createStrapi(await compileStrapi()).load();
   await strapi.listen();
@@ -90,6 +113,7 @@ afterAll(async () => {
   await strapi?.server.destroy();
   await strapi?.db.destroy();
   rmSync(path.join(__dirname, '..', dbFile), { force: true });
+  resend?.close();
 });
 
 const get = async (query: string, token?: string) => {
@@ -122,9 +146,10 @@ describe('public REST API (AC-05)', () => {
   });
 
   it('findOne returns the published document and not the draft-only one', async () => {
+    expect(publicTourId).toBeTruthy();
+    expect(secretTourId).toBeTruthy();
     expect(await get(`/api/tours/${publicTourId}?status=draft`)).toMatchObject({ status: 200, body: expect.stringContaining('Public tour') });
     const draft = await get(`/api/tours/${secretTourId}?status=draft`);
-    expect(secretTourId).toBeTruthy();
     expect(draft.status).toBe(404);
     expect(draft.body).not.toContain('SECRET');
   });
@@ -134,5 +159,53 @@ describe('trusted readers still see drafts', () => {
   it('API token (FR-CMS-09 preview) and the admin panel', async () => {
     expect((await get('/api/tours?status=draft', apiToken)).body).toContain('SECRET tour');
     expect((await get('/content-manager/collection-types/api::tour.tour', adminToken)).body).toContain('SECRET tour');
+  });
+});
+
+describe('lead ingest (M3)', () => {
+  const submit = (token?: string) =>
+    fetch(`${base}/api/leads/submit`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...(token ? { 'x-lead-token': token } : {}) },
+      body: JSON.stringify({ fullName: 'Nguyễn Văn A', phone: '+84 912 345 678', productType: 'tour', productCode: 'PUB' }),
+    });
+  type StoredLead = { phone: string; sheetsStatus: string; notifyAttempts: number; notifiedAt: string | null };
+  // Waits for the background job: without Google config it ends at `skipped`.
+  const processed = async (documentId: string) =>
+    vi.waitFor(
+      async () => {
+        const lead = (await strapi.documents('api::lead.lead').findOne({ documentId })) as unknown as StoredLead;
+        expect(lead.sheetsStatus).toBe('skipped');
+        return lead;
+      },
+      { timeout: 5000 }
+    );
+
+  it('rejects a missing or wrong X-Lead-Token and stores nothing', async () => {
+    expect((await submit()).status).toBe(401);
+    expect((await submit('x'.repeat(64))).status).toBe(401);
+    expect(await strapi.documents('api::lead.lead').count({})).toBe(0);
+  });
+
+  it('stores the lead, then emails it; no Resend key is not a failure', async () => {
+    const response = await submit(LEAD_TOKEN);
+    expect(response.status).toBe(201);
+    const { id } = (await response.json()) as { id: string };
+    expect(await processed(id)).toMatchObject({ phone: '0912345678', notifyAttempts: 0, notifiedAt: null });
+    expect(resendCalls).toBe(0);
+  });
+
+  it('keeps the lead and counts the attempt when Resend fails', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'test-key');
+    vi.stubEnv('MAIL_FROM', 'AZway <no-reply@example.com>');
+    try {
+      const response = await submit(LEAD_TOKEN);
+      expect(response.status).toBe(201);
+      const { id } = (await response.json()) as { id: string };
+      expect(await processed(id)).toMatchObject({ notifyAttempts: 1, notifiedAt: null });
+      expect(resendCalls).toBe(1);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
