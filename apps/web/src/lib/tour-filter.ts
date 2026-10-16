@@ -5,7 +5,7 @@
  * never passed on. Filtering runs on the catalog from `getTourCatalog`.
  */
 import type { Region, Tour, TourCategory } from './cms-types';
-import { foldText, slugify } from './text';
+import { matchesQuery, slugify } from './text';
 
 export const PAGE_SIZE = 12;
 
@@ -140,11 +140,7 @@ const choice = <T>(choices: Choice<T>[], value: string | undefined) => choices.f
 
 /** Whether `tour` meets condition `key` of `query` (true when the condition is absent). */
 const CONDITIONS: Record<ConditionKey, (tour: Tour, query: TourQuery) => boolean> = {
-  q: (tour, { q }) => {
-    if (!q) return true;
-    const haystack = foldText(`${tour.name} ${tour.code}`);
-    return foldText(q).split(/\s+/).every((word) => haystack.includes(word));
-  },
+  q: (tour, { q }) => !q || matchesQuery(`${tour.name} ${tour.code}`, q),
   category: (tour, { category }) => !category || tour.category === choice(CATEGORIES, category)?.match,
   region: (tour, { region }) =>
     !region || (tour.destinations ?? []).some((destination) => destination.region === choice(REGIONS, region)?.match),

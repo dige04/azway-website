@@ -3,12 +3,7 @@
 import { BlocksRenderer, type BlocksContent } from '@strapi/blocks-react-renderer';
 import Image from 'next/image';
 import { createElement, type ReactNode } from 'react';
-
-/** A CMS link that may go in href: http(s), tel, mailto or a path on this site. */
-function linkHref(url: string): string | null {
-  const value = url.trim();
-  return /^(https?:\/\/|tel:|mailto:)/i.test(value) || /^\/(?![/\\])/.test(value) ? value : null;
-}
+import { linkHref } from '@/lib/present';
 
 /** The client half of `RichText` (the renderer is a client module); use `RichText`. */
 export function RichTextBlocks({ blocks, className }: { blocks: unknown[]; className?: string }) {

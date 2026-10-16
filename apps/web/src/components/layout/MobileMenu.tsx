@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { PAGE_IDS } from '@/lib/page-ids';
 import { safeHref, telHref } from '@/lib/present';
 import { type Contacts, ContactLink } from './ContactLink';
 import { NAV_ITEMS } from './nav';
@@ -58,7 +59,7 @@ export function MobileMenu({ contacts }: { contacts: Contacts | null }) {
       <button
         ref={button}
         type="button"
-        aria-controls="mobile-drawer"
+        aria-controls={PAGE_IDS.mobileDrawer}
         aria-expanded={open}
         aria-label={open ? 'Đóng menu' : 'Mở menu'}
         onClick={() => (open ? close(true) : setOpen(true))}
@@ -69,7 +70,7 @@ export function MobileMenu({ contacts }: { contacts: Contacts | null }) {
         </svg>
       </button>
 
-      <div ref={drawer} id="mobile-drawer" hidden={!open} className="fixed inset-x-0 bottom-0 top-header z-55 overflow-auto bg-white px-6 pb-32 pt-5 lg:hidden">
+      <div ref={drawer} id={PAGE_IDS.mobileDrawer} hidden={!open} className="fixed inset-x-0 bottom-0 top-header z-55 overflow-auto bg-white px-6 pb-32 pt-5 lg:hidden">
         <nav aria-label="Menu điện thoại">
           {NAV_ITEMS.map((item) => (
             <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className="flex border-b border-line py-4 text-xl font-bold text-navy">

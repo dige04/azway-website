@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Show } from '@/components/Show';
-import { formatPrice, hasContent, isStrapiSlug } from './present';
+import { formatPrice, hasContent, isStrapiSlug, linkHref } from './present';
 
 describe('hasContent (FR-PRD-05: empty data hides the block)', () => {
   it('treats what Strapi returns for an unfilled field as empty', () => {
@@ -41,5 +41,22 @@ describe('isStrapiSlug', () => {
   it('accepts the uid charset up to 200 chars, rejects the rest', () => {
     for (const slug of ['ha-long', 'ha_long', 'LC2', 'a.b~c', 'x'.repeat(200)]) expect(isStrapiSlug(slug), slug).toBe(true);
     for (const slug of ['', 'x'.repeat(201), 'hạ-long', 'a/b', 'a b', '%2e']) expect(isStrapiSlug(slug), slug).toBe(false);
+  });
+});
+
+describe('linkHref', () => {
+  it('lets through only web, phone, mail and same-site links', () => {
+    const cases: [string, string | null][] = [
+      ['/ok', '/ok'],
+      ['https://azway.vn/tour', 'https://azway.vn/tour'],
+      ['tel:0332028585', 'tel:0332028585'],
+      ['mailto:info@azway.vn', 'mailto:info@azway.vn'],
+      ['//x', null],
+      ['/\\x', null],
+      ['/\t/x', null],
+      ['https:x', null],
+      ['javascript:alert(1)', null],
+    ];
+    for (const [url, href] of cases) expect(linkHref(url), JSON.stringify(url)).toBe(href);
   });
 });
