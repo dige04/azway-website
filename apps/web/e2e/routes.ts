@@ -1,6 +1,13 @@
 /** Routes the smoke test opens. Add each new page here (paths need seed data). */
 export const ROUTES = ['/', '/tour', '/tour?loai=trung-quoc&thoi-luong=4n3d&sap-xep=gia-tang', '/tour/ha-noi-ha-long-1-ngay'];
 
+/** Routes whose heading is fixed text: what must show to prove the seed data rendered. */
+export const SEED_CONTENT: Partial<Record<string, string>> = {
+  '/tour': 'main article',
+  // Seed: LC6, LC7, TK1S.
+  '/tour?loai=trung-quoc&thoi-luong=4n3d&sap-xep=gia-tang': 'main article',
+};
+
 /**
  * Public URLs the menu and cards already link to but no page serves yet (M5
  * pages after WP-07). Next prefetches those links and gets 404s; the smoke

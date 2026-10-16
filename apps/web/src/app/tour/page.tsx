@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import { ContactLink } from '@/components/layout/ContactLink';
 import { ProductCard, tourCard } from '@/components/ProductCard';
-import { CallLink } from '@/components/tour/CallLink';
 import { FilterApplyTracker, TourFilterForm, TourSortSelect } from '@/components/tour/TourFilterForm';
 import { getSiteSetting, getTourCatalog } from '@/lib/cms';
 import { telHref } from '@/lib/present';
@@ -142,9 +142,9 @@ function NoResults({
       <p className="mt-6 text-muted">AZway có thể thiết kế tour riêng theo yêu cầu của đoàn.</p>
       <div className="mt-4 flex flex-wrap justify-center gap-3">
         {phone && (
-          <CallLink href={phone} className="inline-flex min-h-[52px] items-center rounded-button bg-red px-6 font-bold text-white shadow-red hover:bg-red-hover">
+          <ContactLink href={phone} event="click_call" className="inline-flex min-h-[52px] items-center rounded-button bg-red px-6 font-bold text-white shadow-red hover:bg-red-hover">
             Gọi {hotline}
-          </CallLink>
+          </ContactLink>
         )}
         {hasConditions(query) && (
           <Link href="/tour" className="inline-flex min-h-[52px] items-center rounded-button border border-line bg-white px-6 font-bold text-navy">
