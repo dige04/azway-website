@@ -115,6 +115,8 @@ describe('import-redirects', () => {
     expect((await importCsv(sample)).summary).toEqual({ created: 5, updated: 0, kept: 0 });
     expect((await importCsv(sample)).summary).toEqual({ created: 0, updated: 0, kept: 5 });
     expect((await importCsv('from,to\n/tour-sapa.html/?ref=x,/tour\n')).summary).toEqual({ created: 0, updated: 1, kept: 0 });
+    // Excel's "CSV UTF-8" starts the file with a BOM.
+    expect((await importCsv(`\uFEFF${sample}`)).summary).toEqual({ created: 0, updated: 1, kept: 4 });
 
     // Valid lines first: nothing may be written before a bad line is seen.
     const before = await total();

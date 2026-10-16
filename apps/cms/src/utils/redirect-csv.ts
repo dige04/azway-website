@@ -44,7 +44,7 @@ const problemOf = (from: string, to: string, statusCode: number, key: string): s
 
 /** Every row, or every problem with its line number (nothing is imported then). */
 export const parseRedirectCsv = (text: string): { rows: RedirectRow[]; errors: string[] } => {
-  const lines = text.replace(/^﻿/, '').split(/\r?\n/);
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
   const header = splitLine(lines[0] ?? '') ?? [];
   if (header.length < 2 || header.some((name, i) => name !== COLUMNS[i])) {
     return { rows: [], errors: [`line 1: header must be "${COLUMNS.join(',')}" (statusCode optional)`] };
