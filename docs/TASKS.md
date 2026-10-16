@@ -10,15 +10,15 @@ Ký hiệu truy vết (FR-, NFR-, SEO-, AC-) trỏ về [BRD-PRD.md](./BRD-PRD.m
 
 Nhánh: `m1/cms-scaffold`
 
-- [ ] Tạo `apps/cms` bằng Strapi **5.58.x**, TypeScript, không dùng example data. Package name `@azway/cms`.
-- [ ] `config/database.ts`: `sqlite` mặc định (file `.tmp/data.db`), `postgres` khi `DATABASE_CLIENT=postgres` (hỗ trợ `DATABASE_URL`).
-- [ ] `config/plugins.ts`: upload provider `aws-s3` trỏ R2 **chỉ khi** có đủ biến `R2_*`; ngược lại dùng local.
-- [ ] `config/middlewares.ts`: CSP cho phép ảnh từ `R2_PUBLIC_URL`; CORS theo `CORS_ORIGINS`.
-- [ ] `config/admin.ts`: đường dẫn admin lấy từ `ADMIN_PATH` (mặc định `/admin`) — NFR-07.
-- [ ] `.env.example` đầy đủ theo ARCHITECTURE.md.
-- [ ] Script root `pnpm dev:cms` chạy được.
+- [x] Tạo `apps/cms` bằng Strapi **5.58.x**, TypeScript, không dùng example data. Package name `@azway/cms`.
+- [x] `config/database.ts`: `sqlite` mặc định (file `.tmp/data.db`), `postgres` khi `DATABASE_CLIENT=postgres` (hỗ trợ `DATABASE_URL`).
+- [x] `config/plugins.ts`: upload provider `aws-s3` trỏ R2 **chỉ khi** có đủ biến `R2_*`; ngược lại dùng local.
+- [x] `config/middlewares.ts`: CSP cho phép ảnh từ `R2_PUBLIC_URL`; CORS theo `CORS_ORIGINS`.
+- [x] `config/admin.ts`: đường dẫn admin lấy từ `ADMIN_PATH` (mặc định `/admin`) — NFR-07.
+- [x] `.env.example` đầy đủ theo ARCHITECTURE.md.
+- [x] Script root `pnpm dev:cms` chạy được.
 
-**Xong khi:** `pnpm --filter @azway/cms build` thành công; `develop` khởi động trên sqlite, tạo được admin đầu tiên, trả 200 ở `/_health`.
+**Xong khi:** `pnpm --filter @azway/cms build` thành công; `develop` khởi động trên sqlite, tạo được admin đầu tiên, `/_health` trả 204 (route có sẵn của Strapi 5, không body).
 
 ---
 
@@ -130,7 +130,7 @@ Nhánh: `m8/infra`
 - [ ] `infra/docker-compose.yml`: `strapi`, `postgres:16-alpine` (volume), `caddy` (TLS tự động cho `CMS_DOMAIN`); healthcheck; `restart: unless-stopped`; giới hạn RAM Strapi ~1.2 GB.
 - [ ] `infra/backup.sh` + systemd timer/cron: `pg_dump | gzip` → R2 qua `rclone` hoặc `aws s3 --endpoint-url`, giữ 7 bản; `infra/restore.md` có lệnh khôi phục đã thử (NFR-09).
 - [ ] `infra/bootstrap-vps.md`: tạo swap 2 GB, cài Docker, firewall 22/80/443, user deploy.
-- [ ] `.github/workflows/ci.yml`: install, typecheck, test, build cả hai app trên PR.
+- [x] `.github/workflows/ci.yml`: install, typecheck, test, build cả hai app trên PR (hiện build `apps/cms`; thêm bước `pnpm build:web` khi có `apps/web`).
 - [ ] `.github/workflows/deploy-web.yml`: trên push `main` đổi `apps/web/**` → `opennextjs-cloudflare build` + `wrangler deploy` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). Preview deploy cho PR (tên worker `azway-web-pr-<n>`), dọn khi đóng PR.
 - [ ] `.github/workflows/deploy-cms.yml`: build image → GHCR → SSH vào VPS `docker compose pull strapi && docker compose up -d` (secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`).
 

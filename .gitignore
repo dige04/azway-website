@@ -16,6 +16,8 @@ apps/cms/dist/
 apps/cms/public/uploads/*
 !apps/cms/public/uploads/.gitkeep
 apps/cms/types/generated/
+apps/cms/.strapi/
+apps/cms/.strapi-updater.json
 
 # next / opennext
 apps/web/.next/

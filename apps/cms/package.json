@@ -1,0 +1,39 @@
+{
+  "name": "@azway/cms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AZway CMS (Strapi 5)",
+  "scripts": {
+    "build": "strapi build",
+    "console": "strapi console",
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@strapi/plugin-users-permissions": "5.58.0",
+    "@strapi/provider-upload-aws-s3": "5.58.0",
+    "@strapi/strapi": "5.58.0",
+    "better-sqlite3": "12.8.0",
+    "pg": "8.23.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.30.3",
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "5.9.3",
+    "vitest": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "strapi": {
+    "uuid": "0ee70822-d33b-4735-89d4-1ca6d1fc0cc2"
+  }
+}

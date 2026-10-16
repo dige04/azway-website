@@ -11,6 +11,7 @@
     "build:cms": "pnpm --filter @azway/cms build",
     "build:web": "pnpm --filter @azway/web build",
     "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
     "lint": "pnpm -r lint"
   }
 }
