@@ -57,6 +57,9 @@ export default function config(phase: string): NextConfig {
       dangerouslyAllowLocalIP:
         phase === PHASE_DEVELOPMENT_SERVER && [cms, media].some((url) => url && LOCAL_HOSTS.has(url.hostname)),
     },
+    // Child sitemaps sit at the root: a sitemap may only list URLs under its
+    // own directory. App Router has no `sitemap-[n].xml` segment.
+    rewrites: async () => [{ source: '/sitemap-:file(\\d+).xml', destination: '/sitemap/:file' }],
   };
 }
 

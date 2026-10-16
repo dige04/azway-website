@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { ContactLink } from '@/components/layout/ContactLink';
@@ -6,6 +5,7 @@ import { LeadForm } from '@/components/lead/LeadForm';
 import { Show } from '@/components/Show';
 import { renderPerRequestWithoutCms } from '@/lib/build';
 import { safeHref, telHref } from '@/lib/present';
+import { pageMetadata } from '@/lib/seo';
 import { loadSiteSetting } from '@/lib/site-setting';
 
 // Static + ISR (NFR-03): refreshed when the CMS revalidates `site-setting`.
@@ -13,11 +13,11 @@ export const revalidate = 3600;
 
 const INTRO = 'Để lại điểm đến, số người và thời gian dự kiến. AZway sẽ liên hệ để gợi ý hành trình phù hợp.';
 
-export const metadata: Metadata = {
+export const generateMetadata = () => pageMetadata({
   title: 'Liên hệ',
   description: `Hotline, Zalo, email và địa chỉ của AZway. ${INTRO}`,
-  alternates: { canonical: '/lien-he' },
-};
+  path: '/lien-he',
+});
 
 const mailHref = (email: string | null | undefined) => (email && /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(email.trim()) ? `mailto:${email.trim()}` : null);
 

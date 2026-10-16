@@ -1,18 +1,18 @@
-import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { DestinationCard, REGION_LABEL } from '@/components/DestinationCard';
 import { renderPerRequestWithoutCms } from '@/lib/build';
 import { getDestinations } from '@/lib/cms';
 import type { Region } from '@/lib/cms-types';
+import { pageMetadata } from '@/lib/seo';
 
 // Static + ISR (NFR-03, D4): regenerated when the webhook revalidates `destination`.
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
+export const generateMetadata = () => pageMetadata({
   title: 'Điểm đến',
   description: 'Điểm đến trong nước, Trung Quốc và quốc tế cùng AZway: chọn nơi bạn muốn đến để xem tour và du thuyền.',
-  alternates: { canonical: '/diem-den' },
-};
+  path: '/diem-den',
+});
 
 export default async function Page() {
   await renderPerRequestWithoutCms();

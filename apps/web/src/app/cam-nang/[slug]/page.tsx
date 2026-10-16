@@ -6,16 +6,19 @@ import { ArticleCard } from '@/components/ArticleCard';
 import { ArticleBody } from '@/components/article/ArticleBody';
 import { TableOfContents } from '@/components/article/TableOfContents';
 import { Breadcrumb, type Crumb } from '@/components/Breadcrumb';
+import { JsonLd } from '@/components/JsonLd';
 import { ContactLink } from '@/components/layout/ContactLink';
 import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
 import { Show } from '@/components/Show';
 import { prepareArticle } from '@/lib/article';
 import { getArticleBySlug, getArticles } from '@/lib/cms';
 import type { Article, SiteSetting } from '@/lib/cms-types';
-import { imageProps, mediaUrl } from '@/lib/media';
+import { imageProps } from '@/lib/media';
 import { PAGE_IDS } from '@/lib/page-ids';
 import { isStrapiSlug, safeHref, telHref } from '@/lib/present';
 import { pickRelated } from '@/lib/related';
+import { blocksText, metaDescription, pageMetadata } from '@/lib/seo';
+import { articleLd } from '@/lib/structured-data';
 import { loadSiteSetting } from '@/lib/site-setting';
 
 // Static + ISR (NFR-03, D4): rendered on first request, then served from the
@@ -33,16 +36,20 @@ async function load(params: Props['params']) {
   return article;
 }
 
+const contentSummary = (article: Article) => article.excerpt || blocksText(article.content);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await load(params);
-  const image = mediaUrl(article.seo?.shareImage?.url ?? article.cover?.url);
-  return {
-    title: article.seo?.metaTitle || article.title,
-    description: article.seo?.metaDescription || article.excerpt || undefined,
-    alternates: { canonical: `/cam-nang/${article.slug}` },
-    robots: article.seo?.noIndex ? { index: false } : undefined,
-    openGraph: { type: 'article', title: article.title, publishedTime: article.publishedAt ?? undefined, images: image ? [image] : undefined },
-  };
+  return pageMetadata({
+    title: article.title,
+    description: contentSummary(article),
+    path: `/cam-nang/${article.slug}`,
+    image: article.cover,
+    seo: article.seo,
+    type: 'article',
+    publishedTime: article.publishedAt,
+    modifiedTime: article.updatedAt,
+  });
 }
 
 /**
@@ -75,6 +82,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <div className="shell pb-section pt-6 sm:pt-8">
+      <JsonLd data={articleLd(article, metaDescription(article.seo, contentSummary(article)))} />
       <Breadcrumb items={crumbs} className="mb-6" />
       <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-14">
         <article className="min-w-0 max-w-[820px]">

@@ -6,6 +6,7 @@ import { ProductCard, tourCard } from '@/components/ProductCard';
 import { FilterApplyTracker, FilterLink, TourFilterForm, TourSortSelect } from '@/components/tour/TourFilterForm';
 import { getSiteSetting, getTourCatalog } from '@/lib/cms';
 import { telHref } from '@/lib/present';
+import { pageMetadata } from '@/lib/seo';
 import {
   conditionLabels,
   filterEventParams,
@@ -24,16 +25,22 @@ import {
 // Rendered per request (the URL is the filter); the catalog fetch is cached by tag.
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Tour du lịch',
-  description: 'Tour trong nước, tour Trung Quốc theo cửa khẩu và tour nước ngoài. Lọc theo loại, khu vực, thời lượng, số khách.',
-  // SEO-06: every filtered URL points search engines at the list itself.
-  alternates: { canonical: '/tour' },
-};
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+// SEO-06: a filtered, sorted or paged URL points search engines at /tour and stays out of the index.
+// The page already renders per request (it reads the URL), so this costs no caching.
+export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
+  return pageMetadata({
+    title: 'Tour du lịch',
+    description: 'Tour trong nước, tour Trung Quốc theo cửa khẩu và tour nước ngoài. Lọc theo loại, khu vực, thời lượng, số khách.',
+    path: '/tour',
+    noIndex: Object.keys(parseTourQuery(await searchParams)).length > 0,
+  });
+}
 
 type Labels = Partial<Record<ConditionKey, string>>;
 
-export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function Page({ searchParams }: { searchParams: SearchParams }) {
   const query = parseTourQuery(await searchParams);
   // The hotline is only for the empty state; without it the list still renders.
   const [catalog, setting] = await Promise.all([getTourCatalog(), getSiteSetting().catch(() => null)]);

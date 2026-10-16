@@ -12,6 +12,7 @@ import { getDestinationBySlug } from '@/lib/cms';
 import type { Destination } from '@/lib/cms-types';
 import { imageProps } from '@/lib/media';
 import { hasContent, isStrapiSlug } from '@/lib/present';
+import { blocksText, pageMetadata } from '@/lib/seo';
 import { loadSiteSetting } from '@/lib/site-setting';
 import { toursInRegion } from '@/lib/tour-filter';
 
@@ -33,7 +34,13 @@ async function loadDestination(slug: string): Promise<Destination> {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const destination = await loadDestination((await params).slug);
-  return { title: destination.seo?.metaTitle ?? `Du lịch ${destination.name}`, description: destination.seo?.metaDescription ?? undefined };
+  return pageMetadata({
+    title: `Du lịch ${destination.name}`,
+    description: blocksText(destination.description) || `Tour và du thuyền ${destination.name} cùng AZway.`,
+    path: `/diem-den/${destination.slug}`,
+    image: destination.image,
+    seo: destination.seo,
+  });
 }
 
 export default async function Page({ params }: Props) {

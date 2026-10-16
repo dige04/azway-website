@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { JsonLd } from '@/components/JsonLd';
+import { siteUrl } from '@/lib/site';
 
 export interface Crumb {
   name: string;
@@ -8,11 +10,12 @@ export interface Crumb {
 
 const HOME: Crumb = { name: 'Trang chủ', href: '/' };
 
-/** FR-GEN-04 trail on listing, detail and article pages. "Trang chủ" is added. */
+/** FR-GEN-04 trail on listing, detail and article pages, with its BreadcrumbList (SEO-04). "Trang chủ" is added. */
 export function Breadcrumb({ items, className = '' }: { items: Crumb[]; className?: string }) {
   const trail = [HOME, ...items];
   return (
     <nav aria-label="Breadcrumb" className={className}>
+      <JsonLd data={breadcrumbJsonLd(trail)} />
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
         {trail.map((crumb, index) => {
           const last = index === trail.length - 1;
@@ -36,16 +39,16 @@ export function Breadcrumb({ items, className = '' }: { items: Crumb[]; classNam
   );
 }
 
-/** schema.org BreadcrumbList for the same trail (JSON-LD lands with SEO, M7). */
-export function breadcrumbJsonLd(items: Crumb[], siteUrl: string) {
+/** schema.org BreadcrumbList of the visible trail; the current page (no href) is the last item, without a URL. */
+function breadcrumbJsonLd(trail: Crumb[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: [HOME, ...items].map((crumb, index) => ({
+    itemListElement: trail.map((crumb, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       name: crumb.name,
-      ...(crumb.href && { item: new URL(crumb.href, siteUrl).toString() }),
+      ...(crumb.href && { item: siteUrl(crumb.href) }),
     })),
   };
 }

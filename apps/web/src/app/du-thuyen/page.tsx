@@ -1,19 +1,19 @@
-import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { RequestBlock } from '@/components/product/Detail';
 import { cruiseCard, ProductCard } from '@/components/ProductCard';
 import { renderPerRequestWithoutCms } from '@/lib/build';
 import { getCruiseCatalog } from '@/lib/cms';
+import { pageMetadata } from '@/lib/seo';
 import { loadSiteSetting } from '@/lib/site-setting';
 
 // Static + ISR (NFR-03, D4): regenerated when the webhook revalidates `cruise`.
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
+export const generateMetadata = () => pageMetadata({
   title: 'Du thuyền Hạ Long',
   description: 'Vé du thuyền trong ngày, du thuyền ăn tối và thuê nguyên tàu trên vịnh Hạ Long. Xem giá từng lựa chọn và gửi yêu cầu cho AZway.',
-  alternates: { canonical: '/du-thuyen' },
-};
+  path: '/du-thuyen',
+});
 
 export default async function Page() {
   await renderPerRequestWithoutCms();

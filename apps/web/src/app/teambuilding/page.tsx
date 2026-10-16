@@ -1,19 +1,19 @@
-import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { RequestBlock } from '@/components/product/Detail';
 import { ProgrammeCard } from '@/components/teambuilding/ProgrammeCard';
 import { renderPerRequestWithoutCms } from '@/lib/build';
 import { getTeambuildingCatalog } from '@/lib/cms';
+import { pageMetadata } from '@/lib/seo';
 import { loadSiteSetting } from '@/lib/site-setting';
 
 // Static + ISR (NFR-03, D4): regenerated when the webhook revalidates `teambuilding`.
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
+export const generateMetadata = () => pageMetadata({
   title: 'Teambuilding, gala dinner cho doanh nghiệp',
   description: 'Chương trình teambuilding và gala dinner theo đội ngũ của bạn: kịch bản trò chơi, MC, đạo cụ và lịch trình cho đoàn. Gửi yêu cầu để AZway tư vấn và báo giá.',
-  alternates: { canonical: '/teambuilding' },
-};
+  path: '/teambuilding',
+});
 
 const STEPS = [
   { title: 'Lắng nghe nhu cầu', text: 'Trao đổi mục tiêu, số người, ngày dự kiến, điểm đến và ngân sách.' },

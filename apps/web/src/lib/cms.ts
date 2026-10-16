@@ -17,6 +17,7 @@ import type {
   ListResponse,
   Redirect,
   Region,
+  Seo,
   SingleResponse,
   SiteSetting,
   Teambuilding,
@@ -307,6 +308,33 @@ export const getFeedbacks = ({ tour, page, pageSize }: { tour?: string; page?: n
     populate: { album: true, tour: card },
     sort: ['date:desc'],
     pagination: pagination(page, pageSize),
+  });
+
+// Sitemap
+
+/** Content types with a public page per document (SEO-01). */
+export const PAGE_TYPES = {
+  tour: 'tours',
+  cruise: 'cruises',
+  teambuilding: 'teambuildings',
+  destination: 'destinations',
+  article: 'articles',
+  'article-category': 'article-categories',
+} as const;
+export type PageType = keyof typeof PAGE_TYPES;
+
+export interface PageDocument {
+  slug: string;
+  updatedAt: string;
+  seo?: Pick<Seo, 'noIndex' | 'canonicalUrl'> | null;
+}
+
+/** Slug, last change and index settings of every published document of a type (sitemap.xml). */
+export const getPageDocuments = (type: PageType) =>
+  findAll<PageDocument>(type, PAGE_TYPES[type], {
+    fields: ['slug', 'updatedAt'],
+    populate: { seo: { fields: ['noIndex', 'canonicalUrl'] } },
+    sort: ['id:asc'],
   });
 
 // Single types and redirects.

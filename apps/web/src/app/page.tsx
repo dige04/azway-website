@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -10,10 +11,25 @@ import { renderPerRequestWithoutCms } from '@/lib/build';
 import { getDestinations, getFeedbacks, getHomepage } from '@/lib/cms';
 import type { Feedback } from '@/lib/cms-types';
 import { imageProps, mediaUrl } from '@/lib/media';
+import { pageMetadata } from '@/lib/seo';
+import { SITE_NAME } from '@/lib/site';
+import { loadSiteSetting } from '@/lib/site-setting';
 
 // Static + ISR (NFR-03, D4): regenerated hourly, and at once when the CMS
 // webhook revalidates a tag the page reads (homepage, tour, cruise, ...).
 export const revalidate = 3600;
+
+/** The site's own title and description: site-setting `defaultSeo` (the layout template adds no suffix here). */
+export async function generateMetadata(): Promise<Metadata> {
+  const defaultSeo = (await loadSiteSetting())?.defaultSeo;
+  const metadata = await pageMetadata({
+    title: `${SITE_NAME} – Du lịch trong nước, Trung Quốc và du thuyền Hạ Long`,
+    description: 'Du thuyền, khách sạn, xe di chuyển tại Việt Nam; tour Trung Quốc theo cửa khẩu và những hành trình quốc tế.',
+    path: '/',
+    seo: defaultSeo && { ...defaultSeo, canonicalUrl: null, noIndex: null },
+  });
+  return { ...metadata, title: { absolute: String(metadata.title) } };
+}
 
 export default async function Page() {
   await renderPerRequestWithoutCms();
