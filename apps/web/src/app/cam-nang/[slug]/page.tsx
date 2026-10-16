@@ -141,14 +141,22 @@ export default async function Page({ params }: Props) {
           </section>
         </article>
 
-        <aside className="sticky top-[calc(var(--spacing-header)+22px)] hidden gap-7 lg:grid">
-          <Show when={toc}>
-            {(entries) => (
-              <nav aria-label="Mục lục" className="rounded-sm border border-line p-5">
-                <TableOfContents entries={entries} />
-              </nav>
-            )}
-          </Show>
+        {/* Only the TOC sticks, and it stops above the fixed contact dock (bottom
+            right, ~15rem tall); the contact card closes the column at the end of
+            the article and pushes the TOC up as it comes in. */}
+        <aside className="hidden flex-col gap-7 self-stretch lg:flex">
+          <div className="flex-1">
+            <Show when={toc}>
+              {(entries) => (
+                <nav
+                  aria-label="Mục lục"
+                  className="sticky top-[calc(var(--spacing-header)+22px)] max-h-[calc(100dvh-var(--spacing-header)-22px-15rem)] overflow-y-auto rounded-sm border border-line p-5"
+                >
+                  <TableOfContents entries={entries} />
+                </nav>
+              )}
+            </Show>
+          </div>
           <ContactCard setting={setting} />
         </aside>
       </div>
