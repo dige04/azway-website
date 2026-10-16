@@ -1,5 +1,15 @@
 /** Routes the smoke test opens. Add each new page here (paths need seed data). */
-export const ROUTES = ['/', '/tour', '/tour?loai=trung-quoc&thoi-luong=4n3d&sap-xep=gia-tang', '/tour/ha-noi-ha-long-1-ngay'];
+export const ROUTES = [
+  '/',
+  '/tour',
+  '/tour?loai=trung-quoc&thoi-luong=4n3d&sap-xep=gia-tang',
+  // Tour detail: most blocks (itinerary, FOC, cancellation), price 0, missing
+  // blocks (no exclusions or cancellation), a gallery for the lightbox.
+  '/tour/ha-noi-bach-dang-giang-ha-long-2n1d',
+  '/tour/thach-lam-con-minh-4n3d-lc6',
+  '/tour/sapa-cat-cat-fansipan-2n1d',
+  '/tour/bac-hai-nam-ninh-3n2d-mc4',
+];
 
 /**
  * List routes: their heading reads the same with or without data, so the
