@@ -6,8 +6,7 @@ function isPendingPagePrefetch(message: ConsoleMessage): boolean {
   const { url } = message.location();
   if (!url || !message.text().includes('404')) return false;
   const { pathname, searchParams } = new URL(url);
-  // `/tour` itself is pending, `/tour/<slug>` exists.
-  const pending = NOT_BUILT.some((path) => pathname === path || (path !== '/tour' && pathname.startsWith(`${path}/`)));
+  const pending = NOT_BUILT.some((path) => pathname === path || pathname.startsWith(`${path}/`));
   return searchParams.has('_rsc') && pending;
 }
 
