@@ -127,6 +127,7 @@ export default async function Page({ params }: Props) {
 
           <RequestBlock
             setting={setting}
+            lead={{ type: 'tour', code: tour.code, name: tour.name }}
             subject={
               <>
                 tour <strong className="text-white">{tour.code}</strong>

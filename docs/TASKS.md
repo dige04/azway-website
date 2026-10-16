@@ -95,11 +95,11 @@ Nhánh: `m5/pages`
 
 Nhánh: `m6/lead-form`
 
-- [ ] Component `LeadForm` dùng trên chi tiết sản phẩm (gắn `productType/code/name`) và `/lien-he`.
-- [ ] Trường theo FR-LEAD-01; validate client + server (zod dùng chung).
-- [ ] Cookie `az_utm` + `az_landing` ghi lần vào đầu (30 ngày) từ query UTM.
-- [ ] `app/api/lead/route.ts`: honeypot, rate limit 5/10 phút/IP (binding Rate Limiting nếu có, fallback in-memory), gọi Strapi với `X-Lead-Token`, map lỗi thân thiện.
-- [ ] Màn hình xác nhận dùng `site-setting.responseTimeText`, nói rõ đây là ghi nhận yêu cầu (FR-LEAD-09). Sự kiện `lead_submit` (AN-02).
+- [x] Component `LeadForm` dùng trên chi tiết sản phẩm (gắn `productType/code/name`) và `/lien-he`.
+- [x] Trường theo FR-LEAD-01; validate client + server (zod dùng chung).
+- [x] Cookie `az_utm` + `az_landing` ghi lần vào đầu (30 ngày) từ query UTM.
+- [x] `app/api/lead/route.ts`: honeypot, rate limit 5/10 phút/IP (binding Rate Limiting nếu có, fallback in-memory), gọi Strapi với `X-Lead-Token`, map lỗi thân thiện.
+- [x] Màn hình xác nhận dùng `site-setting.responseTimeText`, nói rõ đây là ghi nhận yêu cầu (FR-LEAD-09). Sự kiện `lead_submit` (AN-02).
 
 **Xong khi:** Playwright gửi form với UTM → lead trong Strapi có đủ mã SP, trang nguồn, UTM, thiết bị (AC-13); gửi 6 lần liên tiếp → lần 6 bị chặn; honeypot có giá trị → 200 giả nhưng không tạo lead.
 

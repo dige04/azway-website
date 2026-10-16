@@ -96,6 +96,8 @@ export default async function Page({ params }: Props) {
 
           <RequestBlock
             setting={setting}
+            // Cruises have no code: the slug identifies one.
+            lead={{ type: 'cruise', code: cruise.slug, name: cruise.name }}
             subject={
               <>
                 du thuyền <strong className="text-white">{cruise.name}</strong>

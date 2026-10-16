@@ -95,6 +95,8 @@ export default async function Page({ params }: Props) {
 
           <RequestBlock
             setting={setting}
+            // No code field: the slug identifies a programme, as for cruises.
+            lead={{ type: 'teambuilding', code: programme.slug, name: programme.name }}
             subject={
               <>
                 chương trình <strong className="text-white">{programme.name}</strong>

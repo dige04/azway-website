@@ -78,9 +78,16 @@ jobs:
           {
             echo "APP_KEYS=$(s),$(s)"
             for name in API_TOKEN_SALT ADMIN_JWT_SECRET TRANSFER_TOKEN_SALT JWT_SECRET ENCRYPTION_KEY LEAD_INGEST_TOKEN; do echo "$name=$(s)"; done
+            # Admin login for e2e/lead.spec.ts to read leads back.
+            echo "E2E_ADMIN_EMAIL=e2e@azway.test"
+            echo "E2E_ADMIN_PASSWORD=$(openssl rand -hex 16)Aa1"
           } >> "$GITHUB_ENV"
 
       - run: pnpm build:cms
+
+      # In-process Strapi like the seed: before the server starts, or the two lock the SQLite file.
+      - name: E2E admin user
+        run: pnpm --filter @azway/cms exec strapi admin:create-user --firstname=E2E --email="$E2E_ADMIN_EMAIL" --password="$E2E_ADMIN_PASSWORD"
 
       # The seed loads Strapi in-process on the same SQLite file, so it runs
       # (and exits) before the server starts: two writers lock the database.
@@ -94,10 +101,16 @@ jobs:
       - name: Build and start the Workers preview
         working-directory: apps/web
         run: |
-          echo "CMS_URL=$CMS_URL" > .dev.vars
+          printf 'CMS_URL=%s\nLEAD_INGEST_TOKEN=%s\n' "$CMS_URL" "$LEAD_INGEST_TOKEN" > .dev.vars
           pnpm build:worker
           pnpm exec opennextjs-cloudflare preview > preview.log 2>&1 &
           timeout 120 bash -c 'until curl -sf -o /dev/null http://localhost:8787/; do sleep 2; done'
+
+      # D5: LEAD_INGEST_TOKEN is in this job's env during the build; it must not reach the browser.
+      - name: Lead token is not in the browser bundle
+        working-directory: apps/web
+        run: |
+          if grep -rlF -e "$LEAD_INGEST_TOKEN" .next/static .open-next/assets; then echo "LEAD_INGEST_TOKEN found in client assets"; exit 1; fi
 
       - name: Playwright browser
         run: pnpm --filter @azway/web exec playwright install --with-deps chromium

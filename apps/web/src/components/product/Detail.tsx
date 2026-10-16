@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import { ContactLink } from '@/components/layout/ContactLink';
+import { LeadForm } from '@/components/lead/LeadForm';
 import { Show } from '@/components/Show';
 import type { SiteSetting, TextItem } from '@/lib/cms-types';
+import type { LeadProduct } from '@/lib/lead';
 import { formatPrice, hasContent, safeHref, telHref } from '@/lib/present';
 
 // Building blocks shared by the product detail pages (tour, cruise, ...).
@@ -104,16 +106,22 @@ export function PriceBox({ price, facts }: { price: number | null; facts: Fact[]
 }
 
 /**
- * `#yeu-cau`, the spot for the lead form; WP-12 replaces the body with
- * LeadForm (product type, code and name). `subject`, e.g. "tour <b>MC4</b>".
+ * `#yeu-cau`: the lead form for `lead` (FR-LEAD-02), with call and Zalo.
+ * Without `lead` (destination, empty lists) only the channels. `subject`,
+ * e.g. "tour <b>MC4</b>".
  */
-export function RequestBlock({ subject, setting }: { subject: ReactNode; setting: SiteSetting | null }) {
+export function RequestBlock({ subject, setting, lead }: { subject: ReactNode; setting: SiteSetting | null; lead?: LeadProduct }) {
   const tel = telHref(setting?.hotline);
   const zalo = safeHref(setting?.zaloUrl);
   return (
-    <section id="yeu-cau" className="scroll-mt-24 rounded-panel bg-navy p-6 text-white sm:p-8">
+    <section id="yeu-cau" className="scroll-mt-24 rounded-panel bg-navy p-5 text-white sm:p-8">
       <h2 className="text-2xl font-bold">Gửi yêu cầu cho AZway</h2>
       <p className="mt-2 text-navy-mist">Cho AZway biết số khách, ngày dự kiến và yêu cầu riêng của đoàn cho {subject}, AZway sẽ tư vấn chương trình và báo giá.</p>
+      {lead && (
+        <div className="mt-6">
+          <LeadForm product={lead} responseTimeText={setting?.responseTimeText} hotline={setting?.hotline} />
+        </div>
+      )}
       <div className="mt-5 flex flex-wrap gap-3">
         {tel && (
           <ContactLink href={tel} event="click_call" className="inline-flex min-h-12 items-center rounded-button bg-red px-5 font-bold hover:bg-red-hover">
