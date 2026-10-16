@@ -37,7 +37,7 @@ describe('URL fields', () => {
     expect(ok(canonical)).toBe(true);
     expect(ok(normalizeRedirectPath('/bai viet%20cu'))).toBe(true);
     // Saving again changes nothing, even for an encoded "%" or a stray one.
-    for (const typed of ['/tour-hạ-long', '/a%2541', '/50%off', '/a%2Fb', '/bai viet%20cu/']) {
+    for (const typed of ['/tour-hạ-long', '/a%2541', '/50%off', '/a%25%zz/b', '/a%2Fb', '/bai viet%20cu/']) {
       const once = normalizeRedirectPath(typed);
       expect(normalizeRedirectPath(once), typed).toBe(once);
     }

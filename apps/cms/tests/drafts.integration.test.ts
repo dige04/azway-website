@@ -15,6 +15,7 @@ const dbFile = `.tmp/test-drafts-${process.pid}.db`;
 let strapi: Core.Strapi;
 let base: string;
 let secretTourId: string;
+let publicTourId: string;
 let apiToken: string;
 let adminToken: string;
 
@@ -64,6 +65,7 @@ beforeAll(async () => {
     },
   });
   await tours.publish({ documentId: published.documentId });
+  publicTourId = published.documentId;
 
   // Readers that must keep seeing drafts (FR-CMS-09 preview, the admin panel).
   const token = await strapi
@@ -90,36 +92,47 @@ afterAll(async () => {
   rmSync(path.join(__dirname, '..', dbFile), { force: true });
 });
 
-const get = async (query: string, token?: string) =>
-  (await fetch(base + query, { headers: token ? { authorization: `Bearer ${token}` } : {} })).text();
+const get = async (query: string, token?: string) => {
+  const response = await fetch(base + query, { headers: token ? { authorization: `Bearer ${token}` } : {} });
+  return { status: response.status, body: await response.text() };
+};
+
+const EMPTY = '"data":[]';
 
 describe('public REST API (AC-05)', () => {
-  // [query, what the answer must still contain]
+  // [query, expected status, what the answer must contain]
   it.each([
-    ['/api/tours', ['Public tour']],
-    ['/api/tours?status=draft', ['Public tour']],
-    ['/api/tours?filters[publishedAt][$null]=true', []],
-    ['/api/tours?status=draft&filters[$or][0][publishedAt][$null]=true&filters[$or][1][code]=SECRET', []],
-    ['/api/tours?status=draft&populate[articles]=true', ['Public tour']],
+    ['/api/tours', 200, ['Public tour']],
+    ['/api/tours?status=draft', 200, ['Public tour']],
+    ['/api/tours?filters[publishedAt][$null]=true', 200, [EMPTY]],
+    ['/api/tours?status=draft&filters[$or][0][publishedAt][$null]=true&filters[$or][1][code]=SECRET', 200, [EMPTY]],
+    ['/api/tours?status=draft&populate[articles]=true', 200, ['Public tour']],
     // Images still populate without Public upload permissions.
-    ['/api/tours?populate[thumbnail]=true', ['Public tour', '/uploads/a.png']],
-    ['/api/articles?status=draft', []],
-    ['/api/tours?populate[thumbnail][populate][related]=true', []],
-    ['/api/upload/files?populate[related]=true', []],
-  ])('%s returns no draft', async (query, expected) => {
-    const body = await get(query);
-    expect(body).not.toContain('SECRET');
-    for (const text of expected) expect(body).toContain(text);
+    ['/api/tours?populate[thumbnail]=true', 200, ['Public tour', '/uploads/a.png']],
+    ['/api/articles?status=draft', 200, [EMPTY]],
+    // Rejected on purpose: `related` is private (src/extensions/upload).
+    ['/api/tours?populate[thumbnail][populate][related]=true', 400, []],
+    // No Public upload permissions.
+    ['/api/upload/files?populate[related]=true', 403, []],
+  ] as const)('%s returns no draft', async (query, status, expected) => {
+    const response = await get(query);
+    expect(response.body).not.toContain('SECRET');
+    expect(response.status).toBe(status);
+    for (const text of expected) expect(response.body).toContain(text);
   });
 
-  it('findOne of a draft-only document is not found', async () => {
-    expect(await get(`/api/tours/${secretTourId}?status=draft`)).not.toContain('SECRET');
+  it('findOne returns the published document and not the draft-only one', async () => {
+    expect(await get(`/api/tours/${publicTourId}?status=draft`)).toMatchObject({ status: 200, body: expect.stringContaining('Public tour') });
+    const draft = await get(`/api/tours/${secretTourId}?status=draft`);
+    expect(secretTourId).toBeTruthy();
+    expect(draft.status).toBe(404);
+    expect(draft.body).not.toContain('SECRET');
   });
 });
 
 describe('trusted readers still see drafts', () => {
   it('API token (FR-CMS-09 preview) and the admin panel', async () => {
-    expect(await get('/api/tours?status=draft', apiToken)).toContain('SECRET tour');
-    expect(await get('/content-manager/collection-types/api::tour.tour', adminToken)).toContain('SECRET tour');
+    expect((await get('/api/tours?status=draft', apiToken)).body).toContain('SECRET tour');
+    expect((await get('/content-manager/collection-types/api::tour.tour', adminToken)).body).toContain('SECRET tour');
   });
 });
