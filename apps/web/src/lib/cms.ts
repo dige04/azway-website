@@ -21,7 +21,6 @@ import type {
   SiteSetting,
   Teambuilding,
   Tour,
-  TourCategory,
 } from './cms-types';
 
 const REVALIDATE_SECONDS = 3600;
@@ -138,52 +137,32 @@ const seo = { populate: { shareImage: true } };
 
 // Tours
 
-export interface TourFilters {
-  category?: TourCategory;
-  /** Destination slug. */
-  destination?: string;
-  region?: Region;
-  borderGate?: string;
-  minDays?: number;
-  maxDays?: number;
-  /** Group size the tour must accept. */
-  groupSize?: number;
-  /** Matches tour name or code. */
-  q?: string;
-  sort?: 'price:asc' | 'price:desc' | 'duration:asc' | 'duration:desc';
-  page?: number;
-  pageSize?: number;
-}
+/** Strapi's default `maxLimit`: a larger pageSize is silently capped. */
+const MAX_PAGE_SIZE = 100;
 
-const TOUR_SORT = { price: 'priceFrom', duration: 'durationDays' } as const;
-
-function tourFilterQuery(filters: TourFilters): Query {
-  const and: QueryValue[] = [];
-  if (filters.category) and.push({ category: { $eq: filters.category } });
-  if (filters.destination) and.push({ destinations: { slug: { $eq: filters.destination } } });
-  if (filters.region) and.push({ destinations: { region: { $eq: filters.region } } });
-  if (filters.borderGate) and.push({ borderGate: { $eqi: filters.borderGate } });
-  if (filters.minDays !== undefined) and.push({ durationDays: { $gte: filters.minDays } });
-  if (filters.maxDays !== undefined) and.push({ durationDays: { $lte: filters.maxDays } });
-  if (filters.groupSize !== undefined) {
-    and.push({ $or: [{ groupSizeMin: { $null: true } }, { groupSizeMin: { $lte: filters.groupSize } }] });
-    and.push({ $or: [{ groupSizeMax: { $null: true } }, { groupSizeMax: { $gte: filters.groupSize } }] });
+/**
+ * Every published tour with what /tour shows and filters on. /tour filters,
+ * sorts and searches this list itself (lib/tour-filter.ts): one cached
+ * request serves every filter combination, and the visitor's URL never
+ * reaches Strapi.
+ */
+export async function getTourCatalog(): Promise<Tour[]> {
+  const tours: Tour[] = [];
+  for (let page = 1; ; page++) {
+    const res = await findMany<Tour>('tour', 'tours', {
+      fields: [
+        'name', 'slug', 'code', 'category', 'departure', 'borderGate', 'durationDays', 'durationNights',
+        'groupSizeMin', 'groupSizeMax', 'priceFrom', 'publishedAt',
+      ],
+      populate: { thumbnail: true, destinations: { fields: ['name', 'slug', 'region'] } },
+      sort: ['publishedAt:desc', 'id:desc'],
+      pagination: pagination(page, MAX_PAGE_SIZE),
+    });
+    tours.push(...res.data);
+    // Stops on a missing pageCount too: an odd answer must not loop forever.
+    if (!(page < res.meta?.pagination?.pageCount)) return tours;
   }
-  if (filters.q) and.push({ $or: [{ name: { $containsi: filters.q } }, { code: { $containsi: filters.q } }] });
-
-  const [field, direction] = (filters.sort ?? '').split(':') as [keyof typeof TOUR_SORT | '', string?];
-  return {
-    filters: and.length > 0 ? { $and: and } : undefined,
-    sort: field ? [`${TOUR_SORT[field]}:${direction}`] : ['publishedAt:desc'],
-  };
 }
-
-export const getTours = (filters: TourFilters = {}) =>
-  findMany<Tour>('tour', 'tours', {
-    ...tourFilterQuery(filters),
-    populate: { thumbnail: true, destinations: card },
-    pagination: pagination(filters.page, filters.pageSize),
-  });
 
 export const getTourBySlug = (slug: string) =>
   findBySlug<Tour>('tour', 'tours', slug, {
