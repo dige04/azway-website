@@ -85,7 +85,7 @@ Nhánh: `m5/pages`
 - [x] Mọi khối có dữ liệu rỗng thì không render (FR-PRD-05) — viết helper chung, có test.
 - [x] Bài viết: mục lục tự sinh từ heading, thời gian đọc, khối sản phẩm liên quan.
 - [x] `/lien-he`, `/tim-kiem`, `not-found` (ô tìm + sản phẩm nổi bật, SEO-08).
-- [ ] Render rich text bằng `@strapi/blocks-react-renderer`.
+- [x] Render rich text bằng `@strapi/blocks-react-renderer`.
 
 **Xong khi:** mọi route render với dữ liệu seed; Playwright smoke test mở từng route ở 375px và 1440px không lỗi console; lighthouse local mobile ≥ 75 cho `/` và một trang tour.
 
