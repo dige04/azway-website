@@ -6,7 +6,7 @@ import { Breadcrumb } from '@/components/Breadcrumb';
 import { FeaturedProducts } from '@/components/FeaturedProducts';
 import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
 import { SearchBox } from '@/components/SearchBox';
-import { getArticles, getCruises, getTourCatalog } from '@/lib/cms';
+import { getArticleCatalog, getCruiseCatalog, getTourCatalog } from '@/lib/cms';
 import { search, searchTerm, type SearchCatalogs } from '@/lib/search';
 import { tourHref } from '@/lib/tour-filter';
 
@@ -21,11 +21,7 @@ export const metadata: Metadata = {
 
 // Rendered per request (it reads ?q=); the catalogs are cached fetches, so the query never reaches Strapi.
 async function loadCatalogs(): Promise<SearchCatalogs> {
-  const [tours, cruises, articles] = await Promise.all([
-    getTourCatalog(),
-    getCruises({ pageSize: 100 }).then((res) => res.data),
-    getArticles({ pageSize: 100 }).then((res) => res.data),
-  ]);
+  const [tours, cruises, articles] = await Promise.all([getTourCatalog(), getCruiseCatalog(), getArticleCatalog()]);
   return { tours, cruises, articles };
 }
 

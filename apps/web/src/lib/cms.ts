@@ -264,6 +264,14 @@ export const getArticles = ({ category, page, pageSize }: { category?: string; p
     pagination: pagination(page, pageSize),
   });
 
+/** Every published guide article with what ArticleCard shows: /tim-kiem searches it. */
+export const getArticleCatalog = () =>
+  findAll<Article>('article', 'articles', {
+    fields: ['title', 'slug', 'excerpt', 'readingMinutes', 'publishedAt'],
+    populate: { cover: true, category: card },
+    sort: ['publishedAt:desc', 'id:desc'],
+  });
+
 /** An article with its hand-picked products (FR-BLG-03), fields as their cards show them. */
 export const getArticleBySlug = (slug: string) =>
   findBySlug<Article>('article', 'articles', slug, {
