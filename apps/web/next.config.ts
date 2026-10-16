@@ -35,6 +35,11 @@ export default function config(phase: string): NextConfig {
   if (phase === PHASE_PRODUCTION_BUILD && !siteUrl) {
     throw new Error('NEXT_PUBLIC_SITE_URL is required for a production build (canonical URLs, sitemap)');
   }
+  // Without CMS_URL every CMS page renders per request (src/lib/build.ts) and
+  // images from the CMS are refused: only CI's type/build check may do that.
+  if (phase === PHASE_PRODUCTION_BUILD && !cms && process.env.BUILD_WITHOUT_CMS !== '1') {
+    throw new Error('CMS_URL is required for a production build (set BUILD_WITHOUT_CMS=1 only for a CI check build)');
+  }
 
   // Images: the R2 public domain in production, Strapi's own /uploads when it
   // stores files locally.

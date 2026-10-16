@@ -42,7 +42,72 @@ jobs:
 
       - run: pnpm build:cms
 
-      # Next build + OpenNext Workers bundle (catches Node-only APIs).
+      # Next build + OpenNext Workers bundle (catches Node-only APIs), with no
+      # CMS to prerender from (the smoke job builds against one).
       - run: pnpm build:web
         env:
           NEXT_PUBLIC_SITE_URL: https://example.invalid
+          BUILD_WITHOUT_CMS: '1'
+
+  # TASKS M5 "Xong khi": every route renders with seed data at 375px and
+  # 1440px without console errors. Seeded local Strapi + Workers preview.
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      DATABASE_CLIENT: sqlite
+      HOST: 127.0.0.1
+      PORT: '1337'
+      CMS_URL: http://127.0.0.1:1337
+      NEXT_PUBLIC_SITE_URL: http://localhost:8787
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Throwaway CMS secrets
+        run: |
+          s() { openssl rand -base64 32; }
+          {
+            echo "APP_KEYS=$(s),$(s)"
+            for name in API_TOKEN_SALT ADMIN_JWT_SECRET TRANSFER_TOKEN_SALT JWT_SECRET ENCRYPTION_KEY LEAD_INGEST_TOKEN; do echo "$name=$(s)"; done
+          } >> "$GITHUB_ENV"
+
+      - run: pnpm build:cms
+
+      - name: Start Strapi and seed
+        run: |
+          pnpm --filter @azway/cms start > strapi.log 2>&1 &
+          timeout 120 bash -c 'until curl -sf http://127.0.0.1:1337/_health; do sleep 2; done'
+          # Only the logo is in the repo; other images are skipped with a warning.
+          SEED_ASSETS_DIR=design/assets pnpm --filter @azway/cms seed
+
+      - name: Build and start the Workers preview
+        working-directory: apps/web
+        run: |
+          echo "CMS_URL=$CMS_URL" > .dev.vars
+          pnpm build:worker
+          pnpm exec opennextjs-cloudflare preview > preview.log 2>&1 &
+          timeout 120 bash -c 'until curl -sf -o /dev/null http://localhost:8787/; do sleep 2; done'
+
+      - name: Playwright browser
+        run: pnpm --filter @azway/web exec playwright install --with-deps chromium
+
+      - run: pnpm --filter @azway/web smoke
+
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-logs
+          path: |
+            strapi.log
+            apps/web/preview.log
+            apps/web/test-results/
+          if-no-files-found: ignore

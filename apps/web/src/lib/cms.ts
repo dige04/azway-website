@@ -87,7 +87,10 @@ function toQueryString(query: Query): string {
 }
 
 interface RequestOptions {
-  /** Single types answer 404 until their first save: treat it as "no data". */
+  /**
+   * Single types answer 404 `NotFoundError` until their first save: treat it
+   * as "no data". Any other 404 (wrong CMS_URL, unknown route) still throws.
+   */
   allow404?: boolean;
   /** Adds the `<type>:<slug>` tag. */
   slug?: string;
@@ -102,7 +105,10 @@ async function request<T>(type: string, path: string, query: Query, options: Req
     next: { tags, revalidate: REVALIDATE_SECONDS },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
-  if (res.status === 404 && options.allow404) return null;
+  if (res.status === 404 && options.allow404) {
+    const body = (await res.json().catch(() => null)) as { error?: { name?: string } } | null;
+    if (body?.error?.name === 'NotFoundError') return null;
+  }
   if (!res.ok) throw new Error(`CMS responded ${res.status} for /api/${path}`);
   return (await res.json()) as T;
 }
@@ -292,7 +298,7 @@ export const getFeedbacks = ({ tour, page, pageSize }: { tour?: string; page?: n
     pagination: pagination(page, pageSize),
   });
 
-// Single types and redirects. SCHEMA-PENDING (WP-03): check populate keys.
+// Single types and redirects.
 
 export const getSiteSetting = () => findSingle<SiteSetting>('site-setting', { defaultSeo: seo });
 
@@ -300,8 +306,8 @@ export const getHomepage = () =>
   findSingle<Homepage>('homepage', {
     heroSlides: { populate: { image: true } },
     featuredTours: { populate: { thumbnail: true, destinations: card } },
-    featuredCruises: { populate: { thumbnail: true } },
-    featuredArticles: { populate: { cover: true } },
+    featuredCruises: { populate: { thumbnail: true, options: true } },
+    featuredArticles: { populate: { cover: true, category: card } },
   });
 
 /** Redirect for a legacy path, e.g. "/tour-ha-long.html" (D8). */

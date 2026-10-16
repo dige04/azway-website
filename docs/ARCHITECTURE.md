@@ -77,7 +77,7 @@ flowchart LR
 | Biến | Khi nào | Mô tả |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Build, bắt buộc | `https://<domain>`. Thiếu thì `next build` production dừng với lỗi |
-| `CMS_URL` | Build + runtime (`vars`) | `https://cms.<domain>`. Lúc build: allowlist ảnh `/uploads/**`; lúc chạy: gọi API |
+| `CMS_URL` | Build + runtime (`vars`) | `https://cms.<domain>`. Lúc build: allowlist ảnh `/uploads/**`, và prerender các trang đọc CMS (ISR). Build production thiếu biến này thì lỗi, trừ khi đặt `BUILD_WITHOUT_CMS=1` (chỉ job `check` của CI): khi đó các trang đó chuyển sang render theo request (`renderPerRequestWithoutCms`, `src/lib/build.ts`) thay vì cache trang rỗng. Lúc chạy: gọi API |
 | `CMS_MEDIA_URL` | Build + runtime (`vars`) | `https://media.<domain>` (R2). Allowlist ảnh lúc build |
 | `LEAD_INGEST_TOKEN` | Runtime, secret | Giống bên CMS |
 | `REVALIDATE_SECRET` | Runtime, secret | Giống bên CMS |

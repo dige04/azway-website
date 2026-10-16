@@ -64,7 +64,7 @@ Nhánh: `m4/web-scaffold`
 - [x] `apps/web`: Next.js **16.4.x**, App Router, TypeScript strict, `@opennextjs/cloudflare` **1.20.x**, wrangler 4. Package `@azway/web`.
 - [x] `wrangler.jsonc` + `open-next.config.ts`; scripts `dev`, `build` (`next build`), `build:worker` (`opennextjs-cloudflare build`), `preview` (`opennextjs-cloudflare build && preview`), `deploy`.
 - [x] Styling: Tailwind CSS 4, design tokens trong `src/styles/tokens.css` (navy–đỏ từ thiết kế đã duyệt, nguồn trong `design/`).
-- [x] `src/lib/cms.ts`: client REST có kiểu (types sinh tay từ schema M2), `fetch` với `next: { tags, revalidate: 3600 }`, hàm `getTours(filters)`, `getTourBySlug`, `getCruises`, …, `getSiteSetting`, `getRedirect(path)`. Type của `site-setting`, `homepage`, `redirect` đánh dấu `SCHEMA-PENDING` đến khi có schema.
+- [x] `src/lib/cms.ts`: client REST có kiểu (types sinh tay từ schema M2), `fetch` với `next: { tags, revalidate: 3600 }`, hàm `getTours(filters)`, `getTourBySlug`, `getCruises`, …, `getSiteSetting`, `getRedirect(path)`.
 - [x] `src/lib/media.ts`: chuẩn hoá URL ảnh; `next.config` `images.remotePatterns` theo `CMS_MEDIA_URL`; loader phù hợp Workers (loader mặc định của Next, `/_next/image` chạy qua binding Cloudflare Images).
 - [x] `app/api/revalidate/route.ts`: kiểm secret, `revalidateTag` từng tag.
 - [x] Seed script `apps/cms/scripts/seed.mjs`: 10 tour (đủ loại, có 1 tour "trải nghiệm học tập" dựa trên lịch trình Hà Nội – Bạch Đằng Giang – Hạ Long 2N1Đ), 3 du thuyền, 2 teambuilding, 5 điểm đến, 5 bài viết, cấu hình chung. Dữ liệu là mẫu, ghi rõ trong README. (`pnpm --filter @azway/cms seed`, xem `apps/cms/README.md`.)
@@ -77,12 +77,12 @@ Nhánh: `m4/web-scaffold`
 
 Nhánh: `m5/pages`
 
-- [ ] Layout: header, menu mobile, footer, breadcrumb, **contact dock** (gọi, Zalo, Messenger; bắn sự kiện AN-03).
-- [ ] `/` trang chủ: hero carousel, sản phẩm nổi bật, điểm đến, feedback, bài mới.
+- [x] Layout: header, menu mobile, footer, breadcrumb, **contact dock** (gọi, Zalo, Messenger; bắn sự kiện AN-03).
+- [x] `/` trang chủ: hero carousel, sản phẩm nổi bật, điểm đến, feedback, bài mới.
 - [ ] `/tour`, `/du-thuyen`, `/teambuilding`, `/diem-den`, `/cam-nang` (+ `/cam-nang/danh-muc/[slug]`) danh sách; `/tour/[slug]` … chi tiết.
 - [ ] Bộ lọc tour: loại, khu vực (qua điểm đến), cửa khẩu, thời lượng, quy mô đoàn; sắp xếp giá/thời lượng; tìm tên/mã; **state trên URL**; trạng thái rỗng FR-SRC-05; sự kiện AN-04.
 - [ ] Chi tiết tour: gallery + lightbox, điểm nổi bật, **lịch trình theo ngày/mốc giờ**, bao gồm / không bao gồm, hoàn huỷ, FOC, quy mô, giá (FR-PRD-03), sản phẩm liên quan (FR-PRD-06), bài liên quan.
-- [ ] Mọi khối có dữ liệu rỗng thì không render (FR-PRD-05) — viết helper chung, có test.
+- [x] Mọi khối có dữ liệu rỗng thì không render (FR-PRD-05) — viết helper chung, có test.
 - [ ] Bài viết: mục lục tự sinh từ heading, thời gian đọc, khối sản phẩm liên quan.
 - [ ] `/lien-he`, `/tim-kiem`, `not-found` (ô tìm + sản phẩm nổi bật, SEO-08).
 - [ ] Render rich text bằng `@strapi/blocks-react-renderer`.
