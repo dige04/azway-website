@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { ContactLink } from '@/components/layout/ContactLink';
+import { Show } from '@/components/Show';
 import { renderPerRequestWithoutCms } from '@/lib/build';
 import { safeHref, telHref } from '@/lib/present';
 import { loadSiteSetting } from '@/lib/site-setting';
@@ -27,7 +28,6 @@ export default async function Page() {
   const zalo = safeHref(setting?.zaloUrl);
   const messenger = safeHref(setting?.messengerUrl);
   const mail = mailHref(setting?.email);
-  const address = setting?.address?.trim();
 
   return (
     <div className="shell pb-section pt-6 sm:pt-8">
@@ -42,26 +42,32 @@ export default async function Page() {
             Chưa chọn được tour? Gửi yêu cầu cho AZway
           </h2>
           <dl className="mt-8 grid gap-5">
-            {tel && (
-              <Row label="Hotline">
-                <ContactLink href={tel} event="click_call" className="text-xl font-extrabold hover:underline">
-                  {setting?.hotline}
-                </ContactLink>
-              </Row>
-            )}
-            {mail && (
-              <Row label="Email">
-                <a href={mail} className="font-bold hover:underline">
-                  {setting?.email?.trim()}
-                </a>
-              </Row>
-            )}
-            {address && (
-              <Row label="Địa chỉ">
-                <span className="whitespace-pre-line">{address}</span>
-              </Row>
-            )}
-            {setting?.responseTimeText && <Row label="Thời gian phản hồi">{setting.responseTimeText}</Row>}
+            <Show when={tel}>
+              {(href) => (
+                <Row label="Hotline">
+                  <ContactLink href={href} event="click_call" className="text-xl font-extrabold hover:underline">
+                    {setting?.hotline}
+                  </ContactLink>
+                </Row>
+              )}
+            </Show>
+            <Show when={mail}>
+              {(href) => (
+                <Row label="Email">
+                  <a href={href} className="font-bold hover:underline">
+                    {setting?.email?.trim()}
+                  </a>
+                </Row>
+              )}
+            </Show>
+            <Show when={setting?.address}>
+              {(address) => (
+                <Row label="Địa chỉ">
+                  <span className="whitespace-pre-line">{address.trim()}</span>
+                </Row>
+              )}
+            </Show>
+            <Show when={setting?.responseTimeText}>{(text) => <Row label="Thời gian phản hồi">{text.trim()}</Row>}</Show>
           </dl>
         </section>
 
@@ -72,9 +78,9 @@ export default async function Page() {
           </h2>
           <p className="mt-2 text-label">Gọi hotline hoặc nhắn tin, nhân viên tư vấn sẽ trả lời theo lịch trình và số khách của bạn.</p>
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            {tel && <Channel href={tel} event="click_call" label="Gọi hotline" className="bg-red hover:bg-red-hover" />}
-            {zalo && <Channel href={zalo} event="click_zalo" label="Nhắn Zalo" className="bg-[#0068d9]" />}
-            {messenger && <Channel href={messenger} event="click_messenger" label="Messenger" className="bg-[#6039cf]" />}
+            <Show when={tel}>{(href) => <Channel href={href} event="click_call" label="Gọi hotline" className="bg-red hover:bg-red-hover" />}</Show>
+            <Show when={zalo}>{(href) => <Channel href={href} event="click_zalo" label="Nhắn Zalo" className="bg-zalo" />}</Show>
+            <Show when={messenger}>{(href) => <Channel href={href} event="click_messenger" label="Messenger" className="bg-messenger" />}</Show>
           </div>
         </section>
       </div>

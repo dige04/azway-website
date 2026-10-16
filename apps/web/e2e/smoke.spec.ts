@@ -1,5 +1,5 @@
 import { expect, test, type ConsoleMessage } from '@playwright/test';
-import { LISTS, NOT_BUILT, ROUTES, TEXTS } from './routes';
+import { CALLS, LISTS, NOT_BUILT, ROUTES, TEXTS } from './routes';
 
 /** A 404 prefetch (`?_rsc=`) of a link to a page that does not exist yet. */
 function isPendingPagePrefetch(message: ConsoleMessage): boolean {
@@ -11,9 +11,10 @@ function isPendingPagePrefetch(message: ConsoleMessage): boolean {
 }
 
 // A route passes when its document answers < 400, it shows its heading, its
-// cards if it is a list (LISTS), its own content (TEXTS) and the contact dock
-// (the conversion channel), nothing scrolls sideways, and the page logs no
-// console error and throws no uncaught exception, including after hydration.
+// cards if it is a list (LISTS), its own content (TEXTS), a dialable call link
+// where one is promised (CALLS) and the contact dock (the conversion channel),
+// nothing scrolls sideways, and the page logs no console error and throws no
+// uncaught exception, including after hydration.
 for (const route of ROUTES) {
   test(`smoke ${route}`, async ({ page }, testInfo) => {
     const errors: string[] = [];
@@ -42,6 +43,7 @@ for (const route of ROUTES) {
     for (const text of TEXTS[route] ?? []) {
       await expect(page.locator('main').getByText(text, { exact: true }).first(), `"${text}" on ${route}`).toBeVisible();
     }
+    if (CALLS.includes(route)) await expect(page.locator('main a[href^="tel:"]').first(), `call link on ${route}`).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow, `horizontal overflow (px) on ${route}`).toBeLessThanOrEqual(0);
 

@@ -16,6 +16,11 @@
   --color-navy-deep: #091731; /* footer */
   --color-navy-mist: #c9d4ed; /* body text on navy */
 
+  /* Contact channels (design `.contact-dock`) */
+  --color-zalo: #0068d9;
+  --color-messenger: #6039cf;
+  --color-facebook: #1454ac;
+
   /* Neutrals */
   --color-ink: #111827;
   --color-ink-2: #344054;

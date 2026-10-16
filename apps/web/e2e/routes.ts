@@ -25,6 +25,8 @@ export const ROUTES = [
   '/teambuilding',
   // 12 games, packages, a combined tour, the other programme.
   '/teambuilding/teambuilding',
+  // No result: the call button (FR-SRC-05).
+  '/tim-kiem?q=khong-co-tour-nay',
 ];
 
 /**
@@ -56,6 +58,9 @@ export const TEXTS: Partial<Record<string, string[]>> = {
   '/teambuilding': ['Teambuilding & Gala Dinner'],
   '/teambuilding/teambuilding': ['Mò cua bắt ốc', 'Xếp tháp niềm tin', 'MC và nhân sự điều phối'],
 };
+
+/** Routes whose <main> must offer a call link the phone can dial (`tel:`). */
+export const CALLS = ['/lien-he', '/tim-kiem?q=khong-co-tour-nay'];
 
 /**
  * Public URLs the menu and cards already link to but no page serves yet (M5
