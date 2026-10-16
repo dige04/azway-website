@@ -8,6 +8,7 @@
     "console": "strapi console",
     "develop": "strapi develop",
     "start": "strapi start",
+    "seed": "node scripts/seed.mjs",
     "strapi": "strapi",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "vitest run"
