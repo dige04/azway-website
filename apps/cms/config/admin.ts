@@ -7,6 +7,14 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Admin => 
   auth: {
     secret: env('ADMIN_JWT_SECRET')!,
   },
+  // NFR-07: throttle /admin/login and /admin/register-admin per email + path + IP.
+  // These are Strapi's defaults, kept explicit. Behind a proxy the IP is only
+  // right once server.proxy is enabled (M8).
+  rateLimit: {
+    enabled: true,
+    interval: 5 * 60 * 1000, // ms
+    max: 5,
+  },
   apiToken: {
     salt: env('API_TOKEN_SALT')!,
   },
