@@ -8,10 +8,16 @@ export interface CancellationWindow extends CancellationRule {
  * FR-PRD-02: a rule's `daysBefore` means "cancel within this many days of
  * departure" (cancellation-rule.json), so each fee covers the days from its
  * rule down to the next one. Nothing is said beyond the largest rule, so no
- * row is invented for it.
+ * row is invented for it. Two rules for the same day count once, at the
+ * higher fee.
  */
 export function cancellationWindows(rules: CancellationRule[]): CancellationWindow[] {
-  const sorted = [...rules].sort((a, b) => b.daysBefore - a.daysBefore);
+  const byDay = new Map<number, CancellationRule>();
+  for (const rule of rules) {
+    const kept = byDay.get(rule.daysBefore);
+    if (!kept || rule.feePercent > kept.feePercent) byDay.set(rule.daysBefore, rule);
+  }
+  const sorted = [...byDay.values()].sort((a, b) => b.daysBefore - a.daysBefore);
   return sorted.map((rule, index) => {
     const next = sorted[index + 1];
     return { ...rule, label: windowLabel(rule.daysBefore, next ? next.daysBefore + 1 : null) };

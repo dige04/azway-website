@@ -15,3 +15,30 @@ export function pickRelated<T extends { documentId: string }>(
   }
   return [...picked.values()];
 }
+
+/**
+ * Related products from the cached catalog: same destination (any of the
+ * product's), then `sameType`.
+ */
+export function relatedFromCatalog<T extends { documentId: string; destinations?: { slug: string }[] }>(
+  product: T,
+  catalog: T[],
+  sameType: (item: T) => boolean,
+): T[] {
+  const places = new Set(product.destinations?.map((place) => place.slug));
+  const sameDestination = catalog.filter((item) => item.destinations?.some((place) => places.has(place.slug)));
+  return pickRelated(product.documentId, sameDestination, catalog.filter(sameType));
+}
+
+/**
+ * The catalog for an optional block (related products): a failure is logged
+ * and hides the block instead of failing the page.
+ */
+export async function catalogForRelated<T>(load: Promise<T[]>, what: string): Promise<T[]> {
+  try {
+    return await load;
+  } catch (error) {
+    console.error(`[related] ${what} unavailable:`, error instanceof Error ? error.message : error);
+    return [];
+  }
+}

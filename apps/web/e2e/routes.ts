@@ -12,6 +12,12 @@ export const ROUTES = [
   '/cam-nang',
   '/cam-nang/danh-muc/trung-quoc',
   '/cam-nang/tour-trung-quoc-cua-khau',
+  '/du-thuyen',
+  // All three options: day ticket, charter (no price), dinner.
+  '/du-thuyen/ambassador',
+  '/diem-den',
+  // Tours and cruises.
+  '/diem-den/ha-long',
 ];
 
 /**
@@ -26,6 +32,15 @@ export const LISTS: Partial<Record<string, { cards?: string[] }>> = {
   '/cam-nang': {},
   // Seed: one article per category.
   '/cam-nang/danh-muc/trung-quoc': { cards: ['Đi Trung Quốc: chọn cửa khẩu'] },
+  '/du-thuyen': {},
+  '/diem-den/ha-long': {},
+};
+
+/** Text each route must show in <main> (seed data), so a page is never empty. */
+export const TEXTS: Partial<Record<string, string[]>> = {
+  '/du-thuyen/ambassador': ['Vé du ngoạn trong ngày', 'Du thuyền ăn tối', 'Thuê nguyên tàu'],
+  '/diem-den': ['Hạ Long', 'Đông Hưng'],
+  '/diem-den/ha-long': ['Tour đi Hạ Long', 'Du thuyền Hạ Long'],
 };
 
 /**
@@ -33,4 +48,4 @@ export const LISTS: Partial<Record<string, { cards?: string[] }>> = {
  * pages after WP-07). Next prefetches those links and gets 404s; the smoke
  * test tolerates exactly those. Remove a path when its page lands.
  */
-export const NOT_BUILT = ['/du-thuyen', '/teambuilding', '/diem-den', '/lien-he', '/tim-kiem'];
+export const NOT_BUILT = ['/teambuilding', '/lien-he', '/tim-kiem'];

@@ -2,19 +2,14 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-
-export interface GalleryImage {
-  src: string;
-  alt: string;
-  caption: string | null;
-}
+import type { GalleryImage } from '@/lib/gallery';
 
 /**
  * FR-PRD-02 gallery: one large photo and up to four thumbnails; any photo
  * opens a lightbox (native <dialog>: Esc closes, focus is trapped) with
  * previous/next by button or arrow key.
  */
-export function TourGallery({ images, title }: { images: GalleryImage[]; title: string }) {
+export function Gallery({ images, title }: { images: GalleryImage[]; title: string }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [index, setIndex] = useState<number | null>(null);
   const count = images.length;
