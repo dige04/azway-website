@@ -4,14 +4,17 @@ import { formatPrice, hasContent, isStrapiSlug } from './present';
 describe('hasContent (FR-PRD-05: empty data hides the block)', () => {
   it('treats what Strapi returns for an unfilled field as empty', () => {
     const emptyEditor = [{ type: 'paragraph', children: [{ type: 'text', text: '' }] }];
-    for (const value of [null, undefined, '', '   ', [], [{ id: 1, text: '' }], emptyEditor, {}, { metaTitle: null }]) {
+    // Components always carry an `id` (and `__component` in dynamic zones).
+    const emptyComponent = { id: 7, title: '', description: null };
+    const emptyZone = [{ id: 3, __component: 'shared.text-item', text: '' }];
+    for (const value of [null, undefined, '', '   ', [], [{ id: 1, text: '' }], emptyEditor, {}, { metaTitle: null }, emptyComponent, [emptyComponent], emptyZone]) {
       expect(hasContent(value), JSON.stringify(value)).toBe(false);
     }
   });
 
   it('treats any real value as content', () => {
     const paragraph = [{ type: 'paragraph', children: [{ type: 'text', text: 'Bãi cọc' }] }];
-    for (const value of ['Hạ Long', 0, [{ id: 1, text: 'Xe đưa đón' }], paragraph, { url: '/uploads/a.jpg' }, [{ documentId: 'x' }]]) {
+    for (const value of ['Hạ Long', 0, [{ id: 1, text: 'Xe đưa đón' }], paragraph, { url: '/uploads/a.jpg' }, [{ documentId: 'x' }], { id: 7, title: 'Ngày 1' }]) {
       expect(hasContent(value), JSON.stringify(value)).toBe(true);
     }
   });

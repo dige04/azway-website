@@ -9,7 +9,10 @@ export function SiteHeader({ setting }: { setting: SiteSetting | null }) {
   const tel = telHref(setting?.hotline);
 
   return (
-    <header className="sticky top-0 z-60 border-b border-navy/10 bg-white/96 backdrop-blur-lg">
+    // The blur sits on its own layer: backdrop-filter on the header itself would
+    // make it the containing block of the drawer's `position: fixed`.
+    <header className="sticky top-0 z-60 border-b border-navy/10">
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-white/96 backdrop-blur-lg" />
       <div className="shell grid min-h-header grid-cols-[auto_1fr_auto] items-center gap-5">
         <Link href="/" aria-label="AZway trang chủ" className="flex items-center">
           <Image src="/logo-azway.png" alt="AZway Travel Agency" width={720} height={216} priority className="h-auto w-[145px] sm:w-[180px]" />

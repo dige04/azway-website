@@ -16,11 +16,11 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   const destinations = tour.destinations?.map((destination) => destination.name) ?? [];
 
   return (
-    <main className="shell py-section">
+    <div className="shell py-section">
       <p className="text-sm text-muted">{tour.code}</p>
       <h1 className="text-h2 font-bold text-navy">{tour.name}</h1>
       {destinations.length > 0 && <p className="mt-3 text-muted">{destinations.join(' · ')}</p>}
       <p className="mt-4 font-bold text-red">{formatPrice(tour.priceFrom)}</p>
-    </main>
+    </div>
   );
 }

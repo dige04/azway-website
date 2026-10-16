@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { PHASE_PRODUCTION_BUILD } from 'next/constants';
 import type { ReactNode } from 'react';
 import { ContactDock } from '@/components/layout/ContactDock';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
+import { isBuildWithoutCms } from '@/lib/build';
 import { getSiteSetting } from '@/lib/cms';
 import '@/styles/globals.css';
 
@@ -14,13 +14,19 @@ export const metadata: Metadata = {
 };
 
 /**
- * Contacts for header, footer and dock. `next build` prerenders /_not-found
- * through this layout; a build without CMS_URL (CI) renders it without
- * contacts instead of failing. With CMS_URL set, errors surface as usual.
+ * Contacts for header, footer and dock (all render without them). A CMS that
+ * is down or slow must not turn every route, /lien-he and the 404 page
+ * included, into a 500, so a failure is logged and the shell renders without
+ * contacts. A build without CMS_URL (CI) skips the request.
  */
 async function loadSiteSetting() {
-  if (process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD && !process.env.CMS_URL) return null;
-  return getSiteSetting();
+  if (isBuildWithoutCms()) return null;
+  try {
+    return await getSiteSetting();
+  } catch (error) {
+    console.error('[layout] site-setting unavailable, rendering without contacts:', error instanceof Error ? error.message : error);
+    return null;
+  }
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
@@ -32,7 +38,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           Bỏ qua menu
         </a>
         <SiteHeader setting={setting} />
-        {children}
+        <main id="main">{children}</main>
         <SiteFooter setting={setting} />
         <ContactDock setting={setting} />
       </body>

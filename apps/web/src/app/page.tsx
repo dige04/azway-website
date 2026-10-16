@@ -4,13 +4,14 @@ import type { ReactNode } from 'react';
 import { HeroCarousel, type Slide } from '@/components/home/HeroCarousel';
 import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
 import { Show } from '@/components/Show';
+import { renderPerRequestWithoutCms } from '@/lib/build';
 import { getDestinations, getFeedbacks, getHomepage } from '@/lib/cms';
 import type { Article, Destination, Feedback, Region } from '@/lib/cms-types';
 import { imageProps, mediaUrl } from '@/lib/media';
 
-// Rendered per request so `next build` needs no CMS; the CMS fetches
-// themselves are cached by tag (lib/cms.ts).
-export const dynamic = 'force-dynamic';
+// Static + ISR (NFR-03, D4): regenerated hourly, and at once when the CMS
+// webhook revalidates a tag the page reads (homepage, tour, cruise, ...).
+export const revalidate = 3600;
 
 const REGION: Record<Region, string> = {
   mien_bac: 'Miền Bắc',
@@ -21,17 +22,18 @@ const REGION: Record<Region, string> = {
 };
 
 export default async function Page() {
+  await renderPerRequestWithoutCms();
   const [homepage, destinations, feedbacks] = await Promise.all([getHomepage(), getDestinations(), getFeedbacks({ pageSize: 4 })]);
 
-  const slides: Slide[] = (homepage?.heroSlides ?? []).flatMap((slide) => {
-    const src = mediaUrl(slide.image?.url);
-    return src ? [{ src, alt: slide.image?.alternativeText ?? slide.title ?? '', ...slide }] : [];
+  const slides: Slide[] = (homepage?.heroSlides ?? []).flatMap(({ image, title, subtitle, ctaLabel, ctaUrl }) => {
+    const src = mediaUrl(image?.url);
+    return src ? [{ src, alt: image?.alternativeText ?? title ?? '', title, subtitle, ctaLabel, ctaUrl }] : [];
   });
   // Destinations with a photo first; the grid shows one large and four small.
   const shownDestinations = [...destinations.data].sort((a, b) => Number(!a.image) - Number(!b.image)).slice(0, 5);
 
   return (
-    <main id="main">
+    <>
       <section className="relative overflow-hidden bg-navy pb-16 pt-14 text-white md:pb-[72px] md:pt-8">
         <div className="shell relative grid items-center gap-10 md:grid-cols-[1.3fr_0.7fr]">
           <div>
@@ -107,7 +109,7 @@ export default async function Page() {
           </Section>
         )}
       </Show>
-    </main>
+    </>
   );
 }
 

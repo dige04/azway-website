@@ -13,13 +13,14 @@ export interface ProductCardData {
   typeLabel: string;
   /** Rows under the name; empty values are dropped (FR-PRD-05). */
   meta: { label: string; value: string | null | undefined }[];
-  /** Already formatted (formatPrice). */
-  price: string;
+  /** Lowest per-guest price in VND; 0 or null shows "Liên hệ báo giá" alone (FR-PRD-03). */
+  price: number | null;
 }
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const image = imageProps(product.image, product.name);
   const meta = product.meta.filter((row) => hasContent(row.value));
+  const hasPrice = !!product.price && product.price > 0;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-card border border-line bg-white transition-shadow hover:shadow-card">
@@ -53,8 +54,8 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         )}
         <div className="mt-auto flex items-end justify-between gap-3 border-t border-line pt-4">
           <p>
-            <small className="block text-xs text-muted">Giá từ</small>
-            <strong className="text-[21px] text-red">{product.price}</strong>
+            {hasPrice && <small className="block text-xs text-muted">Giá từ</small>}
+            <strong className="text-[21px] text-red">{formatPrice(product.price)}</strong>
           </p>
           <Link href={product.href} className="text-sm font-bold text-navy hover:text-red">
             Xem chi tiết
@@ -72,8 +73,12 @@ const TOUR_TYPE: Record<TourCategory, string> = {
   trai_nghiem_hoc_tap: 'Trải nghiệm học tập',
 };
 
-const groupSize = (min: number | null, max: number | null) =>
-  min && max ? `${min}–${max} khách` : min ? `Từ ${min} khách` : max ? `Đến ${max} khách` : null;
+function groupSize(min: number | null, max: number | null): string | null {
+  if (min && max) return `${min}–${max} khách`;
+  if (min) return `Từ ${min} khách`;
+  if (max) return `Đến ${max} khách`;
+  return null;
+}
 
 export function tourCard(tour: Tour): ProductCardData {
   return {
@@ -86,7 +91,7 @@ export function tourCard(tour: Tour): ProductCardData {
       { label: 'Khởi hành', value: tour.departure },
       { label: 'Mã tour', value: tour.code },
     ],
-    price: formatPrice(tour.priceFrom),
+    price: tour.priceFrom,
   };
 }
 
@@ -102,7 +107,7 @@ export function cruiseCard(cruise: Cruise): ProductCardData {
       { label: 'Hạng', value: cruise.starRating ? `${cruise.starRating} sao` : null },
       { label: 'Sức chứa', value: cruise.capacity ? `${cruise.capacity} khách` : null },
     ],
-    price: formatPrice(prices.length > 0 ? Math.min(...prices) : null),
+    price: prices.length > 0 ? Math.min(...prices) : null,
   };
 }
 
@@ -116,6 +121,6 @@ export function teambuildingCard(teambuilding: Teambuilding): ProductCardData {
       { label: 'Chủ đề', value: teambuilding.theme },
       { label: 'Quy mô', value: groupSize(teambuilding.groupSizeMin, teambuilding.groupSizeMax) },
     ],
-    price: formatPrice(null),
+    price: null,
   };
 }

@@ -19,9 +19,11 @@ export function hasContent(value: unknown): boolean {
     if (typeof record.text === 'string') return hasContent(record.text);
     // Blocks element: judged by its children (an empty paragraph is empty).
     if (Array.isArray(record.children)) return record.children.some(hasContent) || record.type === 'image';
-    // Media and other objects with an identity are content.
+    // Media and documents (relations) are content.
     if ('url' in record || 'documentId' in record) return true;
-    return Object.values(record).some(hasContent);
+    // Components: every one has an `id` (and `__component` in dynamic zones),
+    // which says nothing about whether it was filled in.
+    return Object.entries(record).some(([key, child]) => key !== 'id' && key !== '__component' && hasContent(child));
   }
   return true;
 }
@@ -52,6 +54,11 @@ export function isStrapiSlug(value: string): boolean {
 /** True for absolute http(s) links, which leave the site (no next/link). */
 export function isExternalUrl(url: string): boolean {
   return /^https?:\/\//i.test(url);
+}
+
+/** A CMS link safe to put in href: http(s) or tel only (no javascript:, data:). */
+export function safeHref(url: string | null | undefined): string | null {
+  return url && /^(https?:\/\/|tel:)/i.test(url.trim()) ? url.trim() : null;
 }
 
 /** "033.202.8585" -> "tel:0332028585"; null when there is no number. */

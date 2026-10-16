@@ -1,7 +1,7 @@
 'use client';
 
 import type { SiteSetting } from '@/lib/cms-types';
-import { telHref } from '@/lib/present';
+import { safeHref, telHref } from '@/lib/present';
 import { track, type TrackEvent } from '@/lib/track';
 
 interface DockLink {
@@ -20,9 +20,9 @@ interface DockLink {
 export function ContactDock({ setting }: { setting: SiteSetting | null }) {
   const all: DockLink[] = [
     { href: telHref(setting?.hotline), label: 'Gọi ngay', event: 'click_call', color: 'bg-red-dark', icon: ICONS.call },
-    { href: setting?.messengerUrl, label: 'Messenger', event: 'click_messenger', color: 'bg-[#6039cf]', icon: ICONS.messenger },
-    { href: setting?.zaloUrl, label: 'Zalo', event: 'click_zalo', color: 'bg-[#0068d9]', icon: ICONS.zalo },
-    { href: setting?.facebookUrl, label: 'Facebook', event: null, color: 'bg-[#1454ac]', icon: ICONS.facebook },
+    { href: safeHref(setting?.messengerUrl), label: 'Messenger', event: 'click_messenger', color: 'bg-[#6039cf]', icon: ICONS.messenger },
+    { href: safeHref(setting?.zaloUrl), label: 'Zalo', event: 'click_zalo', color: 'bg-[#0068d9]', icon: ICONS.zalo },
+    { href: safeHref(setting?.facebookUrl), label: 'Facebook', event: null, color: 'bg-[#1454ac]', icon: ICONS.facebook },
   ];
   const links = all.filter((link) => link.href);
   if (links.length === 0) return null;
