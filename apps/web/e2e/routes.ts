@@ -9,6 +9,7 @@ export const ROUTES = [
   '/tour/thach-lam-con-minh-4n3d-lc6',
   '/tour/sapa-cat-cat-fansipan-2n1d',
   '/tour/bac-hai-nam-ninh-3n2d-mc4',
+  '/cam-nang/tour-trung-quoc-cua-khau',
 ];
 
 /**
