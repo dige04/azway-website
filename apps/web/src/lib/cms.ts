@@ -208,11 +208,12 @@ export const getCruiseBySlug = (slug: string) =>
 
 // Teambuilding
 
-export const getTeambuildings = ({ page, pageSize }: { page?: number; pageSize?: number } = {}) =>
-  findMany<Teambuilding>('teambuilding', 'teambuildings', {
-    populate: { thumbnail: true },
-    sort: ['publishedAt:desc'],
-    pagination: pagination(page, pageSize),
+/** Every published programme with what its card shows: /teambuilding and "Chương trình khác". */
+export const getTeambuildingCatalog = () =>
+  findAll<Teambuilding>('teambuilding', 'teambuildings', {
+    fields: ['name', 'slug', 'theme', 'groupSizeMin', 'groupSizeMax', 'description'],
+    populate: { thumbnail: true, packages: true },
+    sort: ['name:asc'],
   });
 
 export const getTeambuildingBySlug = (slug: string) =>
@@ -221,7 +222,11 @@ export const getTeambuildingBySlug = (slug: string) =>
     album: true,
     games: { populate: { image: true } },
     packages: true,
-    tours: { fields: ['name', 'slug', 'code', 'priceFrom', 'durationDays', 'durationNights'], populate: { thumbnail: true } },
+    tours: {
+      fields: ['name', 'slug', 'code', 'category', 'departure', 'priceFrom', 'durationDays', 'durationNights'],
+      populate: { thumbnail: true },
+      sort: ['publishedAt:desc', 'id:desc'],
+    },
     seo,
   });
 
@@ -243,7 +248,7 @@ export const getDestinationBySlug = (slug: string) =>
     tours: {
       fields: ['name', 'slug', 'code', 'category', 'departure', 'priceFrom', 'durationDays', 'durationNights'],
       populate: { thumbnail: true },
-      sort: ['publishedAt:desc'],
+      sort: ['publishedAt:desc', 'id:desc'],
     },
     cruises: {
       fields: ['name', 'slug', 'starRating', 'capacity'],
