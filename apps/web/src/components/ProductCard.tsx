@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Cruise, Media, Teambuilding, Tour, TourCategory } from '@/lib/cms-types';
+import { lowestGuestPrice, optionSummary } from '@/lib/cruise';
 import { imageProps } from '@/lib/media';
 import { formatDuration, formatPrice, groupSize, hasContent } from '@/lib/present';
 
@@ -89,8 +90,6 @@ export function tourCard(tour: Tour): ProductCardData {
 }
 
 export function cruiseCard(cruise: Cruise): ProductCardData {
-  // Cheapest per-guest option; charter options carry no per-guest price.
-  const prices = (cruise.options ?? []).map((option) => option.price).filter((price): price is number => !!price && price > 0);
   return {
     href: `/du-thuyen/${cruise.slug}`,
     name: cruise.name,
@@ -99,8 +98,9 @@ export function cruiseCard(cruise: Cruise): ProductCardData {
     meta: [
       { label: 'Hạng', value: cruise.starRating ? `${cruise.starRating} sao` : null },
       { label: 'Sức chứa', value: cruise.capacity ? `${cruise.capacity} khách` : null },
+      { label: 'Lựa chọn', value: optionSummary(cruise.options) },
     ],
-    price: prices.length > 0 ? Math.min(...prices) : null,
+    price: lowestGuestPrice(cruise.options),
   };
 }
 

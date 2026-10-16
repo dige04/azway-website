@@ -135,10 +135,21 @@ const pagination = (page = 1, pageSize = DEFAULT_PAGE_SIZE) => ({ page, pageSize
 const card = { fields: ['name', 'slug'] };
 const seo = { populate: { shareImage: true } };
 
-// Tours
-
 /** Strapi's default `maxLimit`: a larger pageSize is silently capped. */
 const MAX_PAGE_SIZE = 100;
+
+/** Every published document of a type, page by page. */
+async function findAll<T>(type: string, plural: string, query: Query): Promise<T[]> {
+  const all: T[] = [];
+  for (let page = 1; ; page++) {
+    const res = await findMany<T>(type, plural, { ...query, pagination: pagination(page, MAX_PAGE_SIZE) });
+    all.push(...res.data);
+    // Stops on a missing pageCount too: an odd answer must not loop forever.
+    if (!(page < res.meta?.pagination?.pageCount)) return all;
+  }
+}
+
+// Tours
 
 /**
  * Every published tour with what /tour shows and filters on. /tour filters,
@@ -146,23 +157,15 @@ const MAX_PAGE_SIZE = 100;
  * request serves every filter combination, and the visitor's URL never
  * reaches Strapi.
  */
-export async function getTourCatalog(): Promise<Tour[]> {
-  const tours: Tour[] = [];
-  for (let page = 1; ; page++) {
-    const res = await findMany<Tour>('tour', 'tours', {
-      fields: [
-        'name', 'slug', 'code', 'category', 'departure', 'borderGate', 'durationDays', 'durationNights',
-        'groupSizeMin', 'groupSizeMax', 'priceFrom', 'publishedAt',
-      ],
-      populate: { thumbnail: true, destinations: { fields: ['name', 'slug', 'region'] } },
-      sort: ['publishedAt:desc', 'id:desc'],
-      pagination: pagination(page, MAX_PAGE_SIZE),
-    });
-    tours.push(...res.data);
-    // Stops on a missing pageCount too: an odd answer must not loop forever.
-    if (!(page < res.meta?.pagination?.pageCount)) return tours;
-  }
-}
+export const getTourCatalog = () =>
+  findAll<Tour>('tour', 'tours', {
+    fields: [
+      'name', 'slug', 'code', 'category', 'departure', 'borderGate', 'durationDays', 'durationNights',
+      'groupSizeMin', 'groupSizeMax', 'priceFrom', 'publishedAt',
+    ],
+    populate: { thumbnail: true, destinations: { fields: ['name', 'slug', 'region'] } },
+    sort: ['publishedAt:desc', 'id:desc'],
+  });
 
 export const getTourBySlug = (slug: string) =>
   findBySlug<Tour>('tour', 'tours', slug, {
@@ -183,11 +186,12 @@ export const getTourBySlug = (slug: string) =>
 
 // Cruises
 
-export const getCruises = ({ page, pageSize }: { page?: number; pageSize?: number } = {}) =>
-  findMany<Cruise>('cruise', 'cruises', {
+/** Every published cruise with what a card shows: /du-thuyen and related cruises. */
+export const getCruiseCatalog = () =>
+  findAll<Cruise>('cruise', 'cruises', {
+    fields: ['name', 'slug', 'starRating', 'capacity'],
     populate: { thumbnail: true, options: true, destinations: card },
-    sort: ['publishedAt:desc'],
-    pagination: pagination(page, pageSize),
+    sort: ['capacity:desc', 'name:asc'],
   });
 
 export const getCruiseBySlug = (slug: string) =>
@@ -198,7 +202,7 @@ export const getCruiseBySlug = (slug: string) =>
     inclusions: true,
     exclusions: true,
     destinations: card,
-    articles: { fields: ['title', 'slug', 'excerpt'], populate: { cover: true } },
+    articles: { fields: ['title', 'slug', 'excerpt', 'readingMinutes'], populate: { cover: true, category: card } },
     seo,
   });
 
@@ -223,19 +227,29 @@ export const getTeambuildingBySlug = (slug: string) =>
 
 // Destinations
 
-export const getDestinations = ({ region, page, pageSize }: { region?: Region; page?: number; pageSize?: number } = {}) =>
-  findMany<Destination>('destination', 'destinations', {
+/** Every published destination (/diem-den, the home grid). */
+export const getDestinations = ({ region }: { region?: Region } = {}) =>
+  findAll<Destination>('destination', 'destinations', {
     filters: region ? { region: { $eq: region } } : undefined,
     populate: { image: true },
     sort: ['name:asc'],
-    pagination: pagination(page, pageSize ?? 50),
   });
 
 export const getDestinationBySlug = (slug: string) =>
   findBySlug<Destination>('destination', 'destinations', slug, {
     image: true,
-    tours: { fields: ['name', 'slug', 'code', 'priceFrom', 'durationDays', 'durationNights'], populate: { thumbnail: true } },
-    cruises: { fields: ['name', 'slug'], populate: { thumbnail: true } },
+    // Full product cards (tourCard, cruiseCard) for the destination's products.
+    // Sorted so the cards shown (the page caps each list) stay the same between regenerations.
+    tours: {
+      fields: ['name', 'slug', 'code', 'category', 'departure', 'priceFrom', 'durationDays', 'durationNights'],
+      populate: { thumbnail: true },
+      sort: ['publishedAt:desc'],
+    },
+    cruises: {
+      fields: ['name', 'slug', 'starRating', 'capacity'],
+      populate: { thumbnail: true, options: true },
+      sort: ['capacity:desc', 'name:asc'],
+    },
     seo,
   });
 

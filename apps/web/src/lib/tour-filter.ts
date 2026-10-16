@@ -126,6 +126,12 @@ export function tourHref(query: TourQuery): string {
   return search ? `/tour?${search}` : '/tour';
 }
 
+/**
+ * /tour filtered to a CMS region (destination pages link there). The URL
+ * value differs from the CMS enum ("mien-bac", not "mien_bac").
+ */
+export const toursInRegion = (region: Region) => tourHref({ region: REGIONS.find((choice) => choice.match === region)?.value });
+
 export function hasConditions(query: TourQuery): boolean {
   return CONDITION_KEYS.some((key) => query[key] !== undefined);
 }

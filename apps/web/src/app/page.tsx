@@ -2,25 +2,18 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArticleCard } from '@/components/ArticleCard';
+import { DestinationCard } from '@/components/DestinationCard';
 import { HeroCarousel, type Slide } from '@/components/home/HeroCarousel';
 import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
 import { Show } from '@/components/Show';
 import { renderPerRequestWithoutCms } from '@/lib/build';
 import { getDestinations, getFeedbacks, getHomepage } from '@/lib/cms';
-import type { Destination, Feedback, Region } from '@/lib/cms-types';
+import type { Feedback } from '@/lib/cms-types';
 import { imageProps, mediaUrl } from '@/lib/media';
 
 // Static + ISR (NFR-03, D4): regenerated hourly, and at once when the CMS
 // webhook revalidates a tag the page reads (homepage, tour, cruise, ...).
 export const revalidate = 3600;
-
-const REGION: Record<Region, string> = {
-  mien_bac: 'Miền Bắc',
-  mien_trung: 'Miền Trung',
-  mien_nam: 'Miền Nam',
-  trung_quoc: 'Trung Quốc',
-  quoc_te: 'Quốc tế',
-};
 
 export default async function Page() {
   await renderPerRequestWithoutCms();
@@ -31,7 +24,7 @@ export default async function Page() {
     return src ? [{ src, alt: image?.alternativeText ?? title ?? '', title, subtitle, ctaLabel, ctaUrl }] : [];
   });
   // Destinations with a photo first; the grid shows one large and four small.
-  const shownDestinations = [...destinations.data].sort((a, b) => Number(!a.image) - Number(!b.image)).slice(0, 5);
+  const shownDestinations = [...destinations].sort((a, b) => Number(!a.image) - Number(!b.image)).slice(0, 5);
 
   return (
     <>
@@ -80,7 +73,12 @@ export default async function Page() {
           <Section kicker="ĐIỂM ĐẾN" title="Chọn nơi bạn muốn đến" action={{ href: '/diem-den', label: 'Tất cả điểm đến' }}>
             <div className="grid auto-rows-[218px] grid-cols-1 gap-4 xs:grid-cols-2 lg:auto-rows-[245px] lg:grid-cols-12">
               {items.map((destination, index) => (
-                <DestinationCard key={destination.documentId} destination={destination} featured={index === 0} />
+                <DestinationCard
+                  key={destination.documentId}
+                  destination={destination}
+                  className={index === 0 ? 'xs:col-span-2 lg:col-span-6 lg:row-span-2' : 'lg:col-span-3'}
+                  sizes={index === 0 ? '(min-width: 1181px) 690px, 100vw' : '(min-width: 1181px) 345px, (min-width: 451px) 50vw, 100vw'}
+                />
               ))}
             </div>
           </Section>
@@ -149,31 +147,6 @@ function Section({
 
 function ProductGrid({ children }: { children: ReactNode }) {
   return <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{children}</div>;
-}
-
-function DestinationCard({ destination, featured }: { destination: Destination; featured: boolean }) {
-  const image = imageProps(destination.image, destination.name);
-  return (
-    <Link
-      href={`/diem-den/${destination.slug}`}
-      className={`group relative isolate flex items-end overflow-hidden rounded-card bg-navy-2 p-5 text-white ${featured ? 'xs:col-span-2 lg:col-span-6 lg:row-span-2' : 'lg:col-span-3'}`}
-    >
-      {image && (
-        <Image
-          src={image.src}
-          alt={image.alt}
-          fill
-          sizes={featured ? '(min-width: 1181px) 690px, 100vw' : '(min-width: 1181px) 345px, (min-width: 451px) 50vw, 100vw'}
-          className="-z-10 object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none"
-        />
-      )}
-      <span className="absolute inset-0 -z-10 bg-linear-to-t from-[#06142ed9] via-[#06142e33] to-transparent" aria-hidden="true" />
-      <span>
-        <small className="block text-xs font-bold uppercase tracking-wider text-white/80">{REGION[destination.region]}</small>
-        <strong className="block text-h3 font-bold">{destination.name}</strong>
-      </span>
-    </Link>
-  );
 }
 
 const dateFormat = new Intl.DateTimeFormat('vi-VN', { month: '2-digit', year: 'numeric' });
