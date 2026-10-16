@@ -11,8 +11,10 @@ function isPendingPagePrefetch(message: ConsoleMessage): boolean {
   return searchParams.has('_rsc') && pending;
 }
 
-// A route passes when its document answers < 400 and the page logs no console
-// error and throws no uncaught exception, including after hydration.
+// A route passes when its document answers < 400, it shows its heading and the
+// contact dock (the conversion channel), nothing scrolls sideways, and the page
+// logs no console error and throws no uncaught exception, including after
+// hydration.
 for (const route of ROUTES) {
   test(`smoke ${route}`, async ({ page }, testInfo) => {
     const errors: string[] = [];
@@ -27,6 +29,10 @@ for (const route of ROUTES) {
     expect(response?.status(), `HTTP status of ${route}`).toBeLessThan(400);
     // Hydration errors and effects show up right after load.
     await page.waitForTimeout(1500);
+    await expect(page.locator('h1').first(), `heading of ${route}`).toBeVisible();
+    await expect(page.getByRole('complementary', { name: 'Liên hệ AZway' }), `contact dock on ${route}`).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow, `horizontal overflow (px) on ${route}`).toBeLessThanOrEqual(0);
 
     // SMOKE_SCREENSHOTS=<dir>: full-page captures for review (not committed).
     if (process.env.SMOKE_SCREENSHOTS) {

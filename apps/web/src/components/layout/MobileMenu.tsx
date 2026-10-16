@@ -3,17 +3,21 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import type { SiteSetting } from '@/lib/cms-types';
 import { safeHref, telHref } from '@/lib/present';
+import { type Contacts, ContactLink } from './ContactLink';
 import { NAV_ITEMS } from './nav';
 
+/** Matches Tailwind `lg`, where the desktop nav takes over. */
+const DESKTOP = '(min-width: 1181px)';
+
 /** Hamburger + drawer under 1181px (design `.menu-btn` / `.mobile-drawer`). */
-export function MobileMenu({ setting }: { setting: SiteSetting | null }) {
+export function MobileMenu({ contacts }: { contacts: Contacts | null }) {
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
+  const drawer = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-  const tel = telHref(setting?.hotline);
-  const zalo = safeHref(setting?.zaloUrl);
+  const tel = telHref(contacts?.hotline);
+  const zalo = safeHref(contacts?.zaloUrl);
 
   /** Closing by keyboard or the button hands focus back to the button. */
   const close = (returnFocus: boolean) => {
@@ -23,16 +27,28 @@ export function MobileMenu({ setting }: { setting: SiteSetting | null }) {
 
   // Close on navigation.
   useEffect(() => setOpen(false), [pathname]);
-  // While open: Escape closes, the page behind does not scroll.
+
+  // While open: Escape closes, widening to desktop closes, the page behind
+  // neither scrolls nor takes focus (`inert` on everything but the header).
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => event.key === 'Escape' && close(true);
+    const desktop = window.matchMedia(DESKTOP);
+    const onWiden = () => desktop.matches && close(false);
     const overflow = document.body.style.overflow;
+    const behind = [...document.body.children].filter(
+      (element): element is HTMLElement => element instanceof HTMLElement && !element.contains(drawer.current),
+    );
+
     document.body.style.overflow = 'hidden';
+    behind.forEach((element) => (element.inert = true));
     document.addEventListener('keydown', onKey);
+    desktop.addEventListener('change', onWiden);
     return () => {
       document.body.style.overflow = overflow;
+      behind.forEach((element) => (element.inert = false));
       document.removeEventListener('keydown', onKey);
+      desktop.removeEventListener('change', onWiden);
     };
   }, [open]);
 
@@ -52,7 +68,7 @@ export function MobileMenu({ setting }: { setting: SiteSetting | null }) {
         </svg>
       </button>
 
-      <div id="mobile-drawer" hidden={!open} className="fixed inset-x-0 bottom-0 top-header z-55 overflow-auto bg-white px-6 pb-32 pt-5 lg:hidden">
+      <div ref={drawer} id="mobile-drawer" hidden={!open} className="fixed inset-x-0 bottom-0 top-header z-55 overflow-auto bg-white px-6 pb-32 pt-5 lg:hidden">
         <nav aria-label="Menu điện thoại">
           {NAV_ITEMS.map((item) => (
             <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className="flex border-b border-line py-4 text-xl font-bold text-navy">
@@ -62,14 +78,14 @@ export function MobileMenu({ setting }: { setting: SiteSetting | null }) {
         </nav>
         <div className="mt-6 grid grid-cols-1 gap-2.5 xs:grid-cols-2">
           {tel && (
-            <a href={tel} className="flex justify-center rounded-control bg-navy p-3 font-bold text-white">
-              {setting?.hotline}
-            </a>
+            <ContactLink href={tel} event="click_call" className="flex justify-center rounded-control bg-navy p-3 font-bold text-white">
+              {contacts?.hotline}
+            </ContactLink>
           )}
           {zalo && (
-            <a href={zalo} target="_blank" rel="noopener noreferrer" className="flex justify-center rounded-control bg-red p-3 font-bold text-white">
+            <ContactLink href={zalo} event="click_zalo" className="flex justify-center rounded-control bg-red p-3 font-bold text-white">
               Zalo AZway
-            </a>
+            </ContactLink>
           )}
         </div>
       </div>

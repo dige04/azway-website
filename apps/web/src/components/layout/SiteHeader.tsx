@@ -1,12 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import type { SiteSetting } from '@/lib/cms-types';
 import { telHref } from '@/lib/present';
+import { type Contacts, ContactLink } from './ContactLink';
 import { MobileMenu } from './MobileMenu';
 import { NAV_ITEMS, SEARCH_HREF } from './nav';
 
-export function SiteHeader({ setting }: { setting: SiteSetting | null }) {
-  const tel = telHref(setting?.hotline);
+export function SiteHeader({ contacts }: { contacts: Contacts | null }) {
+  const tel = telHref(contacts?.hotline);
 
   return (
     // The blur sits on its own layer: backdrop-filter on the header itself would
@@ -38,11 +38,11 @@ export function SiteHeader({ setting }: { setting: SiteSetting | null }) {
             </svg>
           </Link>
           {tel && (
-            <a href={tel} className="hidden min-h-11 items-center rounded-control bg-red px-4 text-[13px] font-bold text-white shadow-red hover:bg-red-dark lg:inline-flex">
-              {setting?.hotline}
-            </a>
+            <ContactLink href={tel} event="click_call" className="hidden min-h-11 items-center rounded-control bg-red px-4 text-[13px] font-bold text-white shadow-red hover:bg-red-dark lg:inline-flex">
+              {contacts?.hotline}
+            </ContactLink>
           )}
-          <MobileMenu setting={setting} />
+          <MobileMenu contacts={contacts} />
         </div>
       </div>
     </header>

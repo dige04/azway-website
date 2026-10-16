@@ -42,10 +42,12 @@ jobs:
 
       - run: pnpm build:cms
 
-      # Next build + OpenNext Workers bundle (catches Node-only APIs).
+      # Next build + OpenNext Workers bundle (catches Node-only APIs), with no
+      # CMS to prerender from (the smoke job builds against one).
       - run: pnpm build:web
         env:
           NEXT_PUBLIC_SITE_URL: https://example.invalid
+          BUILD_WITHOUT_CMS: '1'
 
   # TASKS M5 "Xong khi": every route renders with seed data at 375px and
   # 1440px without console errors. Seeded local Strapi + Workers preview.

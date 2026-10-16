@@ -1,8 +1,8 @@
 'use client';
 
-import type { SiteSetting } from '@/lib/cms-types';
 import { safeHref, telHref } from '@/lib/present';
-import { track, type TrackEvent } from '@/lib/track';
+import type { TrackEvent } from '@/lib/track';
+import { type Contacts, ContactLink } from './ContactLink';
 
 interface DockLink {
   href: string | null | undefined;
@@ -17,12 +17,12 @@ interface DockLink {
  * a column at the bottom right on desktop, a full-width bar on phones.
  * Links come from site-setting; an empty field hides its button.
  */
-export function ContactDock({ setting }: { setting: SiteSetting | null }) {
+export function ContactDock({ contacts }: { contacts: Contacts | null }) {
   const all: DockLink[] = [
-    { href: telHref(setting?.hotline), label: 'Gọi ngay', event: 'click_call', color: 'bg-red-dark', icon: ICONS.call },
-    { href: safeHref(setting?.messengerUrl), label: 'Messenger', event: 'click_messenger', color: 'bg-[#6039cf]', icon: ICONS.messenger },
-    { href: safeHref(setting?.zaloUrl), label: 'Zalo', event: 'click_zalo', color: 'bg-[#0068d9]', icon: ICONS.zalo },
-    { href: safeHref(setting?.facebookUrl), label: 'Facebook', event: null, color: 'bg-[#1454ac]', icon: ICONS.facebook },
+    { href: telHref(contacts?.hotline), label: 'Gọi ngay', event: 'click_call', color: 'bg-red-dark', icon: ICONS.call },
+    { href: safeHref(contacts?.messengerUrl), label: 'Messenger', event: 'click_messenger', color: 'bg-[#6039cf]', icon: ICONS.messenger },
+    { href: safeHref(contacts?.zaloUrl), label: 'Zalo', event: 'click_zalo', color: 'bg-[#0068d9]', icon: ICONS.zalo },
+    { href: safeHref(contacts?.facebookUrl), label: 'Facebook', event: null, color: 'bg-[#1454ac]', icon: ICONS.facebook },
   ];
   const links = all.filter((link) => link.href);
   if (links.length === 0) return null;
@@ -32,23 +32,19 @@ export function ContactDock({ setting }: { setting: SiteSetting | null }) {
       aria-label="Liên hệ AZway"
       className="fixed inset-x-0 bottom-0 z-50 grid auto-cols-fr grid-flow-col gap-1.5 border-t border-line bg-white px-2 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 sm:inset-x-auto sm:bottom-6 sm:right-3.5 sm:grid-flow-row sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0"
     >
-      {links.map((link) => {
-        const external = !link.href!.startsWith('tel:');
-        return (
-          <a
-            key={link.label}
-            href={link.href!}
-            {...(external && { target: '_blank', rel: 'noopener noreferrer' })}
-            onClick={link.event ? () => track(link.event!, { link_url: link.href! }) : undefined}
-            className={`${link.color} flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-sm px-1 py-2 text-xs font-bold text-white shadow-sm sm:flex-row sm:gap-2 sm:rounded-button sm:px-4 sm:text-sm`}
-          >
-            <svg viewBox="0 0 24 24" className="size-[22px] shrink-0 sm:size-6" fill="currentColor" aria-hidden="true">
-              <path d={link.icon} />
-            </svg>
-            {link.label}
-          </a>
-        );
-      })}
+      {links.map((link) => (
+        <ContactLink
+          key={link.label}
+          href={link.href!}
+          event={link.event}
+          className={`${link.color} flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-sm px-1 py-2 text-xs font-bold text-white shadow-sm sm:flex-row sm:gap-2 sm:rounded-button sm:px-4 sm:text-sm`}
+        >
+          <svg viewBox="0 0 24 24" className="size-[22px] shrink-0 sm:size-6" fill="currentColor" aria-hidden="true">
+            <path d={link.icon} />
+          </svg>
+          {link.label}
+        </ContactLink>
+      ))}
     </aside>
   );
 }

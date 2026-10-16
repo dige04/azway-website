@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { Show } from '@/components/Show';
 import { formatPrice, hasContent, isStrapiSlug } from './present';
 
 describe('hasContent (FR-PRD-05: empty data hides the block)', () => {
@@ -17,6 +18,14 @@ describe('hasContent (FR-PRD-05: empty data hides the block)', () => {
     for (const value of ['Hạ Long', 0, [{ id: 1, text: 'Xe đưa đón' }], paragraph, { url: '/uploads/a.jpg' }, [{ documentId: 'x' }], { id: 7, title: 'Ngày 1' }]) {
       expect(hasContent(value), JSON.stringify(value)).toBe(true);
     }
+  });
+});
+
+describe('Show (FR-PRD-05)', () => {
+  it('hands a list to its block without the empty items, and renders nothing for an empty one', () => {
+    const render = (when: unknown) => Show({ when, children: (value) => value as never });
+    expect(render([{ id: 1, text: '' }, { id: 2, text: 'Xe đưa đón' }])).toEqual([{ id: 2, text: 'Xe đưa đón' }]);
+    expect(render([{ id: 1, text: '' }])).toBeNull();
   });
 });
 

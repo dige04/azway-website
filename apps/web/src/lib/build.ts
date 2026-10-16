@@ -1,7 +1,7 @@
 import { PHASE_PRODUCTION_BUILD } from 'next/constants';
 import { connection } from 'next/server';
 
-/** True while `next build` runs without a CMS (CI): nothing to prerender from. */
+/** True while `next build` runs without a CMS (CI, BUILD_WITHOUT_CMS=1): nothing to prerender from. */
 export const isBuildWithoutCms = () => process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD && !process.env.CMS_URL;
 
 /**

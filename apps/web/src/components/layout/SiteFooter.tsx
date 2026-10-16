@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { SiteSetting } from '@/lib/cms-types';
-import { hasContent, safeHref } from '@/lib/present';
+import { hasContent, safeHref, telHref } from '@/lib/present';
+import { ContactLink } from './ContactLink';
 import { NAV_ITEMS } from './nav';
 
 const PRODUCT_LINKS = NAV_ITEMS.slice(0, 4);
@@ -11,6 +12,7 @@ const linkClass = 'block py-1 text-[13px] text-[#c0cbe2] hover:text-[#ff6d7d]';
 const siteHost = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').host;
 
 export function SiteFooter({ setting }: { setting: SiteSetting | null }) {
+  const tel = telHref(setting?.hotline);
   const zalo = safeHref(setting?.zaloUrl);
   const social = [
     { label: 'Facebook', href: safeHref(setting?.facebookUrl) },
@@ -54,16 +56,20 @@ export function SiteFooter({ setting }: { setting: SiteSetting | null }) {
           </FooterColumn>
 
           <FooterColumn title="Liên hệ AZway">
-            {setting?.hotline && <strong className="mb-2 block text-[22px] text-white">{setting.hotline}</strong>}
+            {tel && (
+              <ContactLink href={tel} event="click_call" className="mb-2 block text-[22px] font-bold text-white">
+                {setting?.hotline}
+              </ContactLink>
+            )}
             {setting?.email && (
               <a href={`mailto:${setting.email}`} className={linkClass}>
                 {setting.email}
               </a>
             )}
             {zalo && (
-              <a href={zalo} target="_blank" rel="noopener noreferrer" className={linkClass}>
+              <ContactLink href={zalo} event="click_zalo" className={linkClass}>
                 Zalo {setting?.hotline}
-              </a>
+              </ContactLink>
             )}
           </FooterColumn>
         </div>
