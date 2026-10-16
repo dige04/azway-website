@@ -33,3 +33,7 @@ apps/web/AGENTS.md
 coverage/
 *.tsbuildinfo
 infra/backups/
+
+# playwright
+apps/web/test-results/
+apps/web/playwright-report/

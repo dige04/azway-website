@@ -3,4 +3,6 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  // e2e/ is Playwright's (pnpm smoke).
+  test: { include: ['src/**/*.test.{ts,tsx}'] },
 });
