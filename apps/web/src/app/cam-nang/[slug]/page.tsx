@@ -50,7 +50,8 @@ export default async function Page({ params }: Props) {
   const crumbs: Crumb[] = [
     { name: 'Cẩm nang', href: '/cam-nang' },
     ...(article.category ? [{ name: article.category.name, href: `/cam-nang/danh-muc/${article.category.slug}` }] : []),
-    { name: article.title },
+    // The design ends the trail with "Bài viết": the title is the heading right below.
+    { name: 'Bài viết' },
   ];
 
   return (
