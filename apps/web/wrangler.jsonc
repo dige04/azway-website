@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "azway-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    // Self-reference used by OpenNext for cache revalidation; must match "name".
+    { "binding": "WORKER_SELF_REFERENCE", "service": "azway-web" }
+  ],
+  // Production resources are created in the AZway account in M8; locally
+  // wrangler simulates them, so the names/ids below only matter on deploy.
+  "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "azway-web-opennext-cache" }],
+  "d1_databases": [
+    {
+      "binding": "NEXT_TAG_CACHE_D1",
+      "database_name": "azway-web-tag-cache",
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  // No "vars" yet. `wrangler deploy` makes this file the source of truth: it
+  // overwrites dashboard vars with "vars" here and deletes the rest (no
+  // keep_vars). M8 adds "vars" with the real CMS_URL / CMS_MEDIA_URL; an empty
+  // value would deploy as "". Locally .dev.vars supplies them. Secrets:
+  // `wrangler secret put`.
+  // Next.js image optimization (/_next/image) through Cloudflare Images.
+  "images": { "binding": "IMAGES" },
+  "observability": { "enabled": true }
+}

@@ -9,7 +9,7 @@
     "dev:cms": "pnpm --filter @azway/cms develop",
     "dev:web": "pnpm --filter @azway/web dev",
     "build:cms": "pnpm --filter @azway/cms build",
-    "build:web": "pnpm --filter @azway/web build",
+    "build:web": "pnpm --filter @azway/web build:worker",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint"

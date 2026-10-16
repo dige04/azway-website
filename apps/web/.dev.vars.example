@@ -1,0 +1,19 @@
+# Copy to BOTH .env.local and .dev.vars:
+# - .env.local (or the shell) feeds `next build`, including the build step of
+#   `pnpm preview`, and `pnpm dev`. [build] variables are read only there.
+# - .dev.vars feeds the Worker at runtime in `pnpm preview` (wrangler).
+# On Cloudflare: [build] in the build environment, plain runtime values in
+# wrangler.jsonc `vars` (M8), secrets via `wrangler secret put`.
+
+# [build, required for production builds] Public site URL, e.g. https://<domain>
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+# [build + runtime] Strapi base URL (no trailing slash), e.g. https://cms.<domain>
+CMS_URL=http://localhost:1337
+# [build + runtime] Public media origin (R2 custom domain), e.g. https://media.<domain>. Empty -> Strapi local /uploads
+CMS_MEDIA_URL=
+# [runtime, secret] Shared secret with the CMS
+LEAD_INGEST_TOKEN=
+# [runtime, secret] Shared secret for POST /api/revalidate, same as the CMS
+REVALIDATE_SECRET=
+# [build] GA4 measurement id
+NEXT_PUBLIC_GA_ID=

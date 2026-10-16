@@ -37,6 +37,7 @@ pnpm workspace, Node 22. Lệnh từ root: `pnpm dev:cms`, `pnpm dev:web`, `pnpm
 - VPS production chỉ có **1 core / 2 GB RAM**. Không build gì trên VPS; Strapi chạy từ image đã build sẵn.
 - Next.js chạy trên **Workers runtime**: không dùng API chỉ có ở Node (fs, child_process). Kiểm bằng `pnpm --filter @azway/web preview` trước khi coi là xong.
 - Strapi chỉ chạy trên Node/VPS, **không** đưa lên Workers.
+- Script `build` của `apps/web` phải là `next build`: `opennextjs-cloudflare build` tự gọi `pnpm build`, trỏ `build` về nó là đệ quy vô hạn (fork bomb). Bundle Workers dùng `build:worker`.
 - Tài khoản production (Cloudflare, VPS, Google, Resend) **đứng tên AZway**. Không tạo resource production trong tài khoản cá nhân.
 
 ## Định nghĩa "xong"

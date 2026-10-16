@@ -25,7 +25,7 @@ flowchart LR
 | D1 | **Strapi 5 là nguồn dữ liệu duy nhất**, kể cả lead | Lead lưu DB trước, Sheets chỉ là bản đồng bộ → không mất lead khi Sheets lỗi (FR-LEAD-04/05) |
 | D2 | Next.js chạy trên **Cloudflare Workers qua `@opennextjs/cloudflare`** | Free tier, CDN toàn cầu, giảm tải cho VPS 2 GB |
 | D3 | **Không build trên VPS.** CI build Docker image cho Strapi, đẩy lên GHCR, VPS chỉ `docker compose pull && up -d` | Build Strapi admin + Next cần > 2 GB RAM |
-| D4 | Next.js gọi Strapi REST, cache bằng `fetch(..., { next: { tags } })`; Strapi bắn webhook revalidate theo tag khi publish | Trang tĩnh, cập nhật gần như tức thời (NFR-03) |
+| D4 | Next.js gọi Strapi REST, cache bằng `fetch(..., { next: { tags } })`; Strapi bắn webhook revalidate theo tag khi publish. Webhook chỉ gửi `<type>` và `<type>:<slug>` của document đổi; **web** gắn cho mỗi fetch thêm `<type>` của mọi quan hệ nó populate hoặc lọc (bảng `RELATIONS` trong `apps/web/src/lib/cms.ts`) | Trang tĩnh, cập nhật gần như tức thời (NFR-03); đổi điểm đến làm mới cả trang tour hiện điểm đến đó |
 | D5 | Form gửi tới **route handler của Next** (honeypot, rate limit, validate), route này gọi Strapi với `X-Lead-Token` bí mật | Endpoint lead của Strapi không public; trình duyệt không thấy token |
 | D6 | Google Sheets gọi **REST trực tiếp bằng service account JWT** (ký RS256 với `node:crypto`), không dùng `googleapis` | Giảm dependency nặng; logic ~60 dòng, dễ test |
 | D7 | Email qua **Resend REST API** bằng `fetch`; thiếu `RESEND_API_KEY` thì chỉ log | Không phụ thuộc SMTP; dev chạy được không cần key |
@@ -40,6 +40,8 @@ flowchart LR
 | Strapi + PostgreSQL 16 | VPS Long Vân 1 core / 2 GB / 50 GB, Docker Compose | Swap 2 GB; Caddy làm reverse proxy + TLS cho `cms.<domain>` |
 | Next.js | Cloudflare Workers | Deploy bằng `wrangler` trong GitHub Actions |
 | Ảnh | R2 bucket `azway-media` (public qua custom domain `media.<domain>`) | Provider `@strapi/provider-upload-aws-s3` với endpoint R2 |
+| Cache ISR của web | R2 bucket `azway-web-opennext-cache` + D1 `azway-web-tag-cache` | OpenNext: R2 giữ dữ liệu ISR, D1 giữ trạng thái `revalidateTag`. Tạo ở M8 |
+| Tối ưu ảnh | Cloudflare Images (binding `IMAGES`) | `/_next/image` resize + AVIF/WebP trên Workers (NFR-02); không cần sharp |
 | Backup | R2 bucket `azway-backups` | `pg_dump` + gzip mỗi đêm, giữ 7 bản |
 | Uptime | Cloudflare Health Check hoặc UptimeRobot free | NFR-11 |
 
@@ -65,16 +67,18 @@ flowchart LR
 | `WEB_REVALIDATE_URL`, `REVALIDATE_SECRET` | prod | `https://<domain>/api/revalidate` |
 | `CORS_ORIGINS` | | Danh sách origin, phân tách dấu phẩy; trống → `http://localhost:3000` |
 
-### `apps/web` (`.dev.vars` local, `wrangler secret` / vars trên Cloudflare)
+### `apps/web` (`.dev.vars` cho `preview`, `.env.local` cho `dev`)
 
-| Biến | Mô tả |
-| --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | `https://<domain>` |
-| `CMS_URL` | `https://cms.<domain>` |
-| `CMS_MEDIA_URL` | `https://media.<domain>` (allowlist cho ảnh) |
-| `LEAD_INGEST_TOKEN` | Giống bên CMS |
-| `REVALIDATE_SECRET` | Giống bên CMS |
-| `NEXT_PUBLIC_GA_ID` | GA4 |
+"Build" = phải có trong môi trường chạy `next build` (CI, deploy; local là `.env.local`, kể cả bước build của `preview`): giá trị được nhúng vào bundle. "Runtime" = đọc khi chạy trên Worker: biến không bí mật khai ở `vars` trong `wrangler.jsonc` với giá trị thật (M8; `wrangler deploy` ghi đè biến trên dashboard bằng `vars` và xoá biến không khai), bí mật qua `wrangler secret put`.
+
+| Biến | Khi nào | Mô tả |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | Build, bắt buộc | `https://<domain>`. Thiếu thì `next build` production dừng với lỗi |
+| `CMS_URL` | Build + runtime (`vars`) | `https://cms.<domain>`. Lúc build: allowlist ảnh `/uploads/**`; lúc chạy: gọi API |
+| `CMS_MEDIA_URL` | Build + runtime (`vars`) | `https://media.<domain>` (R2). Allowlist ảnh lúc build |
+| `LEAD_INGEST_TOKEN` | Runtime, secret | Giống bên CMS |
+| `REVALIDATE_SECRET` | Runtime, secret | Giống bên CMS |
+| `NEXT_PUBLIC_GA_ID` | Build | GA4 |
 
 ## Luồng lead chi tiết
 
