@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_tour_itinerary_days",
+  "info": { "displayName": "Ngày lịch trình", "icon": "calendar", "description": "Một ngày gồm nhiều mốc giờ" },
+  "attributes": {
+    "dayNumber": { "type": "integer", "required": true, "min": 1 },
+    "title": { "type": "string", "required": true },
+    "breakfast": { "type": "boolean", "default": false },
+    "lunch": { "type": "boolean", "default": false },
+    "dinner": { "type": "boolean", "default": false },
+    "milestones": { "type": "component", "repeatable": true, "component": "tour.milestone" }
+  },
+  "config": {
+    "metadatas": {
+      "dayNumber": { "edit": { "label": "Ngày thứ" } },
+      "title": { "edit": { "label": "Tiêu đề ngày", "description": "Ví dụ: Hà Nội – Hạ Long" } },
+      "breakfast": { "edit": { "label": "Bữa sáng" } },
+      "lunch": { "edit": { "label": "Bữa trưa" } },
+      "dinner": { "edit": { "label": "Bữa tối" } },
+      "milestones": { "edit": { "label": "Mốc giờ", "description": "Kéo thả để sắp xếp" } }
+    }
+  }
+}

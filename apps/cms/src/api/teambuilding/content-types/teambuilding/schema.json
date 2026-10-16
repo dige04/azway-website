@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "teambuildings",
+  "info": { "singularName": "teambuilding", "pluralName": "teambuildings", "displayName": "Teambuilding", "description": "Chương trình teambuilding" },
+  "options": { "draftAndPublish": true },
+  "pluginOptions": { "i18n": { "localized": true } },
+  "attributes": {
+    "name": { "type": "string", "required": true, "pluginOptions": { "i18n": { "localized": true } } },
+    "slug": { "type": "uid", "targetField": "name", "required": true, "pluginOptions": { "i18n": { "localized": true } } },
+    "theme": { "type": "string", "pluginOptions": { "i18n": { "localized": true } } },
+    "groupSizeMin": { "type": "integer", "min": 1, "pluginOptions": { "i18n": { "localized": false } } },
+    "groupSizeMax": { "type": "integer", "min": 1, "pluginOptions": { "i18n": { "localized": false } } },
+    "description": { "type": "blocks", "pluginOptions": { "i18n": { "localized": true } } },
+    "games": { "type": "component", "repeatable": true, "component": "teambuilding.game", "pluginOptions": { "i18n": { "localized": true } } },
+    "packages": { "type": "component", "repeatable": true, "component": "shared.text-item", "pluginOptions": { "i18n": { "localized": true } } },
+    "thumbnail": { "type": "media", "multiple": false, "allowedTypes": ["images"], "pluginOptions": { "i18n": { "localized": false } } },
+    "album": { "type": "media", "multiple": true, "allowedTypes": ["images", "videos"], "pluginOptions": { "i18n": { "localized": false } } },
+    "tours": { "type": "relation", "relation": "manyToMany", "target": "api::tour.tour", "inversedBy": "teambuildings" },
+    "seo": { "type": "component", "repeatable": false, "component": "shared.seo", "pluginOptions": { "i18n": { "localized": true } } }
+  },
+  "config": {
+    "metadatas": {
+      "name": { "edit": { "label": "Tên chương trình" } },
+      "slug": { "edit": { "label": "Đường dẫn (slug)", "description": "Tự sinh từ tên; chữ không dấu, nối bằng gạch ngang" } },
+      "theme": { "edit": { "label": "Nhóm", "description": "Ví dụ: Bãi biển, Trong nhà, Gala dinner" } },
+      "groupSizeMin": { "edit": { "label": "Quy mô tối thiểu (khách)" } },
+      "groupSizeMax": { "edit": { "label": "Quy mô tối đa (khách)" } },
+      "description": { "edit": { "label": "Mô tả" } },
+      "games": { "edit": { "label": "Trò chơi" } },
+      "packages": { "edit": { "label": "Gói kèm", "description": "Mỗi dòng một dịch vụ đi kèm, ví dụ MC, âm thanh, băng rôn" } },
+      "thumbnail": { "edit": { "label": "Ảnh đại diện", "description": "Nhớ điền mô tả ảnh (alt) trong Thư viện media" } },
+      "album": { "edit": { "label": "Album" } },
+      "tours": { "edit": { "label": "Tour kết hợp" } },
+      "seo": { "edit": { "label": "SEO" } }
+    }
+  }
+}

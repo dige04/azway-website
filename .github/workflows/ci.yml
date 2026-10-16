@@ -29,6 +29,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Generated Strapi types are committed so typecheck sees the real
+      # content model; fail if a schema change was committed without them.
+      - name: Check generated Strapi types are up to date
+        run: |
+          pnpm --filter @azway/cms strapi ts:generate-types
+          git diff --exit-code -- apps/cms/types/generated
+
       - run: pnpm typecheck
 
       - run: pnpm test

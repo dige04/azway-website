@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_teambuilding_games",
+  "info": { "displayName": "Trò chơi", "icon": "puzzle", "description": "Một trò chơi trong chương trình" },
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "howToPlay": { "type": "text" },
+    "image": { "type": "media", "multiple": false, "allowedTypes": ["images"] }
+  },
+  "config": {
+    "metadatas": {
+      "name": { "edit": { "label": "Tên trò chơi" } },
+      "howToPlay": { "edit": { "label": "Cách chơi" } },
+      "image": { "edit": { "label": "Ảnh" } }
+    }
+  }
+}

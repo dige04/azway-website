@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_home_hero_slides",
+  "info": { "displayName": "Slide trang chủ", "icon": "picture", "description": "Một ảnh trong carousel đầu trang chủ" },
+  "attributes": {
+    "image": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images"] },
+    "title": { "type": "string" },
+    "subtitle": { "type": "string" },
+    "ctaLabel": { "type": "string" },
+    "ctaUrl": { "type": "string" }
+  },
+  "config": {
+    "metadatas": {
+      "image": { "edit": { "label": "Ảnh", "description": "Ảnh ngang, tối thiểu 1920px chiều rộng" } },
+      "title": { "edit": { "label": "Tiêu đề" } },
+      "subtitle": { "edit": { "label": "Dòng phụ" } },
+      "ctaLabel": { "edit": { "label": "Chữ trên nút" } },
+      "ctaUrl": { "edit": { "label": "Link của nút", "description": "Đường dẫn trong site, ví dụ /tour/ha-long-2n1d" } }
+    }
+  }
+}

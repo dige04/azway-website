@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cruises",
+  "info": { "singularName": "cruise", "pluralName": "cruises", "displayName": "Du thuyền", "description": "Du thuyền và các lựa chọn: vé du ngoạn, thuê nguyên tàu, ăn tối" },
+  "options": { "draftAndPublish": true },
+  "pluginOptions": { "i18n": { "localized": true } },
+  "attributes": {
+    "name": { "type": "string", "required": true, "pluginOptions": { "i18n": { "localized": true } } },
+    "slug": { "type": "uid", "targetField": "name", "required": true, "pluginOptions": { "i18n": { "localized": true } } },
+    "starRating": { "type": "integer", "min": 1, "max": 6, "pluginOptions": { "i18n": { "localized": false } } },
+    "capacity": { "type": "integer", "min": 1, "pluginOptions": { "i18n": { "localized": false } } },
+    "options": { "type": "component", "repeatable": true, "component": "cruise.option", "pluginOptions": { "i18n": { "localized": true } } },
+    "description": { "type": "blocks", "pluginOptions": { "i18n": { "localized": true } } },
+    "thumbnail": { "type": "media", "multiple": false, "allowedTypes": ["images"], "pluginOptions": { "i18n": { "localized": false } } },
+    "gallery": { "type": "media", "multiple": true, "allowedTypes": ["images"], "pluginOptions": { "i18n": { "localized": false } } },
+    "inclusions": { "type": "component", "repeatable": true, "component": "shared.text-item", "pluginOptions": { "i18n": { "localized": true } } },
+    "exclusions": { "type": "component", "repeatable": true, "component": "shared.text-item", "pluginOptions": { "i18n": { "localized": true } } },
+    "destinations": { "type": "relation", "relation": "manyToMany", "target": "api::destination.destination", "inversedBy": "cruises" },
+    "articles": { "type": "relation", "relation": "manyToMany", "target": "api::article.article", "mappedBy": "cruises" },
+    "seo": { "type": "component", "repeatable": false, "component": "shared.seo", "pluginOptions": { "i18n": { "localized": true } } }
+  },
+  "config": {
+    "metadatas": {
+      "name": { "edit": { "label": "Tên tàu" } },
+      "slug": { "edit": { "label": "Đường dẫn (slug)", "description": "Tự sinh từ tên; chữ không dấu, nối bằng gạch ngang" } },
+      "starRating": { "edit": { "label": "Hạng (số sao)" } },
+      "capacity": { "edit": { "label": "Sức chứa (khách)" } },
+      "options": { "edit": { "label": "Lựa chọn", "description": "Vé du ngoạn, thuê nguyên tàu, ăn tối — mỗi lựa chọn một giá" } },
+      "description": { "edit": { "label": "Mô tả" } },
+      "thumbnail": { "edit": { "label": "Ảnh đại diện", "description": "Nhớ điền mô tả ảnh (alt) trong Thư viện media" } },
+      "gallery": { "edit": { "label": "Bộ ảnh" } },
+      "inclusions": { "edit": { "label": "Bao gồm" } },
+      "exclusions": { "edit": { "label": "Không bao gồm" } },
+      "destinations": { "edit": { "label": "Điểm đến" } },
+      "articles": { "edit": { "label": "Bài cẩm nang liên quan" } },
+      "seo": { "edit": { "label": "SEO" } }
+    }
+  }
+}

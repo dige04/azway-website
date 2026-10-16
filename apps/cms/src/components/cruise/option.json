@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_cruise_options",
+  "info": { "displayName": "Lựa chọn du thuyền", "icon": "priceTag", "description": "Vé du ngoạn, thuê nguyên tàu, ăn tối" },
+  "attributes": {
+    "type": { "type": "enumeration", "enum": ["ve_du_ngoan", "thue_nguyen_tau", "an_toi"], "required": true },
+    "name": { "type": "string", "required": true },
+    "price": { "type": "integer", "min": 0 },
+    "description": { "type": "text" }
+  },
+  "config": {
+    "metadatas": {
+      "type": { "edit": { "label": "Loại", "description": "ve_du_ngoan = vé du ngoạn, thue_nguyen_tau = thuê nguyên tàu, an_toi = ăn tối" } },
+      "name": { "edit": { "label": "Tên lựa chọn" } },
+      "price": { "edit": { "label": "Giá từ (đ/khách)", "description": "Số nguyên VND. Để trống hoặc 0 thì hiện \"Liên hệ báo giá\"" } },
+      "description": { "edit": { "label": "Mô tả" } }
+    }
+  }
+}

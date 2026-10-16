@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_shared_text_items",
+  "info": { "displayName": "Mục nội dung", "icon": "bulletList", "description": "Một dòng nội dung" },
+  "attributes": {
+    "text": { "type": "string", "required": true }
+  },
+  "config": {
+    "metadatas": {
+      "text": { "edit": { "label": "Nội dung" } }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_tour_milestones",
+  "info": { "displayName": "Mốc giờ", "icon": "clock", "description": "Một hoạt động trong ngày" },
+  "attributes": {
+    "time": { "type": "string", "required": true, "regex": "^([01]\\d|2[0-3]):[0-5]\\d$" },
+    "title": { "type": "string", "required": true },
+    "description": { "type": "text" },
+    "note": { "type": "string" }
+  },
+  "config": {
+    "metadatas": {
+      "time": { "edit": { "label": "Giờ", "description": "Định dạng HH:mm, ví dụ 07:30", "placeholder": "07:30" } },
+      "title": { "edit": { "label": "Tiêu đề" } },
+      "description": { "edit": { "label": "Mô tả" } },
+      "note": { "edit": { "label": "Ghi chú", "description": "Ví dụ: AZway tài trợ" } }
+    }
+  }
+}
