@@ -8,12 +8,15 @@ export function siteUrl(path = '/'): string {
 /**
  * The canonical form of a site path or an editor's canonical URL: absolute,
  * no trailing slash (Next redirects `/tour/a/` to `/tour/a`). Null when it
- * does not parse: the CMS only checks `^https://\S+`, so `https://[` gets in.
+ * is blank (it would resolve to the home page) or does not parse: the CMS
+ * only checks `^https://\S+`, so `https://[` gets in.
  */
 export function canonicalUrl(value: string): string | null {
+  const text = value.trim();
+  if (!text) return null;
   let url: URL;
   try {
-    url = new URL(value.trim(), siteUrl());
+    url = new URL(text, siteUrl());
   } catch {
     return null;
   }

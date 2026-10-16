@@ -23,12 +23,12 @@ const PATH: Record<PageType, (slug: string) => string> = {
 
 /**
  * A page search engines should index: not noindex, and its canonical (if any)
- * is itself, compared as pageMetadata writes it. An unparseable canonical
- * drops only that page.
+ * is itself, compared as pageMetadata writes it. A blank or unparseable
+ * canonical counts as none, as on the page.
  */
 const indexable = (doc: PageDocument, path: string) => {
-  const canonical = doc.seo?.canonicalUrl?.trim();
-  return !doc.seo?.noIndex && (!canonical || canonicalUrl(canonical) === canonicalUrl(path));
+  const canonical = doc.seo?.canonicalUrl && canonicalUrl(doc.seo.canonicalUrl);
+  return !doc.seo?.noIndex && (!canonical || canonical === canonicalUrl(path));
 };
 
 /** AC-15: every published page (the CMS client asks for published documents only). */
