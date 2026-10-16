@@ -18,12 +18,13 @@ interface DockLink {
  * Links come from site-setting; an empty field hides its button.
  */
 export function ContactDock({ setting }: { setting: SiteSetting | null }) {
-  const links: DockLink[] = [
+  const all: DockLink[] = [
     { href: telHref(setting?.hotline), label: 'Gọi ngay', event: 'click_call', color: 'bg-red-dark', icon: ICONS.call },
     { href: setting?.messengerUrl, label: 'Messenger', event: 'click_messenger', color: 'bg-[#6039cf]', icon: ICONS.messenger },
     { href: setting?.zaloUrl, label: 'Zalo', event: 'click_zalo', color: 'bg-[#0068d9]', icon: ICONS.zalo },
     { href: setting?.facebookUrl, label: 'Facebook', event: null, color: 'bg-[#1454ac]', icon: ICONS.facebook },
-  ].filter((link) => link.href);
+  ];
+  const links = all.filter((link) => link.href);
   if (links.length === 0) return null;
 
   return (
