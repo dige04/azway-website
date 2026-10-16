@@ -35,7 +35,8 @@ type Labels = Partial<Record<ConditionKey, string>>;
 
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const query = parseTourQuery(await searchParams);
-  const [catalog, setting] = await Promise.all([getTourCatalog(), getSiteSetting()]);
+  // The hotline is only for the empty state; without it the list still renders.
+  const [catalog, setting] = await Promise.all([getTourCatalog(), getSiteSetting().catch(() => null)]);
   const gates = gateChoices(catalog);
   const found = filterTours(catalog, query);
   const { items, page, pageCount } = paginate(found, query.page);
@@ -43,7 +44,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const href = tourHref({ ...query, page: undefined });
 
   return (
-    <main id="main" className="bg-paper pb-section">
+    <div className="bg-paper pb-section">
       <FilterApplyTracker href={href} params={filterEventParams(query, found.length)} />
       <section className="bg-white pb-8 pt-6 sm:pb-10">
         <div className="shell">
@@ -82,7 +83,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           <NoResults query={query} labels={labels} suggestions={relaxations(catalog, query)} phone={telHref(setting?.hotline)} hotline={setting?.hotline} />
         )}
       </section>
-    </main>
+    </div>
   );
 }
 
