@@ -92,8 +92,8 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
               <div className="absolute inset-0 bg-linear-to-t from-[#06142ecc] via-transparent to-transparent" aria-hidden="true" />
               {(slide.title || slide.subtitle || (slide.ctaLabel && slide.ctaUrl)) && (
                 <figcaption className="absolute inset-x-[18px] bottom-[18px] z-10 grid gap-1 text-white sm:inset-x-[22px] sm:bottom-[22px]">
-                  {slide.title && <strong className="text-2xl leading-tight sm:text-[30px]">{slide.title}</strong>}
-                  {slide.subtitle && <span className="text-[13px] text-white/85">{slide.subtitle}</span>}
+                  {slide.title && <strong className="line-clamp-2 text-2xl leading-tight sm:text-[30px]">{slide.title}</strong>}
+                  {slide.subtitle && <span className="hidden text-[13px] text-white/85 xs:line-clamp-2">{slide.subtitle}</span>}
                   {slide.ctaLabel && slide.ctaUrl && <SlideLink url={slide.ctaUrl} label={slide.ctaLabel} hidden={index !== current} />}
                 </figcaption>
               )}

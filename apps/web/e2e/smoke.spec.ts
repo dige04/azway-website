@@ -1,5 +1,15 @@
-import { expect, test } from '@playwright/test';
-import { ROUTES } from './routes';
+import { expect, test, type ConsoleMessage } from '@playwright/test';
+import { NOT_BUILT, ROUTES } from './routes';
+
+/** A 404 prefetch (`?_rsc=`) of a link to a page that does not exist yet. */
+function isPendingPagePrefetch(message: ConsoleMessage): boolean {
+  const { url } = message.location();
+  if (!url || !message.text().includes('404')) return false;
+  const { pathname, searchParams } = new URL(url);
+  // `/tour` itself is pending, `/tour/<slug>` exists.
+  const pending = NOT_BUILT.some((path) => pathname === path || (path !== '/tour' && pathname.startsWith(`${path}/`)));
+  return searchParams.has('_rsc') && pending;
+}
 
 // A route passes when its document answers < 400 and the page logs no console
 // error and throws no uncaught exception, including after hydration.
@@ -7,17 +17,27 @@ for (const route of ROUTES) {
   test(`smoke ${route}`, async ({ page }, testInfo) => {
     const errors: string[] = [];
     page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+      if (message.type() === 'error' && !isPendingPagePrefetch(message)) errors.push(`console: ${message.text()} (${message.location().url})`);
     });
     page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
 
-    const response = await page.goto(route);
+    // Screenshots: a still carousel, so captures are comparable.
+    if (process.env.SMOKE_SCREENSHOTS) await page.emulateMedia({ reducedMotion: 'reduce' });
+    const response = await page.goto(route, { waitUntil: 'load' });
     expect(response?.status(), `HTTP status of ${route}`).toBeLessThan(400);
-    await page.waitForLoadState('networkidle');
+    // Hydration errors and effects show up right after load.
+    await page.waitForTimeout(1500);
 
     // SMOKE_SCREENSHOTS=<dir>: full-page captures for review (not committed).
     if (process.env.SMOKE_SCREENSHOTS) {
-      const name = `${testInfo.project.name}${route.replaceAll('/', '_') || '_'}.png`;
+      // Scroll through once so lazy images load before the capture.
+      for (let y = 0; y < (await page.evaluate(() => document.body.scrollHeight)); y += 600) {
+        await page.evaluate((top) => window.scrollTo(0, top), y);
+        await page.waitForTimeout(150);
+      }
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(500);
+      const name = `${testInfo.project.name}${route.replaceAll('/', '_')}.png`;
       await page.screenshot({ path: `${process.env.SMOKE_SCREENSHOTS}/${name}`, fullPage: true });
     }
     expect(errors).toEqual([]);
