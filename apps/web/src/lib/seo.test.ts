@@ -50,3 +50,13 @@ it('share image: seo image, then content image, then site default, then logo; a 
   expect(await shareImage({})).toBe('/logo-azway.png');
   expect(cms.connection).toHaveBeenCalledOnce();
 });
+
+// The page and /sitemap.xml name the same URL: no trailing slash (Next redirects it), and a broken canonical is ignored.
+it("an editor's canonical is written as the sitemap compares it", async () => {
+  vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://azway.example');
+  cms.setting = null;
+  const canonical = async (canonicalUrl: string) =>
+    (await pageMetadata({ title: 'Tour', path: '/tour/a', seo: { canonicalUrl } as Seo })).alternates?.canonical;
+  expect(await canonical('https://azway.example/tour/b/')).toBe('https://azway.example/tour/b');
+  expect(await canonical('https://[')).toBe('/tour/a');
+});

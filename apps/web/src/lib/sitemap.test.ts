@@ -22,12 +22,15 @@ describe('sitemap (SEO-03)', () => {
       doc('self', { noIndex: false, canonicalUrl: 'https://azway.example/cam-nang/danh-muc/self' }),
       doc('slash', { noIndex: false, canonicalUrl: 'https://azway.example/cam-nang/danh-muc/slash/' }),
       doc('relative', { noIndex: false, canonicalUrl: '/cam-nang/danh-muc/relative' }),
+      // Passes the CMS check but does not parse: that page drops out, the sitemap still renders.
+      doc('broken', { noIndex: false, canonicalUrl: 'https://[' }),
     ];
     const paths = (await sitemapEntries()).map((entry) => entry.path);
     expect(paths).toContain('/tour/a');
     expect(paths).toEqual(expect.arrayContaining(['/cam-nang/danh-muc/self', '/cam-nang/danh-muc/slash', '/cam-nang/danh-muc/relative']));
     expect(paths).not.toContain('/tour/hidden');
     expect(paths).not.toContain('/tour/copy');
+    expect(paths).not.toContain('/cam-nang/danh-muc/broken');
   });
 
   it('splits into files of 1,000 URLs past 1,000, every URL in exactly one file', () => {

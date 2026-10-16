@@ -4,3 +4,19 @@ export const SITE_NAME = 'AZway';
 export function siteUrl(path = '/'): string {
   return new URL(path, process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').toString();
 }
+
+/**
+ * The canonical form of a site path or an editor's canonical URL: absolute,
+ * no trailing slash (Next redirects `/tour/a/` to `/tour/a`). Null when it
+ * does not parse: the CMS only checks `^https://\S+`, so `https://[` gets in.
+ */
+export function canonicalUrl(value: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(value.trim(), siteUrl());
+  } catch {
+    return null;
+  }
+  if (url.pathname !== '/') url.pathname = url.pathname.replace(/\/+$/, '');
+  return url.href;
+}

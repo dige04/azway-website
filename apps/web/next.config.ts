@@ -59,7 +59,7 @@ export default function config(phase: string): NextConfig {
     },
     // Child sitemaps sit at the root: a sitemap may only list URLs under its
     // own directory. App Router has no `sitemap-[n].xml` segment.
-    rewrites: async () => [{ source: '/sitemap-:file.xml', destination: '/sitemap/:file' }],
+    rewrites: async () => [{ source: '/sitemap-:file(\\d+).xml', destination: '/sitemap/:file' }],
   };
 }
 

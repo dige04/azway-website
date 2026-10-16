@@ -1,5 +1,5 @@
 import { getPageDocuments, PAGE_TYPES, type PageDocument, type PageType } from './cms';
-import { siteUrl } from './site';
+import { canonicalUrl, siteUrl } from './site';
 
 /** URLs per sitemap file; Google allows 50,000, the spec asks for paging past 1,000 (SEO-03). */
 export const SITEMAP_SIZE = 1000;
@@ -21,13 +21,14 @@ const PATH: Record<PageType, (slug: string) => string> = {
   'article-category': (slug) => `/cam-nang/danh-muc/${slug}`,
 };
 
-/** Absolute URL without a trailing slash, so `/tour/a`, `/tour/a/` and the full URL compare equal. */
-const normalized = (url: string) => siteUrl(url).replace(/(?<=.)\/$/, '');
-
-/** A page search engines should index: not noindex, and not pointing its canonical elsewhere. */
+/**
+ * A page search engines should index: not noindex, and its canonical (if any)
+ * is itself, compared as pageMetadata writes it. An unparseable canonical
+ * drops only that page.
+ */
 const indexable = (doc: PageDocument, path: string) => {
   const canonical = doc.seo?.canonicalUrl?.trim();
-  return !doc.seo?.noIndex && (!canonical || normalized(canonical) === normalized(path));
+  return !doc.seo?.noIndex && (!canonical || canonicalUrl(canonical) === canonicalUrl(path));
 };
 
 /** AC-15: every published page (the CMS client asks for published documents only). */

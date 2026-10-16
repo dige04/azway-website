@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import type { BlocksContent, Media, Seo } from './cms-types';
 import { mediaUrl } from './media';
-import { SITE_NAME } from './site';
+import { canonicalUrl, SITE_NAME } from './site';
 import { loadSiteSetting } from './site-setting';
 
 /** Google cuts descriptions around 155–160 characters. */
@@ -57,7 +57,8 @@ export interface PageSeo {
 export async function pageMetadata(page: PageSeo): Promise<Metadata> {
   const title = page.seo?.metaTitle?.trim() || page.title;
   const description = metaDescription(page.seo, page.description);
-  const url = page.seo?.canonicalUrl?.trim() || page.path;
+  // The editor's canonical in the form the sitemap compares; an unparseable one is ignored.
+  const url = (page.seo?.canonicalUrl && canonicalUrl(page.seo.canonicalUrl)) || page.path;
   const image = mediaUrl(page.seo?.shareImage?.url) ?? mediaUrl(page.image?.url) ?? (await defaultShareImage());
   const article = page.type === 'article' && {
     publishedTime: page.publishedTime ?? undefined,
