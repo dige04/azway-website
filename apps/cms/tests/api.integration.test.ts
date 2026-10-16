@@ -162,6 +162,19 @@ describe('trusted readers still see drafts', () => {
   });
 });
 
+// FR-CMS-08 / NFR-10: src/setup/editor-role.ts, as applied on boot.
+describe('Editor role', () => {
+  it('edits and publishes content, only reads redirects and settings, never sees leads', async () => {
+    const role = await strapi.service('admin::role').findOne({ code: 'strapi-editor' });
+    const permissions: { action: string; subject: string | null }[] = await strapi.db.query('admin::permission').findMany({ where: { role: role.id } });
+    const actions = (subject: string) => permissions.filter((permission) => permission.subject === subject).map((permission) => permission.action.split('.').pop()).sort();
+    expect(actions('api::tour.tour')).toEqual(expect.arrayContaining(['create', 'delete', 'publish', 'read', 'update']));
+    expect(actions('api::redirect.redirect')).toEqual(['read']);
+    expect(actions('api::site-setting.site-setting')).toEqual(['read']);
+    expect(actions('api::lead.lead')).toEqual([]);
+  });
+});
+
 describe('lead ingest (M3)', () => {
   const submit = (token?: string) =>
     fetch(`${base}/api/leads/submit`, {

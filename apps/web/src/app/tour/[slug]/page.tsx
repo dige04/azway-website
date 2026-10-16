@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArticleCard } from '@/components/ArticleCard';
+import { FeedbackCard } from '@/components/feedback/FeedbackCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { LeadForm } from '@/components/lead/LeadForm';
 import { Block, Check, DetailSection, Inclusions, PriceBox, RequestBlock } from '@/components/product/Detail';
@@ -167,6 +168,18 @@ export default async function Page({ params }: Props) {
           </Show>
         </aside>
       </div>
+
+      <Show when={tour.feedbacks}>
+        {(feedbacks) => (
+          <DetailSection title="Đoàn đã đi tour này">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {feedbacks.map((feedback) => (
+                <FeedbackCard key={feedback.documentId} feedback={feedback} />
+              ))}
+            </div>
+          </DetailSection>
+        )}
+      </Show>
 
       <Show when={related}>
         {(tours) => (

@@ -23,7 +23,7 @@ export function imageProps(media: Media | null | undefined, fallbackAlt = '') {
   if (!media || !src) return null;
   return {
     src,
-    alt: media.alternativeText ?? fallbackAlt,
+    alt: media.alternativeText?.trim() || fallbackAlt,
     width: media.width ?? undefined,
     height: media.height ?? undefined,
   };

@@ -14,6 +14,6 @@ export function galleryImages(alt: string, cover: Media | null | undefined, gall
     const src = mediaUrl(media?.url);
     if (!media || !src || seen.has(src)) return [];
     seen.add(src);
-    return [{ src, alt: media.alternativeText ?? alt, caption: media.caption }];
+    return [{ src, alt: media.alternativeText?.trim() || alt, caption: media.caption }];
   });
 }
