@@ -4,9 +4,11 @@ import type { ReactNode } from 'react';
 import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { FeaturedProducts } from '@/components/FeaturedProducts';
+import { ContactLink } from '@/components/layout/ContactLink';
 import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
 import { SearchBox } from '@/components/SearchBox';
-import { getArticleCatalog, getCruiseCatalog, getTourCatalog } from '@/lib/cms';
+import { getArticleCatalog, getCruiseCatalog, getSiteSetting, getTourCatalog } from '@/lib/cms';
+import { telHref } from '@/lib/present';
 import { search, searchTerm, type SearchCatalogs } from '@/lib/search';
 import { tourHref } from '@/lib/tour-filter';
 
@@ -30,6 +32,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const q = searchTerm((await searchParams).q);
   const results = q ? search(q, await loadCatalogs()) : null;
   const total = results ? results.tours.length + results.cruises.length + results.articles.length : 0;
+  // The hotline is only for the empty state; without it the page still renders.
+  const hotline = results && total === 0 ? ((await getSiteSetting().catch(() => null))?.hotline ?? null) : null;
 
   return (
     <div className="shell pb-section pt-6 sm:pt-8">
@@ -37,20 +41,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
       <h1 className="text-[32px] font-bold leading-[1.08] tracking-[-0.05em] text-navy sm:text-[clamp(30px,3.1vw,44px)]">Bạn muốn khám phá điều gì?</h1>
       <SearchBox defaultValue={q} className="mt-6 max-w-[650px]" />
 
-      {results && (
+      {results && total > 0 && (
         <p role="status" className="mb-2 mt-8 border-b border-line pb-3 text-sm font-bold text-navy">
-          {total > 0 ? `${total} kết quả cho “${q}”` : `Không tìm thấy kết quả cho “${q}”`}
+          {total} kết quả cho “{q}”
         </p>
       )}
-      {results && total === 0 && (
-        <p className="mt-4 max-w-[640px] text-muted">
-          Thử từ khóa ngắn hơn, tên điểm đến hoặc mã tour, hoặc{' '}
-          <Link href="/tour" className="font-bold text-navy underline underline-offset-4">
-            xem tất cả tour
-          </Link>
-          .
-        </p>
-      )}
+      {results && total === 0 && <NoResults q={q} hotline={hotline} />}
 
       {results && results.tours.length > 0 && (
         <Group title="Tour" count={results.tours.length}>
@@ -86,6 +82,28 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
       )}
 
       {total === 0 && <FeaturedProducts title={results ? 'Có thể bạn quan tâm' : 'Sản phẩm nổi bật'} />}
+    </div>
+  );
+}
+
+/** FR-SRC-05, as on /tour: what to try next, and a call (AZway can build a tour to order). */
+function NoResults({ q, hotline }: { q: string; hotline: string | null }) {
+  const phone = telHref(hotline);
+  return (
+    <div role="status" className="mt-8 rounded-card border border-dashed border-[#bdc7d7] bg-white px-6 py-12 text-center sm:py-16">
+      <h2 className="text-h3 font-bold text-navy">Không tìm thấy kết quả cho “{q}”</h2>
+      <p className="mt-3 text-muted">Thử từ khóa ngắn hơn, tên điểm đến hoặc mã tour.</p>
+      <p className="mt-6 text-muted">AZway có thể thiết kế tour riêng theo yêu cầu của đoàn.</p>
+      <div className="mt-4 flex flex-wrap justify-center gap-3">
+        {phone && (
+          <ContactLink href={phone} event="click_call" className="inline-flex min-h-[52px] items-center rounded-button bg-red px-6 font-bold text-white shadow-red hover:bg-red-hover">
+            Gọi {hotline}
+          </ContactLink>
+        )}
+        <Link href="/tour" className="inline-flex min-h-[52px] items-center rounded-button border border-line bg-white px-6 font-bold text-navy">
+          Xem tất cả tour
+        </Link>
+      </div>
     </div>
   );
 }

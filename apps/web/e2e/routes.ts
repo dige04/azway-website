@@ -25,6 +25,8 @@ export const ROUTES = [
   '/teambuilding',
   // 12 games, packages, a combined tour, the other programme.
   '/teambuilding/teambuilding',
+  // No result: the call button (FR-SRC-05).
+  '/tim-kiem?q=khong-co-tour-nay',
 ];
 
 /**
@@ -55,6 +57,7 @@ export const TEXTS: Partial<Record<string, string[]>> = {
   '/lien-he': ['033.202.8585', 'info@azway.vn'],
   '/teambuilding': ['Teambuilding & Gala Dinner'],
   '/teambuilding/teambuilding': ['Mò cua bắt ốc', 'Xếp tháp niềm tin', 'MC và nhân sự điều phối'],
+  '/tim-kiem?q=khong-co-tour-nay': ['Gọi 033.202.8585'],
 };
 
 /**

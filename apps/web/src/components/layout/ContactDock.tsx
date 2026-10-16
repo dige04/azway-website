@@ -18,9 +18,9 @@ interface DockLink {
 export function ContactDock({ contacts }: { contacts: Contacts | null }) {
   const all: DockLink[] = [
     { href: telHref(contacts?.hotline), label: 'Gọi ngay', event: 'click_call', color: 'bg-red-dark', icon: ICONS.call },
-    { href: safeHref(contacts?.messengerUrl), label: 'Messenger', event: 'click_messenger', color: 'bg-[#6039cf]', icon: ICONS.messenger },
-    { href: safeHref(contacts?.zaloUrl), label: 'Zalo', event: 'click_zalo', color: 'bg-[#0068d9]', icon: ICONS.zalo },
-    { href: safeHref(contacts?.facebookUrl), label: 'Facebook', event: null, color: 'bg-[#1454ac]', icon: ICONS.facebook },
+    { href: safeHref(contacts?.messengerUrl), label: 'Messenger', event: 'click_messenger', color: 'bg-messenger', icon: ICONS.messenger },
+    { href: safeHref(contacts?.zaloUrl), label: 'Zalo', event: 'click_zalo', color: 'bg-zalo', icon: ICONS.zalo },
+    { href: safeHref(contacts?.facebookUrl), label: 'Facebook', event: null, color: 'bg-facebook', icon: ICONS.facebook },
   ];
   const links = all.filter((link) => link.href);
   if (links.length === 0) return null;

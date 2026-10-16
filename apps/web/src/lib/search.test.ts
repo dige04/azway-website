@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Article, Cruise, Tour } from './cms-types';
-import { search } from './search';
+import { search, searchTerm } from './search';
 
 const CATALOGS = {
   tours: [
@@ -25,5 +25,11 @@ describe('search', () => {
     expect(found('lc2')).toEqual(['LC2', 'LC20']);
     expect(found('ha long sapa')).toEqual([]);
     expect(found('  ')).toEqual([]);
+  });
+
+  it('reads ?q= as one trimmed term of at most 100 characters', () => {
+    expect(searchTerm(undefined)).toBe('');
+    expect(searchTerm(['  lc2 ', 'x'])).toBe('lc2');
+    expect(searchTerm('x'.repeat(150))).toHaveLength(100);
   });
 });
