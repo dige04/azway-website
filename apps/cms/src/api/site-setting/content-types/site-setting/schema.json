@@ -1,0 +1,35 @@
+{
+  "kind": "singleType",
+  "collectionName": "site_settings",
+  "info": { "singularName": "site-setting", "pluralName": "site-settings", "displayName": "Cấu hình chung", "description": "Hotline, Zalo, Messenger, mạng xã hội, email nhận yêu cầu" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": { "i18n": { "localized": true } },
+  "attributes": {
+    "hotline": { "type": "string", "pluginOptions": { "i18n": { "localized": false } } },
+    "zaloUrl": { "type": "string", "regex": "^https://[^\\s\\\\]+$", "pluginOptions": { "i18n": { "localized": false } } },
+    "messengerUrl": { "type": "string", "regex": "^https://[^\\s\\\\]+$", "pluginOptions": { "i18n": { "localized": false } } },
+    "facebookUrl": { "type": "string", "regex": "^https://[^\\s\\\\]+$", "pluginOptions": { "i18n": { "localized": false } } },
+    "youtubeUrl": { "type": "string", "regex": "^https://[^\\s\\\\]+$", "pluginOptions": { "i18n": { "localized": false } } },
+    "tiktokUrl": { "type": "string", "regex": "^https://[^\\s\\\\]+$", "pluginOptions": { "i18n": { "localized": false } } },
+    "email": { "type": "email", "pluginOptions": { "i18n": { "localized": false } } },
+    "address": { "type": "text", "pluginOptions": { "i18n": { "localized": true } } },
+    "leadNotifyEmails": { "type": "string", "private": true, "regex": "^[^@\\s,]+@[^@\\s,]+\\.[^@\\s,]+(\\s*,\\s*[^@\\s,]+@[^@\\s,]+\\.[^@\\s,]+)*$", "pluginOptions": { "i18n": { "localized": false } } },
+    "responseTimeText": { "type": "string", "pluginOptions": { "i18n": { "localized": true } } },
+    "defaultSeo": { "type": "component", "repeatable": false, "component": "shared.seo", "pluginOptions": { "i18n": { "localized": true } } }
+  },
+  "config": {
+    "metadatas": {
+      "hotline": { "edit": { "label": "Hotline", "description": "Ví dụ 0912 345 678; nút gọi tự bỏ khoảng trắng" } },
+      "zaloUrl": { "edit": { "label": "Link Zalo", "description": "Ví dụ https://zalo.me/0912345678" } },
+      "messengerUrl": { "edit": { "label": "Link Messenger", "description": "Ví dụ https://m.me/azway" } },
+      "facebookUrl": { "edit": { "label": "Facebook" } },
+      "youtubeUrl": { "edit": { "label": "YouTube" } },
+      "tiktokUrl": { "edit": { "label": "TikTok" } },
+      "email": { "edit": { "label": "Email liên hệ (hiện trên website)" } },
+      "address": { "edit": { "label": "Địa chỉ" } },
+      "leadNotifyEmails": { "edit": { "label": "Email nhận thông báo yêu cầu", "description": "Không hiện trên website. Nhiều địa chỉ cách nhau bằng dấu phẩy" } },
+      "responseTimeText": { "edit": { "label": "Thời gian cam kết phản hồi", "description": "Hiện sau khi khách gửi yêu cầu, ví dụ: AZway sẽ gọi lại trong 30 phút (giờ hành chính)" } },
+      "defaultSeo": { "edit": { "label": "SEO mặc định", "description": "Dùng khi trang không có SEO riêng" } }
+    }
+  }
+}

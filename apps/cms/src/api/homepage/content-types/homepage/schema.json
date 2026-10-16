@@ -1,0 +1,21 @@
+{
+  "kind": "singleType",
+  "collectionName": "homepages",
+  "info": { "singularName": "homepage", "pluralName": "homepages", "displayName": "Trang chủ", "description": "Carousel và sản phẩm, bài viết nổi bật trên trang chủ" },
+  "options": { "draftAndPublish": true },
+  "pluginOptions": { "i18n": { "localized": true } },
+  "attributes": {
+    "heroSlides": { "type": "component", "repeatable": true, "component": "home.hero-slide", "pluginOptions": { "i18n": { "localized": true } } },
+    "featuredTours": { "type": "relation", "relation": "oneToMany", "target": "api::tour.tour" },
+    "featuredCruises": { "type": "relation", "relation": "oneToMany", "target": "api::cruise.cruise" },
+    "featuredArticles": { "type": "relation", "relation": "oneToMany", "target": "api::article.article" }
+  },
+  "config": {
+    "metadatas": {
+      "heroSlides": { "edit": { "label": "Carousel đầu trang", "description": "Kéo thả để sắp xếp" } },
+      "featuredTours": { "edit": { "label": "Tour nổi bật", "description": "Kéo thả để sắp xếp" } },
+      "featuredCruises": { "edit": { "label": "Du thuyền nổi bật", "description": "Kéo thả để sắp xếp" } },
+      "featuredArticles": { "edit": { "label": "Bài cẩm nang nổi bật", "description": "Kéo thả để sắp xếp" } }
+    }
+  }
+}
