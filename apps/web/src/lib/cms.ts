@@ -1,7 +1,10 @@
 /**
  * Typed read-only client for the Strapi REST API (D4). Every request is cached
- * by Next with tags that the CMS webhook invalidates (see app/api/revalidate):
- * lists use `<type>`, single documents `<type>` and `<type>:<slug>`.
+ * by Next with tags that the CMS webhook invalidates (see app/api/revalidate).
+ * The webhook only sends `<type>` and `<type>:<slug>` of the changed document,
+ * so each fetch is tagged with its own type, its slug tag for single
+ * documents, and the type of every relation it populates or filters on
+ * (a renamed destination must refresh the tour pages that show it).
  * Only published documents are returned.
  */
 import type {
@@ -22,10 +25,49 @@ import type {
 } from './cms-types';
 
 const REVALIDATE_SECONDS = 3600;
+const REQUEST_TIMEOUT_MS = 10_000;
 const DEFAULT_PAGE_SIZE = 12;
 
 type QueryValue = string | number | boolean | null | undefined | QueryValue[] | { [key: string]: QueryValue };
 type Query = Record<string, QueryValue>;
+
+/**
+ * Relation fields per content type (schemas in apps/cms/src/api). Keep in sync
+ * when a relation is added: an unknown populated field would go untagged.
+ */
+const RELATIONS: Record<string, Record<string, string>> = {
+  tour: { destinations: 'destination', articles: 'article', teambuildings: 'teambuilding', feedbacks: 'feedback' },
+  cruise: { destinations: 'destination', articles: 'article' },
+  teambuilding: { tours: 'tour' },
+  destination: { tours: 'tour', cruises: 'cruise' },
+  article: { category: 'article-category', tours: 'tour', cruises: 'cruise' },
+  'article-category': { articles: 'article' },
+  feedback: { tour: 'tour' },
+  homepage: { featuredTours: 'tour', featuredCruises: 'cruise', featuredArticles: 'article' },
+  'site-setting': {},
+  redirect: {},
+};
+
+/** Content types a query reads: `type` plus every relation in populate/filters. */
+function dependencyTypes(type: string, query: Query): string[] {
+  const found = new Set([type]);
+  const walk = (current: string, value: QueryValue) => {
+    if (Array.isArray(value)) return value.forEach((item) => walk(current, item));
+    if (value === null || typeof value !== 'object') return;
+    for (const [key, child] of Object.entries(value)) {
+      const target = RELATIONS[current]?.[key];
+      if (target) {
+        found.add(target);
+        walk(target, child);
+      } else if (key.startsWith('$') || key === 'populate' || key === 'filters') {
+        walk(current, child);
+      }
+      // Anything else is a scalar field, media or component: no other type.
+    }
+  };
+  walk(type, { populate: query.populate, filters: query.filters });
+  return [...found];
+}
 
 /** Strapi's bracket notation: { filters: { slug: { $eq: 'a' } } } -> filters[slug][$eq]=a */
 function toQueryString(query: Query): string {
@@ -44,36 +86,44 @@ function toQueryString(query: Query): string {
   return parts.join('&');
 }
 
-async function request<T>(path: string, query: Query, tags: string[]): Promise<T | null> {
+interface RequestOptions {
+  /** One document is asked for: 404 means "not found" (null), not an error. */
+  one?: boolean;
+  /** Adds the `<type>:<slug>` tag. */
+  slug?: string;
+}
+
+async function request<T>(type: string, path: string, query: Query, options: RequestOptions = {}): Promise<T | null> {
   const base = process.env.CMS_URL;
   if (!base) throw new Error('CMS_URL is not set');
   const url = `${base.replace(/\/+$/, '')}/api/${path}?${toQueryString({ ...query, status: 'published' })}`;
-  const res = await fetch(url, { next: { tags, revalidate: REVALIDATE_SECONDS } });
-  if (res.status === 404) return null;
+  const tags = [...dependencyTypes(type, query), ...(options.slug ? [`${type}:${options.slug}`] : [])];
+  const res = await fetch(url, {
+    next: { tags, revalidate: REVALIDATE_SECONDS },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+  if (res.status === 404 && options.one) return null;
   if (!res.ok) throw new Error(`CMS responded ${res.status} for /api/${path}`);
   return (await res.json()) as T;
 }
 
-const emptyList = <T>(): ListResponse<T> => ({
-  data: [],
-  meta: { pagination: { page: 1, pageSize: 0, pageCount: 0, total: 0 } },
-});
-
 async function findMany<T>(type: string, plural: string, query: Query): Promise<ListResponse<T>> {
-  return (await request<ListResponse<T>>(plural, query, [type])) ?? emptyList<T>();
+  return (await request<ListResponse<T>>(type, plural, query)) as ListResponse<T>;
 }
 
 async function findBySlug<T>(type: string, plural: string, slug: string, populate: Query): Promise<T | null> {
   const res = await request<ListResponse<T>>(
+    type,
     plural,
     { filters: { slug: { $eq: slug } }, populate, pagination: { pageSize: 1 } },
-    [type, `${type}:${slug}`],
+    { one: true, slug },
   );
   return res?.data[0] ?? null;
 }
 
+/** Single types answer 404 until their first save. */
 async function findSingle<T>(type: string, populate: Query): Promise<T | null> {
-  return (await request<SingleResponse<T>>(type, { populate }, [type]))?.data ?? null;
+  return (await request<SingleResponse<T>>(type, type, { populate }, { one: true }))?.data ?? null;
 }
 
 const pagination = (page = 1, pageSize = DEFAULT_PAGE_SIZE) => ({ page, pageSize });
@@ -257,9 +307,10 @@ export const getHomepage = () =>
 /** Redirect for a legacy path, e.g. "/tour-ha-long.html" (D8). */
 export async function getRedirect(path: string): Promise<Redirect | null> {
   const res = await request<ListResponse<Redirect>>(
+    'redirect',
     'redirects',
     { filters: { from: { $eq: path } }, pagination: { pageSize: 1 } },
-    ['redirect'],
+    { one: true },
   );
   return res?.data[0] ?? null;
 }

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
+  // Required by next.config.ts for production builds; dev falls back to local.
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: { default: 'AZway', template: '%s | AZway' },
 };

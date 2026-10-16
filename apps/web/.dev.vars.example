@@ -1,15 +1,17 @@
 # Copy to .dev.vars for `pnpm preview` (wrangler) and .env.local for `pnpm dev`.
-# On Cloudflare: plain vars in the dashboard / wrangler, secrets via `wrangler secret put`.
+# Build = needed by `next build` (CI/deploy env), inlined into the bundle.
+# Runtime = read on the Worker: plain values in wrangler.jsonc `vars`,
+# secrets via `wrangler secret put`. Here they all live in one local file.
 
-# Public site URL, e.g. https://<domain>
+# [build, required for production builds] Public site URL, e.g. https://<domain>
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-# Strapi base URL (no trailing slash), e.g. https://cms.<domain>
+# [build + runtime] Strapi base URL (no trailing slash), e.g. https://cms.<domain>
 CMS_URL=http://localhost:1337
-# Public media origin (R2 custom domain), e.g. https://media.<domain>. Empty -> Strapi local /uploads
+# [build + runtime] Public media origin (R2 custom domain), e.g. https://media.<domain>. Empty -> Strapi local /uploads
 CMS_MEDIA_URL=
-# Shared secret with the CMS (secret)
+# [runtime, secret] Shared secret with the CMS
 LEAD_INGEST_TOKEN=
-# Shared secret for POST /api/revalidate, same as the CMS (secret)
+# [runtime, secret] Shared secret for POST /api/revalidate, same as the CMS
 REVALIDATE_SECRET=
-# GA4 measurement id
+# [build] GA4 measurement id
 NEXT_PUBLIC_GA_ID=

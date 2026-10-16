@@ -22,6 +22,10 @@
       "database_id": "00000000-0000-0000-0000-000000000000"
     }
   ],
+  // Non-secret runtime config; declared here so `wrangler deploy` does not
+  // wipe values set elsewhere. Real values are filled in M8; locally
+  // .dev.vars overrides them. Secrets: `wrangler secret put`.
+  "vars": { "CMS_URL": "", "CMS_MEDIA_URL": "" },
   // Next.js image optimization (/_next/image) through Cloudflare Images.
   "images": { "binding": "IMAGES" },
   "observability": { "enabled": true }

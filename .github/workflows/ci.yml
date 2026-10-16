@@ -44,3 +44,5 @@ jobs:
 
       # Next build + OpenNext Workers bundle (catches Node-only APIs).
       - run: pnpm build:web
+        env:
+          NEXT_PUBLIC_SITE_URL: https://example.invalid
