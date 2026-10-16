@@ -126,7 +126,7 @@ Nhánh: `m7/seo`
 
 Nhánh: `m8/infra`
 
-- [ ] `apps/cms/Dockerfile` multi-stage (node 22-alpine), chạy non-root.
+- [ ] `apps/cms/Dockerfile` multi-stage (node 22-alpine), chạy non-root. `ADMIN_PATH` truyền vào làm build-arg cho `strapi build` (nó được bake vào bundle admin); kiểm image trả 200 ở `/<ADMIN_PATH>`.
 - [ ] `infra/docker-compose.yml`: `strapi`, `postgres:16-alpine` (volume), `caddy` (TLS tự động cho `CMS_DOMAIN`); healthcheck; `restart: unless-stopped`; giới hạn RAM Strapi ~1.2 GB.
 - [ ] `infra/backup.sh` + systemd timer/cron: `pg_dump | gzip` → R2 qua `rclone` hoặc `aws s3 --endpoint-url`, giữ 7 bản; `infra/restore.md` có lệnh khôi phục đã thử (NFR-09).
 - [ ] `infra/bootstrap-vps.md`: tạo swap 2 GB, cài Docker, firewall 22/80/443, user deploy.

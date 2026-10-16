@@ -27,7 +27,11 @@ describe('enforceAdminPasswordPolicy', () => {
     ] as const;
     for (const [target, calls] of targets) {
       for (const [name, args] of Object.entries(calls)) {
-        await expect(target[name](...args(short))).rejects.toThrow(ADMIN_PASSWORD_TOO_SHORT_MESSAGE);
+        // Admin forms only show errors that carry a field path.
+        await expect(target[name](...args(short))).rejects.toMatchObject({
+          message: ADMIN_PASSWORD_TOO_SHORT_MESSAGE,
+          details: { errors: [{ path: ['password'] }] },
+        });
         expect(originals[name]).not.toHaveBeenCalled();
         await expect(target[name](...args(ok))).resolves.toBe('done');
       }

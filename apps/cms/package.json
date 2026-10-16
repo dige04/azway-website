@@ -9,8 +9,8 @@
     "develop": "strapi develop",
     "start": "strapi start",
     "strapi": "strapi",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "test": "vitest run"
   },
   "dependencies": {
     "@strapi/plugin-users-permissions": "5.58.0",
@@ -32,7 +32,7 @@
     "vitest": "^5.0.5"
   },
   "engines": {
-    "node": ">=22"
+    "node": "^22.12.0"
   },
   "strapi": {
     "uuid": "0ee70822-d33b-4735-89d4-1ca6d1fc0cc2"

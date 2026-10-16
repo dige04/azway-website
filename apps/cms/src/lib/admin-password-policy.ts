@@ -12,7 +12,11 @@ const passwordOf = (value: unknown) => (value as { password?: unknown } | undefi
 
 const assertLongEnough = (password: unknown) => {
   if (typeof password === 'string' && [...password].length < ADMIN_PASSWORD_MIN_LENGTH) {
-    throw new errors.ValidationError(ADMIN_PASSWORD_TOO_SHORT_MESSAGE);
+    // Field-level details: admin forms map `errors[].path` onto inputs and
+    // show nothing for a ValidationError without them.
+    throw new errors.ValidationError(ADMIN_PASSWORD_TOO_SHORT_MESSAGE, {
+      errors: [{ path: ['password'], message: ADMIN_PASSWORD_TOO_SHORT_MESSAGE, name: 'ValidationError' }],
+    });
   }
 };
 
