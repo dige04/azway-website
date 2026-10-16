@@ -109,10 +109,10 @@ Nhánh: `m6/lead-form`
 
 Nhánh: `m7/seo`
 
-- [ ] `generateMetadata` mọi trang: title/description/canonical từ component SEO, fallback sinh từ nội dung (SEO-02); OG/Twitter (SEO-05).
-- [ ] `app/sitemap.ts` (phân trang nếu > 1000 URL), `app/robots.ts` (SEO-03).
-- [ ] JSON-LD: TravelAgency (layout), BreadcrumbList, Article, TouristTrip (SEO-04).
-- [ ] Trang có query lọc → canonical về URL gốc + `robots: noindex, follow` (SEO-06).
+- [x] `generateMetadata` mọi trang: title/description/canonical từ component SEO, fallback sinh từ nội dung (SEO-02); OG/Twitter (SEO-05).
+- [x] `app/sitemap.xml/route.ts` + `app/sitemap/[file]/route.ts` (thành sitemap index nếu > 1000 URL), `app/robots.ts` (SEO-03).
+- [x] JSON-LD: TravelAgency (layout), BreadcrumbList, Article, TouristTrip (SEO-04).
+- [x] Trang có query lọc → canonical về URL gốc + `robots: noindex, follow` (SEO-06).
 - [ ] Redirect theo ARCHITECTURE D8: `app/[...legacy]/page.tsx` + nhánh notFound của trang chi tiết gọi `getRedirect(pathname)` → `permanentRedirect` (301) / `redirect` (302).
 - [ ] Script `apps/cms/scripts/import-redirects.mjs` nhập CSV `from,to,statusCode`.
 - [ ] GA4 tải sau tương tác/idle, helper `track(event, params)`.

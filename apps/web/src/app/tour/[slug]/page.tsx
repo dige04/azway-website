@@ -35,7 +35,8 @@ async function loadTour(slug: string): Promise<Tour> {
 /** Description from content when `seo.metaDescription` is empty (the seed has none for most tours). */
 function contentSummary(tour: Tour): string {
   const facts = [formatDuration(tour.durationDays, tour.durationNights), tour.departure && `khởi hành từ ${tour.departure}`].filter(Boolean).join(', ');
-  return [`${tour.name}: ${facts}.`, ...(tour.highlights ?? []).map((item) => item.text)].join(' ');
+  const highlights = (tour.highlights ?? []).map((item) => item.text.trim().replace(/[.;,]+$/, '')).filter(Boolean);
+  return [`${tour.name}: ${facts}.`, highlights.length > 0 && `${highlights.join(', ')}.`].filter(Boolean).join(' ');
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
