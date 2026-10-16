@@ -7,8 +7,9 @@ export const normalizeRedirectPath = (input: string): string => {
   path = path.replace(/[?#].*$/, '');
   if (!path.startsWith('/')) path = `/${path}`;
   // Decode first so "/tour-hạ-long" and "/tour-h%E1%BA%A1-long" end up equal.
+  // "%25" (a literal "%") stays encoded, so a stored value normalises to itself.
   try {
-    path = decodeURI(path);
+    path = decodeURI(path.replace(/%25/gi, '%2525'));
   } catch {
     // Malformed escape: encode as typed.
   }

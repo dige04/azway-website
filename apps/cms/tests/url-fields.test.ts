@@ -36,6 +36,12 @@ describe('URL fields', () => {
     expect(normalizeRedirectPath('/')).toBe('/');
     expect(ok(canonical)).toBe(true);
     expect(ok(normalizeRedirectPath('/bai viet%20cu'))).toBe(true);
+    // Saving again changes nothing, even for an encoded "%" or a stray one.
+    for (const typed of ['/tour-hạ-long', '/a%2541', '/50%off', '/a%2Fb', '/bai viet%20cu/']) {
+      const once = normalizeRedirectPath(typed);
+      expect(normalizeRedirectPath(once), typed).toBe(once);
+    }
+    expect(normalizeRedirectPath('/a%2541')).toBe('/a%2541');
     for (const hostile of ['//evil.com', '/\\evil.com', 'https://old.azway.vn//evil.com']) {
       expect(ok(normalizeRedirectPath(hostile)), hostile).toBe(false);
     }

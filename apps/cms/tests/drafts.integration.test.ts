@@ -14,6 +14,9 @@ const { compileStrapi, createStrapi } = createRequire(__filename)('@strapi/strap
 const dbFile = `.tmp/test-drafts-${process.pid}.db`;
 let strapi: Core.Strapi;
 let base: string;
+let secretTourId: string;
+let apiToken: string;
+let adminToken: string;
 
 beforeAll(async () => {
   const secret = () => randomBytes(16).toString('base64');
@@ -44,7 +47,10 @@ beforeAll(async () => {
   const article = await strapi
     .documents('api::article.article')
     .create({ data: { title: 'SECRET article', slug: 'secret-article', content: [], cover: cover.id } });
-  await tours.create({ data: { name: 'SECRET tour', code: 'SECRET', slug: 'secret', category: 'noi_dia', durationDays: 1, durationNights: 0 } });
+  const secretTour = await tours.create({
+    data: { name: 'SECRET tour', code: 'SECRET', slug: 'secret', category: 'noi_dia', durationDays: 1, durationNights: 0 },
+  });
+  secretTourId = secretTour.documentId;
   const published = await tours.create({
     data: {
       name: 'Public tour',
@@ -58,6 +64,23 @@ beforeAll(async () => {
     },
   });
   await tours.publish({ documentId: published.documentId });
+
+  // Readers that must keep seeing drafts (FR-CMS-09 preview, the admin panel).
+  const token = await strapi
+    .service('admin::api-token')
+    .create({ name: 'preview', type: 'read-only', kind: 'content-api', lifespan: null });
+  apiToken = token.accessKey;
+  const password = `${randomBytes(18).toString('base64url')}Aa1!`;
+  const superAdmin = await strapi.service('admin::role').getSuperAdmin();
+  await strapi
+    .service('admin::user')
+    .create({ firstname: 'Test', email: 'admin@test.local', password, isActive: true, roles: [superAdmin.id] });
+  const login = await fetch(`${base}/admin/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: 'admin@test.local', password }),
+  });
+  adminToken = ((await login.json()) as { data: { token: string } }).data.token;
 }, 120_000);
 
 afterAll(async () => {
@@ -67,20 +90,36 @@ afterAll(async () => {
   rmSync(path.join(__dirname, '..', dbFile), { force: true });
 });
 
+const get = async (query: string, token?: string) =>
+  (await fetch(base + query, { headers: token ? { authorization: `Bearer ${token}` } : {} })).text();
+
 describe('public REST API (AC-05)', () => {
-  // [query, published tour expected in the answer]
+  // [query, what the answer must still contain]
   it.each([
-    ['/api/tours', true],
-    ['/api/tours?status=draft', true],
-    ['/api/tours?filters[publishedAt][$null]=true', false],
-    ['/api/tours?status=draft&filters[$or][0][publishedAt][$null]=true&filters[$or][1][code]=SECRET', false],
-    ['/api/tours?status=draft&populate[articles]=true', true],
-    ['/api/articles?status=draft', false],
-    ['/api/tours?populate[thumbnail][populate][related]=true', false],
-    ['/api/upload/files?populate[related]=true', false],
-  ])('%s returns no draft', async (query, expectPublished) => {
-    const body = await (await fetch(base + query)).text();
+    ['/api/tours', ['Public tour']],
+    ['/api/tours?status=draft', ['Public tour']],
+    ['/api/tours?filters[publishedAt][$null]=true', []],
+    ['/api/tours?status=draft&filters[$or][0][publishedAt][$null]=true&filters[$or][1][code]=SECRET', []],
+    ['/api/tours?status=draft&populate[articles]=true', ['Public tour']],
+    // Images still populate without Public upload permissions.
+    ['/api/tours?populate[thumbnail]=true', ['Public tour', '/uploads/a.png']],
+    ['/api/articles?status=draft', []],
+    ['/api/tours?populate[thumbnail][populate][related]=true', []],
+    ['/api/upload/files?populate[related]=true', []],
+  ])('%s returns no draft', async (query, expected) => {
+    const body = await get(query);
     expect(body).not.toContain('SECRET');
-    if (expectPublished) expect(body).toContain('Public tour');
+    for (const text of expected) expect(body).toContain(text);
+  });
+
+  it('findOne of a draft-only document is not found', async () => {
+    expect(await get(`/api/tours/${secretTourId}?status=draft`)).not.toContain('SECRET');
+  });
+});
+
+describe('trusted readers still see drafts', () => {
+  it('API token (FR-CMS-09 preview) and the admin panel', async () => {
+    expect(await get('/api/tours?status=draft', apiToken)).toContain('SECRET tour');
+    expect(await get('/content-manager/collection-types/api::tour.tour', adminToken)).toContain('SECRET tour');
   });
 });
