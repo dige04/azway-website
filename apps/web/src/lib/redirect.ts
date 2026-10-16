@@ -1,14 +1,29 @@
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
+import { connection } from 'next/server';
 import { getRedirects } from './cms';
-import { normalizeRedirectPath } from './redirect-path';
 
 /**
- * The request path from route params in the CMS's canonical form. Next hands
- * params over decoded; encodeURI restores what the browser sent, except a
- * decoded "/", "?" or "#" inside a segment, which must stay escaped.
+ * One form for both sides of the lookup: every segment decoded, then encoded
+ * with encodeURIComponent. Next hands params over decoded, so "%3A" and ":"
+ * can no longer be told apart and must compare equal; a "/" decoded from
+ * "%2F" stays inside its segment, and "%25" stays a literal "%".
  */
-export const pathFromParams = (segments: string[]): string =>
-  normalizeRedirectPath(`/${segments.map((segment) => encodeURI(segment).replace(/[/?#]/g, encodeURIComponent)).join('/')}`);
+const keyOf = (segments: string[]): string => segments.map(encodeURIComponent).join('/');
+
+const decodeSegment = (segment: string): string => {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    // A stray "%" stored as typed: it can only mean a literal "%".
+    return segment;
+  }
+};
+
+/** Key of a stored `redirect.from` (canonical form, apps/cms/src/utils/redirect-path.ts). */
+export const storedKey = (from: string): string => keyOf(from.slice(1).split('/').map(decodeSegment));
+
+/** Key of a request from its route params, which Next has decoded segment by segment. */
+export const requestKey = keyOf;
 
 /**
  * Legacy URLs (SEO-07, D8), for a path no page serves: redirect if the CMS
@@ -19,8 +34,18 @@ export const pathFromParams = (segments: string[]): string =>
  * (temporary) a 307.
  */
 export async function movedOrNotFound(...segments: string[]): Promise<never> {
-  const from = pathFromParams(segments);
-  const rule = (await getRedirects()).find((entry) => entry.from === from);
+  let rules;
+  try {
+    rules = await getRedirects();
+  } catch (error) {
+    // CMS down: a 404 rather than a 500 on every unknown URL, rendered per
+    // request so the miss is not cached.
+    console.error(`[redirect] list unavailable, answering 404: ${(error as Error).message}`);
+    await connection();
+    notFound();
+  }
+  const key = requestKey(segments);
+  const rule = rules.find((entry) => storedKey(entry.from) === key);
   if (!rule) notFound();
   if (rule.statusCode === 302) redirect(rule.to);
   permanentRedirect(rule.to);

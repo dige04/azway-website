@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb, type Crumb } from '@/components/Breadcrumb';
 import { Show } from '@/components/Show';
 import { getArticleCategories, getArticleCategoryBySlug, getArticles } from '@/lib/cms';
 import { pageFromSegment, pageHref } from '@/lib/pagination';
 import { isStrapiSlug } from '@/lib/present';
+import { movedOrNotFound } from '@/lib/redirect';
 import { pageMetadata } from '@/lib/seo';
 
 const PAGE_SIZE = 9;
@@ -18,13 +18,17 @@ export interface GuideListParams {
   page?: string;
 }
 
-async function resolve({ category, page: segment }: GuideListParams) {
+/** A list URL that shows nothing: a redirect from the CMS (an old category or page), else 404. */
+const missing = ({ category, page }: GuideListParams) =>
+  movedOrNotFound('cam-nang', ...(category === undefined ? [] : ['danh-muc', category]), ...(page === undefined ? [] : ['trang', page]));
+
+async function resolve(params: GuideListParams) {
+  const { category, page: segment } = params;
   const page = segment === undefined ? 1 : pageFromSegment(segment);
-  if (page === null) notFound();
+  if (page === null) return missing(params);
   if (category === undefined) return { page, category: null, base: '/cam-nang' };
-  if (!isStrapiSlug(category)) notFound();
-  const found = await getArticleCategoryBySlug(category);
-  if (!found) notFound();
+  const found = isStrapiSlug(category) ? await getArticleCategoryBySlug(category) : null;
+  if (!found) return missing(params);
   return { page, category: found, base: `/cam-nang/danh-muc/${found.slug}` };
 }
 
@@ -49,7 +53,7 @@ export async function GuideList(params: GuideListParams) {
     getArticleCategories(),
   ]);
   const { pageCount = 1, total = articles.data.length } = articles.meta?.pagination ?? {};
-  if (page > 1 && page > pageCount) notFound();
+  if (page > 1 && page > pageCount) return missing(params);
 
   const crumbs: Crumb[] = category ? [{ name: 'Cẩm nang', href: '/cam-nang' }, { name: category.name }] : [{ name: 'Cẩm nang' }];
   return (

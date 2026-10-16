@@ -38,22 +38,28 @@ test('a redirect saved in Strapi after the build works without a rebuild', async
   if (process.env.CI && !configured) throw new Error('redirect.spec.ts needs CMS_URL, E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD on CI');
   test.skip(!configured, 'needs CMS_URL, E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD');
 
-  // A renamed tour: the detail route's not-found branch (an ISR page).
-  const from = `/tour/ten-cu-${Date.now().toString(36)}`;
-  const target = '/tour/ha-noi-ha-long-1-ngay';
-  // Requested first, so the cached redirect list without it must be cleared.
-  expect(await answer(request, from)).toEqual([404, null]);
+  // Not-found branches of ISR routes: a renamed tour, an old guide category.
+  const run = Date.now().toString(36);
+  const moved = [
+    { from: `/tour/ten-cu-${run}`, to: '/tour/ha-noi-ha-long-1-ngay' },
+    { from: `/cam-nang/danh-muc/cu-${run}`, to: '/cam-nang' },
+  ];
+  // Requested first, so the cached redirect list without them must be cleared.
+  for (const { from } of moved) expect(await answer(request, from), from).toEqual([404, null]);
 
   const login = await request.post(`${CMS}/admin/login`, { data: ADMIN });
   expect(login.ok(), 'admin login').toBe(true);
   const headers = { authorization: `Bearer ${((await login.json()) as { data: { token: string } }).data.token}` };
-  const created = await request.post(REDIRECTS, { headers, data: { from, to: target, statusCode: 301 } });
-  expect(created.ok(), 'redirect created').toBe(true);
-  const { documentId } = ((await created.json()) as { data: { documentId: string } }).data;
+  const created: string[] = [];
   try {
+    for (const { from, to } of moved) {
+      const res = await request.post(REDIRECTS, { headers, data: { from, to, statusCode: 301 } });
+      expect(res.ok(), `redirect ${from} created`).toBe(true);
+      created.push(((await res.json()) as { data: { documentId: string } }).data.documentId);
+    }
     // The webhook is sent after the commit, without waiting for it.
-    await expect.poll(() => answer(request, from), { timeout: 10_000 }).toEqual([308, target]);
+    for (const { from, to } of moved) await expect.poll(() => answer(request, from), { timeout: 10_000 }).toEqual([308, to]);
   } finally {
-    await request.delete(`${REDIRECTS}/${documentId}`, { headers });
+    for (const documentId of created) await request.delete(`${REDIRECTS}/${documentId}`, { headers });
   }
 });

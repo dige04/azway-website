@@ -4,6 +4,7 @@
 import { randomBytes } from 'node:crypto';
 import { copyFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import type { Core } from '@strapi/strapi';
@@ -104,21 +105,52 @@ describe('seed', () => {
 
 // TASKS M7: the legacy URL list (scripts/import-redirects.mjs) can be imported again safely.
 describe('import-redirects', () => {
-  type Result = { summary?: Record<string, number>; errors?: string[] };
+  type Result = { summary?: Record<string, number>; revalidate?: string; errors?: string[] };
   const importCsv = (text: string) =>
     (strapi.service('api::redirect.redirect') as unknown as { importCsv(text: string): Promise<Result> }).importCsv(text);
   const total = () => strapi.db.query('api::redirect.redirect').count();
 
   it('a rerun or the same old URL typed another way creates nothing; a bad file imports nothing', async () => {
     const sample = readFileSync(path.join(__dirname, '../scripts/redirects.sample.csv'), 'utf8');
-    expect(await importCsv(sample)).toEqual({ summary: { created: 5, updated: 0, kept: 0 } });
-    expect(await importCsv(sample)).toEqual({ summary: { created: 0, updated: 0, kept: 5 } });
-    expect(await importCsv('from,to\n/tour-sapa.html/?ref=x,/tour\n')).toEqual({ summary: { created: 0, updated: 1, kept: 0 } });
+    expect((await importCsv(sample)).summary).toEqual({ created: 5, updated: 0, kept: 0 });
+    expect((await importCsv(sample)).summary).toEqual({ created: 0, updated: 0, kept: 5 });
+    expect((await importCsv('from,to\n/tour-sapa.html/?ref=x,/tour\n')).summary).toEqual({ created: 0, updated: 1, kept: 0 });
 
+    // Valid lines first: nothing may be written before a bad line is seen.
     const before = await total();
-    expect(await importCsv('from,to,statusCode\n/moi,/tour,301\n/x,/a,303\n/moi/,/b,301\n')).toEqual({
-      errors: ['line 3: statusCode must be 301 or 302', 'line 4: /moi is already on line 2'],
+    const bad = ['from,to,statusCode', '/moi,/tour,301', '/x,/a,303', '/moi/,/b,301', '/cu,http://azway.vn/x,301', '/vong,/vong?a=1,301'];
+    expect(await importCsv(bad.join('\n'))).toEqual({
+      errors: [
+        'line 3: statusCode must be 301 or 302',
+        'line 4: /moi is already on line 2',
+        'line 5: to "http://azway.vn/x" must start with / or https://',
+        'line 6: /vong redirects to itself',
+      ],
     });
     expect(await total()).toBe(before);
+  });
+
+  // The script exits right after importCsv: the web must have been told by then.
+  it('resolves only after the web has revalidated tag `redirect`', async () => {
+    const received: unknown[] = [];
+    const web = createServer((req, res) => {
+      let body = '';
+      req.on('data', (chunk) => (body += chunk));
+      req.on('end', () => {
+        received.push(JSON.parse(body));
+        res.end('{}');
+      });
+    });
+    await new Promise<void>((resolve) => web.listen(0, '127.0.0.1', resolve));
+    process.env.WEB_REVALIDATE_URL = `http://127.0.0.1:${(web.address() as { port: number }).port}/api/revalidate`;
+    process.env.REVALIDATE_SECRET = 'test';
+    try {
+      expect((await importCsv('from,to\n/khuyen-mai-cu,/\n')).revalidate).toBe('sent');
+      expect(received).toContainEqual({ tags: ['redirect'] });
+    } finally {
+      delete process.env.WEB_REVALIDATE_URL;
+      delete process.env.REVALIDATE_SECRET;
+      await new Promise((resolve) => web.close(resolve));
+    }
   });
 });

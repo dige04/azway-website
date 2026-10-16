@@ -28,7 +28,7 @@ describe('URL fields', () => {
 
   it('redirect.from is stored as one canonical encoded path, never as a host', () => {
     const ok = matcher(redirect.attributes.from.regex);
-    // Shared with apps/web/src/lib/redirect-path.test.ts: the web looks paths up in this form.
+    // Shared with apps/web/src/lib/redirect.test.ts: the web finds stored paths from route params.
     for (const [typed, canonical] of vectors) {
       expect(normalizeRedirectPath(typed), typed).toBe(canonical);
       // Saving again changes nothing, even for an encoded "%" or a stray one.

@@ -1,12 +1,15 @@
 import { factories } from '@strapi/strapi';
 import { normalizeRedirectPath } from '../../../utils/redirect-path';
+import { revalidateWeb } from '../../../setup/revalidate';
 import { parseRedirectCsv } from '../../../utils/redirect-csv';
 
 export default factories.createCoreService('api::redirect.redirect', ({ strapi }) => ({
   /**
    * scripts/import-redirects.mjs: one redirect per canonical `from`, so the
    * same list imported again changes nothing and a changed target updates.
-   * A file with any bad line imports nothing.
+   * A file with any bad line imports nothing. Resolves once the web has been
+   * told (tag `redirect`): the per-write webhooks are not awaited, and the
+   * script exits right after.
    */
   async importCsv(text: string) {
     const { rows, errors } = parseRedirectCsv(text);
@@ -26,6 +29,6 @@ export default factories.createCoreService('api::redirect.redirect', ({ strapi }
         summary.updated += 1;
       }
     }
-    return { summary };
+    return { summary, revalidate: await revalidateWeb(strapi, ['redirect']) };
   },
 }));
