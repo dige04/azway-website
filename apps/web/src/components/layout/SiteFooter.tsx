@@ -62,7 +62,7 @@ export function SiteFooter({ setting }: { setting: SiteSetting | null }) {
             )}
             {zalo && (
               <a href={zalo} target="_blank" rel="noopener noreferrer" className={linkClass}>
-                Zalo {setting.hotline}
+                Zalo {setting?.hotline}
               </a>
             )}
           </FooterColumn>
