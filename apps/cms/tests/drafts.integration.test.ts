@@ -122,9 +122,10 @@ describe('public REST API (AC-05)', () => {
   });
 
   it('findOne returns the published document and not the draft-only one', async () => {
+    expect(publicTourId).toBeTruthy();
+    expect(secretTourId).toBeTruthy();
     expect(await get(`/api/tours/${publicTourId}?status=draft`)).toMatchObject({ status: 200, body: expect.stringContaining('Public tour') });
     const draft = await get(`/api/tours/${secretTourId}?status=draft`);
-    expect(secretTourId).toBeTruthy();
     expect(draft.status).toBe(404);
     expect(draft.body).not.toContain('SECRET');
   });
