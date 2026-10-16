@@ -1,5 +1,4 @@
 import type { BlocksContent } from './cms-types';
-import { mediaUrl } from './media';
 import { slugify } from './text';
 
 export interface TocEntry {
@@ -18,11 +17,10 @@ function plainText(nodes: InlineNode[] | undefined): string {
 }
 
 /**
- * Article body ready for the client renderer, and its table of contents
+ * Article content with heading anchors, and its table of contents
  * (FR-BLG-02). Every heading gets an anchor from its text without accents,
  * so a shared "#chuan-bi-gi" link keeps working while the heading stays the
- * same; repeated headings are numbered ("-2", "-3"). Images get absolute
- * URLs here, where CMS_URL is known.
+ * same; repeated headings are numbered ("-2", "-3").
  */
 export function prepareArticle(content: BlocksContent | null | undefined): { blocks: BlocksContent; toc: TocEntry[] } {
   const used = new Set(RESERVED_IDS);
@@ -37,12 +35,7 @@ export function prepareArticle(content: BlocksContent | null | undefined): { blo
       if (text && (block.level === 2 || block.level === 3)) toc.push({ id, text, level: block.level });
       return { ...block, id };
     }
-    if (block.type === 'image') {
-      const image = block.image as { url?: string } | undefined;
-      const url = mediaUrl(image?.url);
-      return url ? { ...block, image: { ...image, url } } : null;
-    }
     return block;
   });
-  return { blocks: blocks.filter((block) => block !== null), toc };
+  return { blocks, toc };
 }
