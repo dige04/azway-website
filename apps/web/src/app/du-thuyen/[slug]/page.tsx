@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import { LeadForm } from '@/components/lead/LeadForm';
 import { Block, DESCRIPTION, DetailSection, Inclusions, PriceBox, RequestBlock } from '@/components/product/Detail';
 import { Gallery } from '@/components/product/Gallery';
 import { cruiseCard, ProductCard } from '@/components/ProductCard';
@@ -101,7 +102,10 @@ export default async function Page({ params }: Props) {
                 du thuyền <strong className="text-white">{cruise.name}</strong>
               </>
             }
-          />
+          >
+            {/* Cruises have no code: the slug identifies one. */}
+            <LeadForm product={{ type: 'cruise', code: cruise.slug, name: cruise.name }} responseTimeText={setting?.responseTimeText} hotline={setting?.hotline} />
+          </RequestBlock>
         </div>
 
         <aside className="row-start-2 lg:sticky lg:top-[calc(var(--spacing-header)+16px)] lg:col-start-2 lg:row-span-2 lg:row-start-1">

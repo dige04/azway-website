@@ -95,11 +95,11 @@ Nhánh: `m5/pages`
 
 Nhánh: `m6/lead-form`
 
-- [ ] Component `LeadForm` dùng trên chi tiết sản phẩm (gắn `productType/code/name`) và `/lien-he`.
-- [ ] Trường theo FR-LEAD-01; validate client + server (zod dùng chung).
-- [ ] Cookie `az_utm` + `az_landing` ghi lần vào đầu (30 ngày) từ query UTM.
-- [ ] `app/api/lead/route.ts`: honeypot, rate limit 5/10 phút/IP (binding Rate Limiting nếu có, fallback in-memory), gọi Strapi với `X-Lead-Token`, map lỗi thân thiện.
-- [ ] Màn hình xác nhận dùng `site-setting.responseTimeText`, nói rõ đây là ghi nhận yêu cầu (FR-LEAD-09). Sự kiện `lead_submit` (AN-02).
+- [x] Component `LeadForm` dùng trên chi tiết sản phẩm (gắn `productType/code/name`) và `/lien-he`.
+- [x] Trường theo FR-LEAD-01; validate client + server (zod dùng chung).
+- [x] Cookie `az_utm` + `az_landing` ghi lần vào đầu (30 ngày) từ query UTM.
+- [x] `app/api/lead/route.ts`: honeypot, rate limit 5/10 phút/IP (bộ nhớ trong isolate; giới hạn chặt ở M8), gọi Strapi với `X-Lead-Token`, map lỗi thân thiện.
+- [x] Màn hình xác nhận dùng `site-setting.responseTimeText`, nói rõ đây là ghi nhận yêu cầu (FR-LEAD-09). Sự kiện `lead_submit` (AN-02).
 
 **Xong khi:** Playwright gửi form với UTM → lead trong Strapi có đủ mã SP, trang nguồn, UTM, thiết bị (AC-13); gửi 6 lần liên tiếp → lần 6 bị chặn; honeypot có giá trị → 200 giả nhưng không tạo lead.
 
@@ -133,6 +133,7 @@ Nhánh: `m8/infra`
 - [x] `.github/workflows/ci.yml`: install, typecheck, test, build cả hai app trên PR (build `apps/cms` và bundle Workers của `apps/web`).
 - [ ] `.github/workflows/deploy-web.yml`: tạo R2 bucket + D1 cache theo `apps/web/wrangler.jsonc` (điền `database_id`), bật Cloudflare Images cho binding `IMAGES`, đặt `CMS_URL`/`CMS_MEDIA_URL`/`NEXT_PUBLIC_SITE_URL` khi build; thêm `vars` `CMS_URL`/`CMS_MEDIA_URL` giá trị thật vào `wrangler.jsonc` (không để rỗng). Trên push `main` đổi `apps/web/**` → `opennextjs-cloudflare build` + `wrangler deploy` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). Preview deploy cho PR (tên worker `azway-web-pr-<n>`), dọn khi đóng PR.
 - [ ] `.github/workflows/deploy-cms.yml`: build image → GHCR → SSH vào VPS `docker compose pull strapi && docker compose up -d` (secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`).
+- [ ] Rate limit chặt cho `/api/lead` (5/10 phút/IP trên mọi isolate): rule WAF rate limiting cho đường dẫn này (cần gói có chu kỳ 10 phút) hoặc Durable Object đếm theo IP. Bản hiện tại chỉ đếm trong một isolate (`apps/web/src/lib/rate-limit.ts`).
 
 **Xong khi:** CI xanh trên PR; `docker compose up` chạy local với Postgres và seed; tài liệu đủ để người khác dựng lại VPS từ đầu.
 

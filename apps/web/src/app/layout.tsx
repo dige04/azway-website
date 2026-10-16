@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ContactDock } from '@/components/layout/ContactDock';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
+import { AttributionCookies } from '@/components/lead/AttributionCookies';
 import { PAGE_IDS } from '@/lib/page-ids';
 import { loadSiteSetting } from '@/lib/site-setting';
 import '@/styles/globals.css';
@@ -31,6 +32,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <main id={PAGE_IDS.main}>{children}</main>
         <SiteFooter setting={setting} />
         <ContactDock contacts={contacts} />
+        <AttributionCookies />
       </body>
     </html>
   );

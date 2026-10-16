@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { ContactLink } from '@/components/layout/ContactLink';
+import { LeadForm } from '@/components/lead/LeadForm';
 import { Show } from '@/components/Show';
 import { renderPerRequestWithoutCms } from '@/lib/build';
 import { safeHref, telHref } from '@/lib/present';
@@ -71,9 +72,15 @@ export default async function Page() {
           </dl>
         </section>
 
-        {/* WP-12 (FR-LEAD-11): the general LeadForm goes in this panel, above the quick channels. */}
-        <section id="gui-yeu-cau" aria-labelledby="kenh-nhanh" className="bg-white p-7 sm:p-[clamp(30px,4vw,55px)]">
-          <h2 id="kenh-nhanh" className="text-card-title font-bold text-navy">
+        {/* FR-LEAD-11: the general request form, then the quick channels. */}
+        <section id="gui-yeu-cau" aria-labelledby="gui-yeu-cau-title" className="bg-white p-5 sm:p-[clamp(30px,4vw,55px)]">
+          <h2 id="gui-yeu-cau-title" className="text-card-title font-bold text-navy">
+            Gửi yêu cầu tư vấn
+          </h2>
+          <div className="-mx-5 sm:-mx-7">
+            <LeadForm responseTimeText={setting?.responseTimeText} hotline={setting?.hotline} />
+          </div>
+          <h2 id="kenh-nhanh" className="mt-4 border-t border-line pt-6 text-card-title font-bold text-navy">
             Trao đổi ngay với AZway
           </h2>
           <p className="mt-2 text-label">Gọi hotline hoặc nhắn tin, nhân viên tư vấn sẽ trả lời theo lịch trình và số khách của bạn.</p>

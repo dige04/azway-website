@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import { LeadForm } from '@/components/lead/LeadForm';
 import { Block, Check, DetailSection, Inclusions, PriceBox, RequestBlock } from '@/components/product/Detail';
 import { Gallery } from '@/components/product/Gallery';
 import { ProductCard, tourCard } from '@/components/ProductCard';
@@ -132,7 +133,9 @@ export default async function Page({ params }: Props) {
                 tour <strong className="text-white">{tour.code}</strong>
               </>
             }
-          />
+          >
+            <LeadForm product={{ type: 'tour', code: tour.code, name: tour.name }} responseTimeText={setting?.responseTimeText} hotline={setting?.hotline} />
+          </RequestBlock>
         </div>
 
         <aside className="row-start-2 grid gap-4 lg:sticky lg:top-[calc(var(--spacing-header)+16px)] lg:col-start-2 lg:row-span-2 lg:row-start-1">

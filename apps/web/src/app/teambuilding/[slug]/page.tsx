@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import { LeadForm } from '@/components/lead/LeadForm';
 import { Block, Check, DESCRIPTION, DetailSection, PriceBox, RequestBlock, TextList } from '@/components/product/Detail';
 import { Gallery } from '@/components/product/Gallery';
 import { ProductCard, teambuildingCard, tourCard } from '@/components/ProductCard';
@@ -100,7 +101,10 @@ export default async function Page({ params }: Props) {
                 chương trình <strong className="text-white">{programme.name}</strong>
               </>
             }
-          />
+          >
+            {/* No code field: the slug identifies a programme, as for cruises. */}
+            <LeadForm product={{ type: 'teambuilding', code: programme.slug, name: programme.name }} responseTimeText={setting?.responseTimeText} hotline={setting?.hotline} />
+          </RequestBlock>
         </div>
 
         <aside className="row-start-2 lg:sticky lg:top-[calc(var(--spacing-header)+16px)] lg:col-start-2 lg:row-span-2 lg:row-start-1">

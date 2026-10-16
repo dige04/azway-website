@@ -104,16 +104,18 @@ export function PriceBox({ price, facts }: { price: number | null; facts: Fact[]
 }
 
 /**
- * `#yeu-cau`, the spot for the lead form; WP-12 replaces the body with
- * LeadForm (product type, code and name). `subject`, e.g. "tour <b>MC4</b>".
+ * `#yeu-cau`: call and Zalo, and the lead form passed as `children` (product
+ * pages, FR-LEAD-02). Pages import LeadForm themselves, so pages without a
+ * form do not ship its code. `subject`, e.g. "tour <b>MC4</b>".
  */
-export function RequestBlock({ subject, setting }: { subject: ReactNode; setting: SiteSetting | null }) {
+export function RequestBlock({ subject, setting, children }: { subject: ReactNode; setting: SiteSetting | null; children?: ReactNode }) {
   const tel = telHref(setting?.hotline);
   const zalo = safeHref(setting?.zaloUrl);
   return (
-    <section id="yeu-cau" className="scroll-mt-24 rounded-panel bg-navy p-6 text-white sm:p-8">
+    <section id="yeu-cau" className="scroll-mt-24 rounded-panel bg-navy p-5 text-white sm:p-8">
       <h2 className="text-2xl font-bold">Gửi yêu cầu cho AZway</h2>
       <p className="mt-2 text-navy-mist">Cho AZway biết số khách, ngày dự kiến và yêu cầu riêng của đoàn cho {subject}, AZway sẽ tư vấn chương trình và báo giá.</p>
+      {children && <div className="mt-6">{children}</div>}
       <div className="mt-5 flex flex-wrap gap-3">
         {tel && (
           <ContactLink href={tel} event="click_call" className="inline-flex min-h-12 items-center rounded-button bg-red px-5 font-bold hover:bg-red-hover">
