@@ -220,7 +220,6 @@ export interface SiteSetting extends Document {
   tiktokUrl: string | null;
   email: string | null;
   address: string | null;
-  leadNotifyEmails: string | null;
   responseTimeText: string | null;
   defaultSeo?: Seo | null;
 }

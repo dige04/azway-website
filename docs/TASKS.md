@@ -31,10 +31,10 @@ Nhánh: `m2/content-model`
 - [x] `tour.category` enum: `noi_dia`, `trung_quoc`, `quoc_te`, `trai_nghiem_hoc_tap`. `tour.code` unique. Trường số, mã, giá, ảnh đặt `i18n.localized: false`.
 - [x] `destination.region` enum: `mien_bac`, `mien_trung`, `mien_nam`, `trung_quoc`, `quoc_te`.
 - [x] Quan hệ đúng bảng §7.1 (tour↔destination n-n, article↔tour n-n, article↔cruise n-n, teambuilding↔tour n-n, feedback→tour n-1).
-- [ ] Collection không D&P, không i18n: `redirect` (`from` unique, `to`, `statusCode` 301/302), `lead` (đủ trường §7.1 + `sheetsStatus` enum `pending|synced|failed|skipped`, `sheetsAttempts`, `sheetsError`, `notifiedAt`, `ipHash`).
-- [ ] Single types (i18n): `site-setting` (hotline, zaloUrl, messengerUrl, facebookUrl, youtubeUrl, tiktokUrl, email, address, `leadNotifyEmails`, `responseTimeText`, `defaultSeo`), `homepage` (heroSlides, featuredTours, featuredCruises, featuredArticles).
-- [ ] Bootstrap: tạo locale `vi` và đặt mặc định; cấp quyền **Public** `find`/`findOne` cho mọi type công khai (KHÔNG cho `lead`); tạo role "Editor" (FR-CMS-08).
-- [ ] Document middleware: `article.readingMinutes` tự tính (200 từ/phút) khi create/update.
+- [x] Collection không D&P, không i18n: `redirect` (`from` unique, `to`, `statusCode` 301/302), `lead` (đủ trường §7.1 + `sheetsStatus` enum `pending|synced|failed|skipped`, `sheetsAttempts`, `sheetsError`, `notifiedAt`, `ipHash`).
+- [x] Single types (i18n): `site-setting` (hotline, zaloUrl, messengerUrl, facebookUrl, youtubeUrl, tiktokUrl, email, address, `leadNotifyEmails`, `responseTimeText`, `defaultSeo`), `homepage` (heroSlides, featuredTours, featuredCruises, featuredArticles).
+- [x] Bootstrap: tạo locale `vi` và đặt mặc định; cấp quyền **Public** `find`/`findOne` cho mọi type công khai (KHÔNG cho `lead`); tạo role "Editor" (FR-CMS-08).
+- [x] Document middleware: `article.readingMinutes` tự tính (200 từ/phút) khi create/update.
 
 **Xong khi:** build pass; mở admin thấy đủ type; tạo được một tour có 2 ngày × 3 mốc, kéo thả mốc được (AC-04 phần CMS); `GET /api/tours?populate=*` trả tour đã publish, không trả bản nháp (AC-05).
 

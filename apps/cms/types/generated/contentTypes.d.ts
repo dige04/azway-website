@@ -855,6 +855,261 @@ export interface ApiFeedbackFeedback extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
+  collectionName: 'homepages';
+  info: {
+    description: 'Carousel v\u00E0 s\u1EA3n ph\u1EA9m, b\u00E0i vi\u1EBFt n\u1ED5i b\u1EADt tr\u00EAn trang ch\u1EE7';
+    displayName: 'Trang ch\u1EE7';
+    pluralName: 'homepages';
+    singularName: 'homepage';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    featuredArticles: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::article.article'
+    >;
+    featuredCruises: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::cruise.cruise'
+    >;
+    featuredTours: Schema.Attribute.Relation<'oneToMany', 'api::tour.tour'>;
+    heroSlides: Schema.Attribute.Component<'home.hero-slide', true> &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    locale: Schema.Attribute.String;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::homepage.homepage'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiLeadLead extends Struct.CollectionTypeSchema {
+  collectionName: 'leads';
+  info: {
+    description: 'Y\u00EAu c\u1EA7u t\u01B0 v\u1EA5n g\u1EEDi t\u1EEB website. D\u1EEF li\u1EC7u c\u00E1 nh\u00E2n \u2014 kh\u00F4ng chia s\u1EBB ra ngo\u00E0i';
+    displayName: 'Y\u00EAu c\u1EA7u kh\u00E1ch';
+    pluralName: 'leads';
+    singularName: 'lead';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    device: Schema.Attribute.String;
+    email: Schema.Attribute.Email;
+    fullName: Schema.Attribute.String & Schema.Attribute.Required;
+    groupSize: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    ipHash: Schema.Attribute.String & Schema.Attribute.Private;
+    landingPage: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::lead.lead'> &
+      Schema.Attribute.Private;
+    need: Schema.Attribute.Text;
+    note: Schema.Attribute.Text;
+    notifiedAt: Schema.Attribute.DateTime;
+    organization: Schema.Attribute.String;
+    phone: Schema.Attribute.String & Schema.Attribute.Required;
+    productCode: Schema.Attribute.String;
+    productName: Schema.Attribute.String;
+    productType: Schema.Attribute.Enumeration<
+      ['tour', 'cruise', 'teambuilding']
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    sheetsAttempts: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    sheetsError: Schema.Attribute.Text;
+    sheetsStatus: Schema.Attribute.Enumeration<
+      ['pending', 'synced', 'failed', 'skipped']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    sourcePage: Schema.Attribute.String;
+    travelDate: Schema.Attribute.Date;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    utm_campaign: Schema.Attribute.String;
+    utm_medium: Schema.Attribute.String;
+    utm_source: Schema.Attribute.String;
+  };
+}
+
+export interface ApiRedirectRedirect extends Struct.CollectionTypeSchema {
+  collectionName: 'redirects';
+  info: {
+    description: 'C\u1EB7p URL c\u0169 \u2192 URL m\u1EDBi, c\u00F3 hi\u1EC7u l\u1EF1c kh\u00F4ng c\u1EA7n deploy l\u1EA1i';
+    displayName: 'Chuy\u1EC3n h\u01B0\u1EDBng URL';
+    pluralName: 'redirects';
+    singularName: 'redirect';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    from: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::redirect.redirect'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    statusCode: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 302;
+          min: 301;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<301>;
+    to: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSiteSettingSiteSetting extends Struct.SingleTypeSchema {
+  collectionName: 'site_settings';
+  info: {
+    description: 'Hotline, Zalo, Messenger, m\u1EA1ng x\u00E3 h\u1ED9i, email nh\u1EADn y\u00EAu c\u1EA7u';
+    displayName: 'C\u1EA5u h\u00ECnh chung';
+    pluralName: 'site-settings';
+    singularName: 'site-setting';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
+  attributes: {
+    address: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    defaultSeo: Schema.Attribute.Component<'shared.seo', false> &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    email: Schema.Attribute.Email &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+    facebookUrl: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+    hotline: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+    leadNotifyEmails: Schema.Attribute.String &
+      Schema.Attribute.Private &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+    locale: Schema.Attribute.String;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::site-setting.site-setting'
+    >;
+    messengerUrl: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    responseTimeText: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    tiktokUrl: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    youtubeUrl: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+    zaloUrl: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+  };
+}
+
 export interface ApiTeambuildingTeambuilding
   extends Struct.CollectionTypeSchema {
   collectionName: 'teambuildings';
@@ -1464,7 +1719,8 @@ export interface PluginUploadFile extends Struct.CollectionTypeSchema {
     provider: Schema.Attribute.String & Schema.Attribute.Required;
     provider_metadata: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
-    related: Schema.Attribute.Relation<'morphToMany'>;
+    related: Schema.Attribute.Relation<'morphToMany'> &
+      Schema.Attribute.Private;
     size: Schema.Attribute.Decimal & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1693,6 +1949,10 @@ declare module '@strapi/strapi' {
       'api::cruise.cruise': ApiCruiseCruise;
       'api::destination.destination': ApiDestinationDestination;
       'api::feedback.feedback': ApiFeedbackFeedback;
+      'api::homepage.homepage': ApiHomepageHomepage;
+      'api::lead.lead': ApiLeadLead;
+      'api::redirect.redirect': ApiRedirectRedirect;
+      'api::site-setting.site-setting': ApiSiteSettingSiteSetting;
       'api::teambuilding.teambuilding': ApiTeambuildingTeambuilding;
       'api::tour.tour': ApiTourTour;
       'plugin::content-releases.release': PluginContentReleasesRelease;

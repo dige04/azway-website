@@ -59,10 +59,8 @@ describe('cache tags', () => {
     // Types without relations (e.g. lead) need no entry.
     for (const [type, relations] of Object.entries(fromSchemas)) expect(RELATIONS[type] ?? {}, type).toEqual(relations);
 
-    // Schemas that land with PR #3; once they are on main this list must be
-    // emptied so those types are checked too.
-    const pendingSchemas = ['homepage', 'redirect', 'site-setting'];
-    expect(Object.keys(RELATIONS).filter((type) => !fromSchemas[type]).sort()).toEqual(pendingSchemas);
+    // And no type the CMS does not have.
+    expect(Object.keys(RELATIONS).filter((type) => !fromSchemas[type])).toEqual([]);
   });
 });
 
