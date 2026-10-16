@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArticleCard } from '@/components/ArticleCard';
@@ -10,7 +9,7 @@ import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
 import { Show } from '@/components/Show';
 import { renderPerRequestWithoutCms } from '@/lib/build';
 import { getDestinations, getFeedbacks, getHomepage } from '@/lib/cms';
-import { imageProps, mediaUrl } from '@/lib/media';
+import { mediaUrl } from '@/lib/media';
 import { pageMetadata } from '@/lib/seo';
 import { SITE_NAME } from '@/lib/site';
 import { loadSiteSetting } from '@/lib/site-setting';
@@ -37,7 +36,7 @@ export default async function Page() {
 
   const slides: Slide[] = (homepage?.heroSlides ?? []).flatMap(({ image, title, subtitle, ctaLabel, ctaUrl }) => {
     const src = mediaUrl(image?.url);
-    return src ? [{ src, alt: image?.alternativeText ?? title ?? '', title, subtitle, ctaLabel, ctaUrl }] : [];
+    return src ? [{ src, alt: image?.alternativeText?.trim() || title || '', title, subtitle, ctaLabel, ctaUrl }] : [];
   });
   // Destinations with a photo first; the grid shows one large and four small.
   const shownDestinations = [...destinations].sort((a, b) => Number(!a.image) - Number(!b.image)).slice(0, 5);
@@ -164,4 +163,3 @@ function Section({
 function ProductGrid({ children }: { children: ReactNode }) {
   return <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{children}</div>;
 }
-

@@ -6,8 +6,8 @@ import { FeedbackAlbum } from './FeedbackAlbum';
 
 const dateFormat = new Intl.DateTimeFormat('vi-VN', { month: '2-digit', year: 'numeric' });
 
-/** FR-GEN-03: one group, its note and its whole photo album. */
-export function FeedbackCard({ feedback }: { feedback: Feedback }) {
+/** FR-GEN-03: one group, its note and its whole photo album; `linkTour` off on that tour's own page. */
+export function FeedbackCard({ feedback, linkTour = true }: { feedback: Feedback; linkTour?: boolean }) {
   // Albums may hold videos; Next's <Image> shows photos only.
   const photos = galleryImages(feedback.groupName, null, feedback.album?.filter((media) => media.mime.startsWith('image/')));
   return (
@@ -18,7 +18,7 @@ export function FeedbackCard({ feedback }: { feedback: Feedback }) {
         <h3 className="text-lg font-bold leading-snug text-navy">{feedback.groupName}</h3>
         {feedback.organization && <p className="text-sm text-label">{feedback.organization}</p>}
         {feedback.description && <p className="text-sm text-muted">{feedback.description}</p>}
-        {feedback.tour && (
+        {linkTour && feedback.tour && (
           <Link href={`/tour/${feedback.tour.slug}`} className="mt-auto pt-2 text-sm font-bold text-navy underline underline-offset-4 hover:text-red">
             {feedback.tour.name}
           </Link>
