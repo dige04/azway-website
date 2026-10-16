@@ -25,12 +25,19 @@ describe('URL fields', () => {
     for (const value of ['/tour/x', ...hostile]) expect(ok(value), value).toBe(false);
   });
 
-  it('redirect.from is stored as a decoded path the schema accepts', () => {
+  it('redirect.from is stored as one canonical encoded path, never as a host', () => {
     const ok = matcher(redirect.attributes.from.regex);
-    expect(normalizeRedirectPath(' https://old.azway.vn/tour-h%E1%BA%A1-long/?p=1#top ')).toBe('/tour-hạ-long');
+    const canonical = '/tour-h%E1%BA%A1-long';
+    for (const typed of [' https://old.azway.vn/tour-h%e1%ba%a1-long/?p=1#top ', '/tour-hạ-long', '/tour-h%E1%BA%A1-long/']) {
+      expect(normalizeRedirectPath(typed), typed).toBe(canonical);
+    }
+    expect(normalizeRedirectPath('/bai viet%20cu')).toBe('/bai%20viet%20cu');
     expect(normalizeRedirectPath('tour-cu')).toBe('/tour-cu');
     expect(normalizeRedirectPath('/')).toBe('/');
-    expect(ok('/tour-hạ-long')).toBe(true);
-    expect(ok(normalizeRedirectPath('//evil.com'))).toBe(false);
+    expect(ok(canonical)).toBe(true);
+    expect(ok(normalizeRedirectPath('/bai viet%20cu'))).toBe(true);
+    for (const hostile of ['//evil.com', '/\\evil.com', 'https://old.azway.vn//evil.com']) {
+      expect(ok(normalizeRedirectPath(hostile)), hostile).toBe(false);
+    }
   });
 });

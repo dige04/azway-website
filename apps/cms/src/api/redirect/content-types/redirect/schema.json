@@ -4,13 +4,13 @@
   "info": { "singularName": "redirect", "pluralName": "redirects", "displayName": "Chuyển hướng URL", "description": "Cặp URL cũ → URL mới, có hiệu lực không cần deploy lại" },
   "options": { "draftAndPublish": false },
   "attributes": {
-    "from": { "type": "string", "required": true, "unique": true, "regex": "^/(?![/\\\\])[^\\s\\\\?#]*$" },
+    "from": { "type": "string", "required": true, "unique": true, "regex": "^(https?://[^/\\s\\\\]+)?/(?![/\\\\])[^\\s\\\\]*$" },
     "to": { "type": "string", "required": true, "regex": "^(/(?![/\\\\])[^\\s\\\\]*|https://[^\\s\\\\]+)$" },
     "statusCode": { "type": "integer", "required": true, "default": 301, "min": 301, "max": 302 }
   },
   "config": {
     "metadatas": {
-      "from": { "edit": { "label": "URL cũ", "description": "Chỉ phần đường dẫn, ví dụ /tour-ha-long-2-ngay. Dán cả link https://… cũng được, hệ thống tự bỏ tên miền, dấu / cuối và phần ?…#…" } },
+      "from": { "edit": { "label": "URL cũ", "description": "Đường dẫn bắt đầu bằng /, ví dụ /tour-ha-long-2-ngay, hoặc dán cả link cũ https://… Khi lưu, hệ thống bỏ tên miền, phần ?…#… và dấu / cuối" } },
       "to": { "edit": { "label": "URL mới", "description": "Đường dẫn trong site bắt đầu bằng / hoặc link ngoài bắt đầu bằng https://" } },
       "statusCode": { "edit": { "label": "Mã chuyển hướng", "description": "301 = chuyển vĩnh viễn (giữ thứ hạng Google), 302 = tạm thời" } }
     }
