@@ -27,7 +27,10 @@ describe('lead input', () => {
         ['email', 'fullName', 'groupSize', 'note', 'phone', 'productType', 'travelDate'].sort()
       );
     }
-    expect(validateLeadInput({ fullName: 'A', phone: '0912345678', groupSize: { n: 3 } })).toMatchObject({ ok: false });
+    // Any JSON value: an error, never a crash (`String({ toString: null })` throws).
+    for (const groupSize of [{ n: 3 }, { toString: null }]) {
+      expect(validateLeadInput({ fullName: 'A', phone: '0912345678', groupSize }), JSON.stringify(groupSize)).toMatchObject({ ok: false });
+    }
 
     // Tracking data never costs the lead: an ad-click URL longer than the limit is cut, not rejected.
     const ok = validateLeadInput({

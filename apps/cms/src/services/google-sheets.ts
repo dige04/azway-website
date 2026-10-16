@@ -94,6 +94,7 @@ export const appendRow = async (config: SheetsConfig, row: (string | number)[], 
   let response = await append();
   // A revoked or expired cached token: fetch a new one and try once more.
   if (response.status === 401) {
+    await response.body?.cancel();
     cachedToken = null;
     response = await append();
   }

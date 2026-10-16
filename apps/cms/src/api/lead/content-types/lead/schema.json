@@ -51,7 +51,7 @@
       "sheetsAttempts": { "edit": { "label": "Số lần đẩy Sheets" } },
       "sheetsError": { "edit": { "label": "Lỗi Sheets gần nhất" } },
       "notifiedAt": { "edit": { "label": "Đã gửi email thông báo lúc" } },
-      "notifyAttempts": { "edit": { "label": "Số lần gửi email thông báo" } },
+      "notifyAttempts": { "edit": { "label": "Số lần gửi email thông báo lỗi", "description": "10 = đã dừng gửi (lỗi 10 lần hoặc quá 24 giờ)" } },
       "ipHash": { "edit": { "label": "IP (đã băm)", "visible": false } }
     }
   }

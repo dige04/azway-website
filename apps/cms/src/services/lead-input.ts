@@ -34,7 +34,6 @@ const FORM_LIMITS = {
   note: 2000,
   productCode: 100,
   productName: 200,
-  ipHash: 128,
 } as const;
 const MULTI_LINE = new Set(['need', 'note']);
 
@@ -47,6 +46,7 @@ const METADATA_LIMITS = {
   utm_medium: 200,
   utm_campaign: 200,
   device: 50,
+  ipHash: 128,
 } as const;
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -101,13 +101,12 @@ export const validateLeadInput = (body: unknown): ValidationResult => {
     errors.travelDate = 'định dạng YYYY-MM-DD';
   }
 
+  // Type first: String() of an arbitrary JSON object can throw.
   const rawGroupSize = src.groupSize;
-  const groupSize = rawGroupSize === undefined || rawGroupSize === null ? null : String(rawGroupSize).trim() || null;
+  const groupSize = typeof rawGroupSize === 'string' || typeof rawGroupSize === 'number' ? String(rawGroupSize).trim() : '';
   out.groupSize = groupSize ? Number(groupSize) : null;
-  if (
-    groupSize !== null &&
-    (!['string', 'number'].includes(typeof rawGroupSize) || !/^\d+$/.test(groupSize) || Number(groupSize) < 1 || Number(groupSize) > 10000)
-  ) {
+  const given = rawGroupSize !== undefined && rawGroupSize !== null && rawGroupSize !== '';
+  if (given && !(/^\d+$/.test(groupSize) && Number(groupSize) >= 1 && Number(groupSize) <= 10000)) {
     errors.groupSize = 'số nguyên 1–10000';
   }
 
