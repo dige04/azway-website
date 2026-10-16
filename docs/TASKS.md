@@ -26,11 +26,11 @@ Nhánh: `m1/cms-scaffold`
 
 Nhánh: `m2/content-model`
 
-- [ ] Components: `shared.seo`, `shared.text-item`, `tour.itinerary-day` (lồng `tour.milestone`), `tour.milestone` (giờ regex `^\d{2}:\d{2}$`), `tour.cancellation-rule` (feePercent 0–100), `cruise.option`, `teambuilding.game`, `home.hero-slide`.
-- [ ] Collection types (draft & publish, i18n bật): `tour`, `cruise`, `teambuilding`, `destination`, `article`, `article-category`, `feedback`.
-- [ ] `tour.category` enum: `noi_dia`, `trung_quoc`, `quoc_te`, `trai_nghiem_hoc_tap`. `tour.code` unique. Trường số, mã, giá, ảnh đặt `i18n.localized: false`.
-- [ ] `destination.region` enum: `mien_bac`, `mien_trung`, `mien_nam`, `trung_quoc`, `quoc_te`.
-- [ ] Quan hệ đúng bảng §7.1 (tour↔destination n-n, article↔tour n-n, article↔cruise n-n, teambuilding↔tour n-n, feedback→tour n-1).
+- [x] Components: `shared.seo`, `shared.text-item`, `tour.itinerary-day` (lồng `tour.milestone`), `tour.milestone` (giờ regex `^\d{2}:\d{2}$`), `tour.cancellation-rule` (feePercent 0–100), `cruise.option`, `teambuilding.game`, `home.hero-slide`.
+- [x] Collection types (draft & publish, i18n bật): `tour`, `cruise`, `teambuilding`, `destination`, `article`, `article-category`, `feedback`.
+- [x] `tour.category` enum: `noi_dia`, `trung_quoc`, `quoc_te`, `trai_nghiem_hoc_tap`. `tour.code` unique. Trường số, mã, giá, ảnh đặt `i18n.localized: false`.
+- [x] `destination.region` enum: `mien_bac`, `mien_trung`, `mien_nam`, `trung_quoc`, `quoc_te`.
+- [x] Quan hệ đúng bảng §7.1 (tour↔destination n-n, article↔tour n-n, article↔cruise n-n, teambuilding↔tour n-n, feedback→tour n-1).
 - [ ] Collection không D&P, không i18n: `redirect` (`from` unique, `to`, `statusCode` 301/302), `lead` (đủ trường §7.1 + `sheetsStatus` enum `pending|synced|failed|skipped`, `sheetsAttempts`, `sheetsError`, `notifiedAt`, `ipHash`).
 - [ ] Single types (i18n): `site-setting` (hotline, zaloUrl, messengerUrl, facebookUrl, youtubeUrl, tiktokUrl, email, address, `leadNotifyEmails`, `responseTimeText`, `defaultSeo`), `homepage` (heroSlides, featuredTours, featuredCruises, featuredArticles).
 - [ ] Bootstrap: tạo locale `vi` và đặt mặc định; cấp quyền **Public** `find`/`findOne` cho mọi type công khai (KHÔNG cho `lead`); tạo role "Editor" (FR-CMS-08).

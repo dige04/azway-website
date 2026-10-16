@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_shared_seos",
+  "info": { "displayName": "SEO", "icon": "search", "description": "Tiêu đề, mô tả và ảnh khi chia sẻ" },
+  "attributes": {
+    "metaTitle": { "type": "string", "maxLength": 70 },
+    "metaDescription": { "type": "text", "maxLength": 160 },
+    "shareImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "canonicalUrl": { "type": "string", "regex": "^https://[^\\s\\\\]+$" },
+    "noIndex": { "type": "boolean", "default": false }
+  },
+  "config": {
+    "metadatas": {
+      "metaTitle": { "edit": { "label": "Tiêu đề SEO", "description": "Tối đa 70 ký tự. Để trống thì dùng tên nội dung" } },
+      "metaDescription": { "edit": { "label": "Mô tả SEO", "description": "Tối đa 160 ký tự" } },
+      "shareImage": { "edit": { "label": "Ảnh chia sẻ", "description": "Ảnh khi chia sẻ Facebook, Zalo. Để trống thì dùng ảnh đại diện" } },
+      "canonicalUrl": { "edit": { "label": "URL chuẩn (canonical)", "description": "Chỉ điền khi trang này trùng nội dung với một URL khác. Phải bắt đầu bằng https://" } },
+      "noIndex": { "edit": { "label": "Ẩn khỏi Google (noindex)" } }
+    }
+  }
+}

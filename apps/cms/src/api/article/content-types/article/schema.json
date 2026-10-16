@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "articles",
+  "info": { "singularName": "article", "pluralName": "articles", "displayName": "Bài cẩm nang", "description": "Bài viết cẩm nang du lịch" },
+  "options": { "draftAndPublish": true },
+  "pluginOptions": { "i18n": { "localized": true } },
+  "attributes": {
+    "title": { "type": "string", "required": true, "pluginOptions": { "i18n": { "localized": true } } },
+    "slug": { "type": "uid", "targetField": "title", "required": true, "pluginOptions": { "i18n": { "localized": true } } },
+    "category": { "type": "relation", "relation": "manyToOne", "target": "api::article-category.article-category", "inversedBy": "articles" },
+    "cover": { "type": "media", "multiple": false, "allowedTypes": ["images"], "pluginOptions": { "i18n": { "localized": false } } },
+    "author": { "type": "string", "pluginOptions": { "i18n": { "localized": false } } },
+    "excerpt": { "type": "text", "maxLength": 300, "pluginOptions": { "i18n": { "localized": true } } },
+    "content": { "type": "blocks", "required": true, "pluginOptions": { "i18n": { "localized": true } } },
+    "readingMinutes": { "type": "integer", "min": 0, "pluginOptions": { "i18n": { "localized": true } } },
+    "tours": { "type": "relation", "relation": "manyToMany", "target": "api::tour.tour", "inversedBy": "articles" },
+    "cruises": { "type": "relation", "relation": "manyToMany", "target": "api::cruise.cruise", "inversedBy": "articles" },
+    "seo": { "type": "component", "repeatable": false, "component": "shared.seo", "pluginOptions": { "i18n": { "localized": true } } }
+  },
+  "config": {
+    "metadatas": {
+      "title": { "edit": { "label": "Tiêu đề" } },
+      "slug": { "edit": { "label": "Đường dẫn (slug)", "description": "Tự sinh từ tiêu đề; chữ không dấu, nối bằng gạch ngang" } },
+      "category": { "edit": { "label": "Danh mục" } },
+      "cover": { "edit": { "label": "Ảnh bìa", "description": "Nhớ điền mô tả ảnh (alt) trong Thư viện media" } },
+      "author": { "edit": { "label": "Tác giả" } },
+      "excerpt": { "edit": { "label": "Tóm tắt", "description": "Hiện trên thẻ bài viết, tối đa 300 ký tự" } },
+      "content": { "edit": { "label": "Nội dung", "description": "Dùng Heading 2, 3 để mục lục tự sinh" } },
+      "readingMinutes": { "edit": { "label": "Thời gian đọc (phút)", "description": "Tự tính khi lưu (200 từ/phút)", "editable": false } },
+      "tours": { "edit": { "label": "Tour liên quan", "description": "Hiện ở khối \"Sản phẩm liên quan\" cuối bài" } },
+      "cruises": { "edit": { "label": "Du thuyền liên quan", "description": "Hiện ở khối \"Sản phẩm liên quan\" cuối bài" } },
+      "seo": { "edit": { "label": "SEO" } }
+    }
+  }
+}

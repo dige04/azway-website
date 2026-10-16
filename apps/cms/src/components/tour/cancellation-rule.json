@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_tour_cancellation_rules",
+  "info": { "displayName": "Điều kiện hoàn huỷ", "icon": "information", "description": "Phí huỷ theo số ngày trước khởi hành" },
+  "attributes": {
+    "daysBefore": { "type": "integer", "required": true, "min": 0 },
+    "feePercent": { "type": "integer", "required": true, "min": 0, "max": 100 },
+    "note": { "type": "string" }
+  },
+  "config": {
+    "metadatas": {
+      "daysBefore": { "edit": { "label": "Từ mốc (số ngày trước khởi hành)", "description": "Huỷ trong vòng số ngày này trước ngày đi thì áp dụng mức phí bên cạnh" } },
+      "feePercent": { "edit": { "label": "Phí huỷ (%)", "description": "Từ 0 đến 100" } },
+      "note": { "edit": { "label": "Ghi chú" } }
+    }
+  }
+}

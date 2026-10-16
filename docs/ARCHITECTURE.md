@@ -30,7 +30,7 @@ flowchart LR
 | D6 | Google Sheets gọi **REST trực tiếp bằng service account JWT** (ký RS256 với `node:crypto`), không dùng `googleapis` | Giảm dependency nặng; logic ~60 dòng, dễ test |
 | D7 | Email qua **Resend REST API** bằng `fetch`; thiếu `RESEND_API_KEY` thì chỉ log | Không phụ thuộc SMTP; dev chạy được không cần key |
 | D8 | **Redirect không dùng middleware.** Catch-all route `app/[...legacy]` + nhánh notFound của trang chi tiết tra bảng Redirect rồi `permanentRedirect()` | Tránh gọi Strapi ở mọi request; vẫn quản lý được trong CMS (FR-CMS-07) |
-| D9 | i18n Strapi **bật sẵn, một locale `vi`**; frontend chưa có route locale | GĐ2 song ngữ chỉ cần thêm locale + route `[locale]` |
+| D9 | i18n Strapi **bật sẵn, một locale `vi`**; frontend chưa có route locale | GĐ2 song ngữ chỉ cần thêm locale + route `[locale]`. Chấp nhận: Strapi chỉ cho localize cả component, nên giá/phí trong `cruise.options`, `tour.itinerary`, `tour.cancellationRules` được nhập riêng theo locale; GĐ2 thêm document middleware chép giá/phí từ `vi` sang locale khác khi lưu |
 | D10 | Retry Sheets: 3 lần ngay (backoff 1s/3s/9s) + **cron 10 phút** quét lead `failed`/`pending` quá 5 phút | Tự phục hồi khi Sheets lỗi tạm thời |
 
 ## Hạ tầng

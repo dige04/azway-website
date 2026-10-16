@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "destinations",
+  "info": { "singularName": "destination", "pluralName": "destinations", "displayName": "Điểm đến", "description": "Điểm đến, dùng để lọc tour theo khu vực" },
+  "options": { "draftAndPublish": true },
+  "pluginOptions": { "i18n": { "localized": true } },
+  "attributes": {
+    "name": { "type": "string", "required": true, "pluginOptions": { "i18n": { "localized": true } } },
+    "slug": { "type": "uid", "targetField": "name", "required": true, "pluginOptions": { "i18n": { "localized": true } } },
+    "region": { "type": "enumeration", "enum": ["mien_bac", "mien_trung", "mien_nam", "trung_quoc", "quoc_te"], "required": true, "pluginOptions": { "i18n": { "localized": false } } },
+    "image": { "type": "media", "multiple": false, "allowedTypes": ["images"], "pluginOptions": { "i18n": { "localized": false } } },
+    "description": { "type": "blocks", "pluginOptions": { "i18n": { "localized": true } } },
+    "tours": { "type": "relation", "relation": "manyToMany", "target": "api::tour.tour", "mappedBy": "destinations" },
+    "cruises": { "type": "relation", "relation": "manyToMany", "target": "api::cruise.cruise", "mappedBy": "destinations" },
+    "seo": { "type": "component", "repeatable": false, "component": "shared.seo", "pluginOptions": { "i18n": { "localized": true } } }
+  },
+  "config": {
+    "metadatas": {
+      "name": { "edit": { "label": "Tên điểm đến" } },
+      "slug": { "edit": { "label": "Đường dẫn (slug)", "description": "Tự sinh từ tên; chữ không dấu, nối bằng gạch ngang" } },
+      "region": { "edit": { "label": "Khu vực", "description": "mien_bac = miền Bắc, mien_trung = miền Trung, mien_nam = miền Nam, trung_quoc = Trung Quốc, quoc_te = quốc tế" } },
+      "image": { "edit": { "label": "Ảnh", "description": "Nhớ điền mô tả ảnh (alt) trong Thư viện media" } },
+      "description": { "edit": { "label": "Mô tả" } },
+      "tours": { "edit": { "label": "Tour" } },
+      "cruises": { "edit": { "label": "Du thuyền" } },
+      "seo": { "edit": { "label": "SEO" } }
+    }
+  }
+}
