@@ -10,6 +10,11 @@ export const RETRY_DELAYS_MS = [1000, 3000, 9000];
 export const MAX_SYNC_ROUNDS = 10;
 /** Failed notification sends per lead (first run + cron), counted apart from Sheets rounds. */
 export const MAX_NOTIFY_ATTEMPTS = 10;
+/**
+ * Notifications are only (re)sent for leads younger than this, so turning on
+ * Resend after a while without it does not email every old lead at once.
+ */
+export const NOTIFY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 type SheetsStatus = 'pending' | 'synced' | 'failed' | 'skipped';
 export type LeadRecord = LeadRow & {
@@ -50,8 +55,11 @@ export const syncLeadToSheets = async (lead: LeadRecord, deps: SyncDeps): Promis
 };
 
 /** What a run still owes this lead; each part stops at its own limit. */
-export const pendingWork = (lead: LeadRecord) => ({
-  notify: !lead.notifiedAt && lead.notifyAttempts < MAX_NOTIFY_ATTEMPTS,
+export const pendingWork = (lead: LeadRecord, now = Date.now()) => ({
+  notify:
+    !lead.notifiedAt &&
+    lead.notifyAttempts < MAX_NOTIFY_ATTEMPTS &&
+    now - new Date(lead.createdAt).getTime() < NOTIFY_WINDOW_MS,
   sync: (lead.sheetsStatus === 'pending' || lead.sheetsStatus === 'failed') && lead.sheetsAttempts < MAX_SYNC_ROUNDS,
 });
 
@@ -140,13 +148,14 @@ export const processLead = async (strapi: Core.Strapi, documentId: string) => {
     if (!lead) return;
 
     const work = pendingWork(lead);
-    const data: Record<string, unknown> = {};
     if (work.notify) {
       const outcome = await notify(strapi, lead);
-      if (outcome === 'sent') data.notifiedAt = new Date();
+      // Saved right away: a crash during the Sheets push must not resend the email.
+      if (outcome === 'sent') await strapi.documents(LEAD).update({ documentId, data: { notifiedAt: new Date() } });
       if (outcome === 'failed') {
-        data.notifyAttempts = lead.notifyAttempts + 1;
-        if (data.notifyAttempts === MAX_NOTIFY_ATTEMPTS) {
+        const notifyAttempts = lead.notifyAttempts + 1;
+        await strapi.documents(LEAD).update({ documentId, data: { notifyAttempts } });
+        if (notifyAttempts === MAX_NOTIFY_ATTEMPTS) {
           strapi.log.error(`[lead] ${lead.documentId} notification email given up after ${MAX_NOTIFY_ATTEMPTS} tries`);
         }
       }
@@ -158,10 +167,11 @@ export const processLead = async (strapi: Core.Strapi, documentId: string) => {
         sleep,
         alert: alert(strapi),
       });
-      Object.assign(data, result);
+      // `sheetsError: null` clears the previous error; the generated input type has no null.
+      const data: Record<string, unknown> = { ...result };
+      await strapi.documents(LEAD).update({ documentId, data });
       strapi.log.info(`[lead] ${lead.documentId} sheets=${result.sheetsStatus} rounds=${result.sheetsAttempts}`);
     }
-    if (Object.keys(data).length) await strapi.documents(LEAD).update({ documentId, data });
   } catch (error) {
     strapi.log.error(`[lead] processing ${documentId} failed: ${(error as Error).message}`);
   } finally {
@@ -169,20 +179,41 @@ export const processLead = async (strapi: Core.Strapi, documentId: string) => {
   }
 };
 
+// A run can outlast the cron interval (each lead may wait ~13 s per round).
+let cronRunning = false;
+
 /**
  * Cron (D10): re-push `failed` leads and `pending` ones stuck for over 5
  * minutes; resend the notification email (FR-LEAD-06) not sent after 5
- * minutes, only when Resend is configured (otherwise emails are only logged).
+ * minutes, only when Resend is configured (otherwise emails are only logged)
+ * and only within NOTIFY_WINDOW_MS.
  */
 export const retryDueLeads = async (strapi: Core.Strapi) => {
+  if (cronRunning) return;
+  cronRunning = true;
+  try {
+    await retryDue(strapi);
+  } finally {
+    cronRunning = false;
+  }
+};
+
+const retryDue = async (strapi: Core.Strapi) => {
   const stuckBefore = new Date(Date.now() - 5 * 60 * 1000);
+  const notifySince = new Date(Date.now() - NOTIFY_WINDOW_MS);
   const due = await strapi.documents(LEAD).findMany({
     filters: {
       $or: [
         { sheetsStatus: 'failed', sheetsAttempts: { $lt: MAX_SYNC_ROUNDS } },
         { sheetsStatus: 'pending', sheetsAttempts: { $lt: MAX_SYNC_ROUNDS }, createdAt: { $lt: stuckBefore } },
         ...(mailConfigured()
-          ? [{ notifiedAt: { $null: true }, notifyAttempts: { $lt: MAX_NOTIFY_ATTEMPTS }, createdAt: { $lt: stuckBefore } }]
+          ? [
+              {
+                notifiedAt: { $null: true },
+                notifyAttempts: { $lt: MAX_NOTIFY_ATTEMPTS },
+                createdAt: { $lt: stuckBefore, $gt: notifySince },
+              },
+            ]
           : []),
       ],
     },

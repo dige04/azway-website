@@ -81,17 +81,22 @@ const getAccessToken = async (config: SheetsConfig, fetchImpl: typeof fetch) => 
 };
 
 export const appendRow = async (config: SheetsConfig, row: (string | number)[], fetchImpl: typeof fetch = fetch) => {
-  const token = await getAccessToken(config, fetchImpl);
   const url = `${config.apiUrl}/v4/spreadsheets/${encodeURIComponent(config.sheetId)}/values/${encodeURIComponent(
     config.range
   )}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
-  const response = await fetchImpl(url, {
-    method: 'POST',
-    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ values: [row] }),
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
-  if (response.status === 401) cachedToken = null;
+  const append = async () =>
+    fetchImpl(url, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${await getAccessToken(config, fetchImpl)}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ values: [row] }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+  let response = await append();
+  // A revoked or expired cached token: fetch a new one and try once more.
+  if (response.status === 401) {
+    cachedToken = null;
+    response = await append();
+  }
   await check(response, 'append');
 };
 

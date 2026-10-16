@@ -24,8 +24,9 @@ export type LeadInput = {
   ipHash: string | null;
 };
 
-// Max length per text field; `fullName` and `phone` are required.
-const TEXT_LIMITS = {
+// Max length of what the visitor types; longer is rejected. `fullName` and
+// `phone` are required. `need` and `note` may span several lines.
+const FORM_LIMITS = {
   fullName: 100,
   email: 254,
   organization: 200,
@@ -33,17 +34,26 @@ const TEXT_LIMITS = {
   note: 2000,
   productCode: 100,
   productName: 200,
+  ipHash: 128,
+} as const;
+const MULTI_LINE = new Set(['need', 'note']);
+
+// Tracking data the web adds (long ad-click URLs are common): cut to fit,
+// never a reason to lose the lead.
+const METADATA_LIMITS = {
   sourcePage: 2000,
   landingPage: 2000,
   utm_source: 200,
   utm_medium: 200,
   utm_campaign: 200,
   device: 50,
-  ipHash: 128,
 } as const;
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+// Control characters; in single-line fields they could, e.g., break the email subject.
+const CONTROL = /[\u0000-\u001f\u007f]+/g;
+const CONTROL_EXCEPT_NEWLINE = /[\u0000-\u0009\u000b-\u001f\u007f]+/g;
 
 /** Vietnamese mobile/landline: 10 digits starting with 0, after +84/84/0084 → 0. */
 export const normalizePhone = (raw: string): string | null => {
@@ -54,11 +64,11 @@ export const normalizePhone = (raw: string): string | null => {
   return /^0\d{9}$/.test(digits) ? digits : null;
 };
 
-const text = (value: unknown): string | null => {
+const text = (value: unknown, multiLine = false): string | null => {
   if (value === undefined || value === null) return null;
   if (typeof value !== 'string' && typeof value !== 'number') return null;
-  const trimmed = String(value).trim();
-  return trimmed === '' ? null : trimmed;
+  const cleaned = String(value).replace(/\r\n?/g, '\n').replace(multiLine ? CONTROL_EXCEPT_NEWLINE : CONTROL, ' ').trim();
+  return cleaned === '' ? null : cleaned;
 };
 
 export type ValidationResult = { ok: true; value: LeadInput } | { ok: false; errors: Record<string, string> };
@@ -68,10 +78,13 @@ export const validateLeadInput = (body: unknown): ValidationResult => {
   const errors: Record<string, string> = {};
   const out: Record<string, unknown> = {};
 
-  for (const [field, max] of Object.entries(TEXT_LIMITS)) {
-    const value = text(src[field]);
+  for (const [field, max] of Object.entries(FORM_LIMITS)) {
+    const value = text(src[field], MULTI_LINE.has(field));
     if (value && value.length > max) errors[field] = `tối đa ${max} ký tự`;
     out[field] = value;
+  }
+  for (const [field, max] of Object.entries(METADATA_LIMITS)) {
+    out[field] = text(src[field])?.slice(0, max) ?? null;
   }
 
   if (!out.fullName) errors.fullName = 'bắt buộc';
@@ -88,9 +101,13 @@ export const validateLeadInput = (body: unknown): ValidationResult => {
     errors.travelDate = 'định dạng YYYY-MM-DD';
   }
 
-  const groupSize = text(src.groupSize);
-  out.groupSize = groupSize === null ? null : Number(groupSize);
-  if (groupSize !== null && !(Number.isInteger(out.groupSize) && (out.groupSize as number) >= 1 && (out.groupSize as number) <= 10000)) {
+  const rawGroupSize = src.groupSize;
+  const groupSize = rawGroupSize === undefined || rawGroupSize === null ? null : String(rawGroupSize).trim() || null;
+  out.groupSize = groupSize ? Number(groupSize) : null;
+  if (
+    groupSize !== null &&
+    (!['string', 'number'].includes(typeof rawGroupSize) || !/^\d+$/.test(groupSize) || Number(groupSize) < 1 || Number(groupSize) > 10000)
+  ) {
     errors.groupSize = 'số nguyên 1–10000';
   }
 

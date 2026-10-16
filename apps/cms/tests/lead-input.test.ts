@@ -17,7 +17,7 @@ describe('lead input', () => {
       phone: '123',
       email: 'not-an-email',
       travelDate: '16/10/2026',
-      groupSize: 0,
+      groupSize: '2.5',
       productType: 'hotel',
       note: 'x'.repeat(2001),
     });
@@ -27,7 +27,20 @@ describe('lead input', () => {
         ['email', 'fullName', 'groupSize', 'note', 'phone', 'productType', 'travelDate'].sort()
       );
     }
-    const ok = validateLeadInput({ fullName: 'Nguyễn Văn A', phone: '+84 912 345 678', groupSize: '30' });
-    expect(ok).toMatchObject({ ok: true, value: { phone: '0912345678', groupSize: 30, email: null } });
+    expect(validateLeadInput({ fullName: 'A', phone: '0912345678', groupSize: { n: 3 } })).toMatchObject({ ok: false });
+
+    // Tracking data never costs the lead: an ad-click URL longer than the limit is cut, not rejected.
+    const ok = validateLeadInput({
+      fullName: 'Nguyễn\r\nVăn A',
+      phone: '+84 912 345 678',
+      groupSize: '30',
+      landingPage: `https://azway.vn/?gclid=${'x'.repeat(3000)}`,
+      note: 'dòng 1\ndòng 2',
+    });
+    expect(ok).toMatchObject({
+      ok: true,
+      value: { fullName: 'Nguyễn Văn A', phone: '0912345678', groupSize: 30, email: null, note: 'dòng 1\ndòng 2' },
+    });
+    if (ok.ok) expect(ok.value.landingPage).toHaveLength(2000);
   });
 });

@@ -36,22 +36,44 @@ const send = async (strapi: Core.Strapi, tags: string[]) => {
   }
 };
 
+// Content-manager publish/unpublish run inside `strapi.db.transaction`; a
+// webhook sent before the commit would let the web re-read the old data.
+// A nested transaction shares the outer one's commit callbacks.
+const sendAfterCommit = async (strapi: Core.Strapi, tags: string[]) => {
+  if (!strapi.db.inTransaction()) return void send(strapi, tags);
+  await strapi.db.transaction(async ({ onCommit }) => {
+    onCommit(() => void send(strapi, tags));
+  });
+};
+
 export const registerRevalidate = (strapi: Core.Strapi) => {
   strapi.documents.use(async (ctx, next) => {
     const contentType = strapi.contentTypes[ctx.uid as keyof typeof strapi.contentTypes];
     const actions = contentType?.options?.draftAndPublish ? PUBLISH_ACTIONS : WRITE_ACTIONS;
     if (!ctx.uid.startsWith('api::') || EXCLUDED.has(ctx.uid) || !actions.has(ctx.action)) return next();
 
-    const params = ctx.params as { documentId?: string };
-    // Read before `next()`: after a delete the rows are gone.
-    const before = params.documentId ? await slugsOf(strapi, ctx.uid, params.documentId) : [];
-    const result = await next();
-    const documentId = params.documentId ?? (result as { documentId?: string } | null)?.documentId;
-    const after = documentId ? await slugsOf(strapi, ctx.uid, documentId) : [];
-
     const short = contentType.info.singularName;
-    const tags = [short, ...[...new Set([...before, ...after])].map((slug) => `${short}:${slug}`)];
-    void send(strapi, tags);
+    const params = ctx.params as { documentId?: string };
+    // Never fail an editor's action because of the webhook.
+    const slugs = async (documentId: string | undefined) => {
+      try {
+        return documentId ? await slugsOf(strapi, ctx.uid, documentId) : [];
+      } catch (error) {
+        strapi.log.error(`[revalidate] reading slugs of ${ctx.uid} ${documentId} failed: ${(error as Error).message}`);
+        return [];
+      }
+    };
+
+    // Read before `next()`: after a delete the rows are gone.
+    const before = await slugs(params.documentId);
+    const result = await next();
+    try {
+      const after = await slugs(params.documentId ?? (result as { documentId?: string } | null)?.documentId);
+      const tags = [short, ...[...new Set([...before, ...after])].map((slug) => `${short}:${slug}`)];
+      await sendAfterCommit(strapi, tags);
+    } catch (error) {
+      strapi.log.error(`[revalidate] ${short} not sent: ${(error as Error).message}`);
+    }
     return result;
   });
 };

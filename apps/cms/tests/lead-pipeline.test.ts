@@ -3,6 +3,7 @@ import { SheetsError, type SheetsConfig } from '../src/services/google-sheets';
 import {
   MAX_NOTIFY_ATTEMPTS,
   MAX_SYNC_ROUNDS,
+  NOTIFY_WINDOW_MS,
   pendingWork,
   syncLeadToSheets,
   type LeadRecord,
@@ -70,10 +71,13 @@ describe('syncLeadToSheets', () => {
 
 describe('pendingWork', () => {
   it('retries the email and the Sheets push each up to its own limit', () => {
-    expect(pendingWork(lead())).toEqual({ notify: true, sync: true });
+    const now = Date.parse('2026-10-16T10:00:00Z'); // one hour after `lead().createdAt`
+    expect(pendingWork(lead(), now)).toEqual({ notify: true, sync: true });
     // Email retries must not push Sheets past its limit, and the other way round.
-    expect(pendingWork(lead({ sheetsStatus: 'failed', sheetsAttempts: MAX_SYNC_ROUNDS }))).toEqual({ notify: true, sync: false });
-    expect(pendingWork(lead({ sheetsStatus: 'failed', notifyAttempts: MAX_NOTIFY_ATTEMPTS }))).toEqual({ notify: false, sync: true });
-    expect(pendingWork(lead({ sheetsStatus: 'synced', notifiedAt: '2026-10-16T09:00:05Z' }))).toEqual({ notify: false, sync: false });
+    expect(pendingWork(lead({ sheetsStatus: 'failed', sheetsAttempts: MAX_SYNC_ROUNDS }), now)).toEqual({ notify: true, sync: false });
+    expect(pendingWork(lead({ sheetsStatus: 'failed', notifyAttempts: MAX_NOTIFY_ATTEMPTS }), now)).toEqual({ notify: false, sync: true });
+    expect(pendingWork(lead({ sheetsStatus: 'synced', notifiedAt: '2026-10-16T09:00:05Z' }), now)).toEqual({ notify: false, sync: false });
+    // No backlog of old notifications once Resend gets configured.
+    expect(pendingWork(lead(), now + NOTIFY_WINDOW_MS).notify).toBe(false);
   });
 });

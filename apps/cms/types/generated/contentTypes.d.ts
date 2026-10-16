@@ -928,7 +928,7 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
         number
       >;
     ipHash: Schema.Attribute.String & Schema.Attribute.Private;
-    landingPage: Schema.Attribute.String;
+    landingPage: Schema.Attribute.Text;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::lead.lead'> &
       Schema.Attribute.Private;
@@ -967,7 +967,7 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'pending'>;
-    sourcePage: Schema.Attribute.String;
+    sourcePage: Schema.Attribute.Text;
     travelDate: Schema.Attribute.Date;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
