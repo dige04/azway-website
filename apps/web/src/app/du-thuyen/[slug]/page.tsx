@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { RichText } from '@/components/PlainRichText';
 import { Block, DetailSection, Inclusions, PriceBox, RequestBlock } from '@/components/product/Detail';
 import { Gallery } from '@/components/product/Gallery';
 import { cruiseCard, ProductCard } from '@/components/ProductCard';
+import { RichText } from '@/components/RichText';
 import { Show } from '@/components/Show';
 import { getCruiseBySlug, getCruiseCatalog } from '@/lib/cms';
 import type { Cruise } from '@/lib/cms-types';
@@ -70,7 +70,7 @@ export default async function Page({ params }: Props) {
           <Show when={cruise.description}>
             {(description) => (
               <Block title="Giới thiệu">
-                <RichText content={description} className="grid gap-3 text-ink-2 [&_a]:underline" />
+                <RichText content={description} className="grid gap-3 text-ink-2 [&_a]:underline [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-navy [&_h3]:font-bold [&_h3]:text-navy [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5" />
               </Block>
             )}
           </Show>

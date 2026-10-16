@@ -24,7 +24,7 @@ export default async function Page() {
     return src ? [{ src, alt: image?.alternativeText ?? title ?? '', title, subtitle, ctaLabel, ctaUrl }] : [];
   });
   // Destinations with a photo first; the grid shows one large and four small.
-  const shownDestinations = [...destinations.data].sort((a, b) => Number(!a.image) - Number(!b.image)).slice(0, 5);
+  const shownDestinations = [...destinations].sort((a, b) => Number(!a.image) - Number(!b.image)).slice(0, 5);
 
   return (
     <>

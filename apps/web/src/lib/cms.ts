@@ -227,23 +227,29 @@ export const getTeambuildingBySlug = (slug: string) =>
 
 // Destinations
 
-export const getDestinations = ({ region, page, pageSize }: { region?: Region; page?: number; pageSize?: number } = {}) =>
-  findMany<Destination>('destination', 'destinations', {
+/** Every published destination (/diem-den, the home grid). */
+export const getDestinations = ({ region }: { region?: Region } = {}) =>
+  findAll<Destination>('destination', 'destinations', {
     filters: region ? { region: { $eq: region } } : undefined,
     populate: { image: true },
     sort: ['name:asc'],
-    pagination: pagination(page, pageSize ?? 50),
   });
 
 export const getDestinationBySlug = (slug: string) =>
   findBySlug<Destination>('destination', 'destinations', slug, {
     image: true,
     // Full product cards (tourCard, cruiseCard) for the destination's products.
+    // Sorted so the cards shown (the page caps each list) stay the same between regenerations.
     tours: {
       fields: ['name', 'slug', 'code', 'category', 'departure', 'priceFrom', 'durationDays', 'durationNights'],
       populate: { thumbnail: true },
+      sort: ['publishedAt:desc'],
     },
-    cruises: { fields: ['name', 'slug', 'starRating', 'capacity'], populate: { thumbnail: true, options: true } },
+    cruises: {
+      fields: ['name', 'slug', 'starRating', 'capacity'],
+      populate: { thumbnail: true, options: true },
+      sort: ['capacity:desc', 'name:asc'],
+    },
     seo,
   });
 

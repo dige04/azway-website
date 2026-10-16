@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Region, Tour } from './cms-types';
-import { filterEventParams, filterTours, parseTourQuery, relaxations, tourHref, type TourQuery } from './tour-filter';
+import { filterEventParams, filterTours, parseTourQuery, REGIONS, relaxations, tourHref, toursInRegion, type TourQuery } from './tour-filter';
 
 const tour = (code: string, over: Partial<Tour> & { regions?: Region[] } = {}): Tour =>
   ({
@@ -43,6 +43,14 @@ describe('tour list URL', () => {
     expect(parseTourQuery(new URLSearchParams(tourHref(query).split('?')[1]))).toEqual(query);
     // Seed hero slide and the 301 of /tourtrungtonghop.
     expect(codes(parseTourQuery({ loai: 'trung-quoc' }))).toEqual(['LC4', 'MC5']);
+  });
+
+  it('a link to the tours of a CMS region opens /tour filtered to that region', () => {
+    const ALL: Record<Region, true> = { mien_bac: true, mien_trung: true, mien_nam: true, trung_quoc: true, quoc_te: true };
+    for (const region of Object.keys(ALL) as Region[]) {
+      const query = parseTourQuery(new URLSearchParams(toursInRegion(region).split('?')[1]));
+      expect(REGIONS.find((choice) => choice.value === query.region)?.match, region).toBe(region);
+    }
   });
 
   it('drops values it does not understand instead of passing them on', () => {

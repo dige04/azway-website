@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   await renderPerRequestWithoutCms();
-  const { data: destinations } = await getDestinations();
+  const destinations = await getDestinations();
   // One section per region, in REGION_LABEL order; a region without places is left out.
   const regions = (Object.keys(REGION_LABEL) as Region[])
     .map((region) => ({ region, places: destinations.filter((place) => place.region === region) }))
