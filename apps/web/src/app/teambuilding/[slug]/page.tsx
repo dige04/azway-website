@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { LeadForm } from '@/components/lead/LeadForm';
 import { Block, Check, DESCRIPTION, DetailSection, PriceBox, RequestBlock, TextList } from '@/components/product/Detail';
@@ -13,6 +12,7 @@ import type { Teambuilding, TeambuildingGame } from '@/lib/cms-types';
 import { galleryImages } from '@/lib/gallery';
 import { imageProps } from '@/lib/media';
 import { groupSize, hasContent, isStrapiSlug } from '@/lib/present';
+import { movedOrNotFound } from '@/lib/redirect';
 import { catalogForRelated, relatedFromCatalog } from '@/lib/related';
 import { blocksText, pageMetadata } from '@/lib/seo';
 import { loadSiteSetting } from '@/lib/site-setting';
@@ -26,7 +26,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 async function loadProgramme(slug: string): Promise<Teambuilding> {
   const programme = isStrapiSlug(slug) ? await getTeambuildingBySlug(slug) : null;
-  if (!programme) notFound();
+  if (!programme) return movedOrNotFound('teambuilding', slug);
   return programme;
 }
 

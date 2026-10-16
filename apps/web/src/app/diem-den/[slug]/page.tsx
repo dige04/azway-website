@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { REGION_LABEL } from '@/components/DestinationCard';
 import { DESCRIPTION, DetailSection, RequestBlock } from '@/components/product/Detail';
@@ -12,6 +11,7 @@ import { getDestinationBySlug } from '@/lib/cms';
 import type { Destination } from '@/lib/cms-types';
 import { imageProps } from '@/lib/media';
 import { hasContent, isStrapiSlug } from '@/lib/present';
+import { movedOrNotFound } from '@/lib/redirect';
 import { blocksText, pageMetadata } from '@/lib/seo';
 import { loadSiteSetting } from '@/lib/site-setting';
 import { toursInRegion } from '@/lib/tour-filter';
@@ -28,7 +28,7 @@ const SHOWN = 8;
 
 async function loadDestination(slug: string): Promise<Destination> {
   const destination = isStrapiSlug(slug) ? await getDestinationBySlug(slug) : null;
-  if (!destination) notFound();
+  if (!destination) return movedOrNotFound('diem-den', slug);
   return destination;
 }
 

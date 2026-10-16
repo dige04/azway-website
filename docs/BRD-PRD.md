@@ -216,7 +216,7 @@ i18n bật sẵn cho content-type công khai với 1 locale `vi`, để làm son
 | SEO-04 | Schema: Organization/TravelAgency, BreadcrumbList, Article, TouristTrip |
 | SEO-05 | Open Graph đúng từng trang (Facebook, Zalo) |
 | SEO-06 | Trang có tham số lọc → canonical về trang danh mục gốc |
-| SEO-07 | 301 toàn bộ URL cũ theo danh sách AZway giao |
+| SEO-07 | Chuyển hướng vĩnh viễn toàn bộ URL cũ theo danh sách AZway giao: mã 308, Google xử lý như 301 (lý do ở ARCHITECTURE D8); mục tạm thời trả 307 |
 | SEO-08 | 404 có ô tìm kiếm + sản phẩm nổi bật |
 | AN-01 | GA4 + Search Console |
 | AN-02 | Sự kiện `lead_submit` kèm mã sản phẩm, trang nguồn |
@@ -247,7 +247,7 @@ Xem [ARCHITECTURE.md](./ARCHITECTURE.md).
 | AC-13 | Yêu cầu có mã sản phẩm và nguồn | FR-LEAD-02/07 |
 | AC-14 | Mỗi trang có title, description riêng | SEO-02 |
 | AC-15 | Sitemap chứa trang đã xuất bản | SEO-03 |
-| AC-16 | URL cũ chuyển đúng | SEO-07, FR-CMS-07 |
+| AC-16 | URL cũ chuyển đúng đích: 308 (vĩnh viễn), 307 (tạm thời) | SEO-07, FR-CMS-07 |
 | AC-17 | Chia sẻ Facebook, Zalo đúng ảnh, tiêu đề | SEO-05 |
 | AC-18 | PageSpeed mobile ≥ 75, desktop ≥ 85 | NFR-01 |
 | AC-19 | Bàn giao mã nguồn, tài khoản, tài liệu | NFR-12 |
@@ -262,7 +262,7 @@ Xem [ARCHITECTURE.md](./ARCHITECTURE.md).
 | Rủi ro | Xử lý |
 | --- | --- |
 | Nội dung giao chậm | Dựng bằng dữ liệu mẫu (seed) |
-| Mất thứ hạng khi chuyển | 301 đủ trước khi trỏ tên miền |
+| Mất thứ hạng khi chuyển | Đủ chuyển hướng vĩnh viễn (SEO-07) trước khi trỏ tên miền |
 | Sheets mất kết nối | DB là nguồn chính, Sheets là bản đồng bộ, retry + cảnh báo |
 | Mã nhúng làm chậm trang | Tải trễ widget chat |
 | VPS 2 GB thiếu RAM | Không build trên VPS; frontend ở Cloudflare |

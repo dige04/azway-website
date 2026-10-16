@@ -12,7 +12,7 @@
     "metadatas": {
       "from": { "edit": { "label": "URL cũ", "description": "Đường dẫn bắt đầu bằng /, ví dụ /tour-ha-long-2-ngay, hoặc dán cả link cũ https://… Khi lưu, hệ thống bỏ tên miền, phần ?…#… và dấu / cuối" } },
       "to": { "edit": { "label": "URL mới", "description": "Đường dẫn trong site bắt đầu bằng / hoặc link ngoài bắt đầu bằng https://" } },
-      "statusCode": { "edit": { "label": "Mã chuyển hướng", "description": "301 = chuyển vĩnh viễn (giữ thứ hạng Google), 302 = tạm thời" } }
+      "statusCode": { "edit": { "label": "Mã chuyển hướng", "description": "301 = chuyển vĩnh viễn (giữ thứ hạng Google), 302 = tạm thời. Website trả về mã tương đương 308 và 307: Google xử lý 308 như 301" } }
     }
   }
 }

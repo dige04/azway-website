@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { LeadForm } from '@/components/lead/LeadForm';
@@ -15,6 +14,7 @@ import type { Cruise } from '@/lib/cms-types';
 import { lowestGuestPrice, optionSummary, sortedOptions } from '@/lib/cruise';
 import { galleryImages } from '@/lib/gallery';
 import { formatPrice, isStrapiSlug } from '@/lib/present';
+import { movedOrNotFound } from '@/lib/redirect';
 import { catalogForRelated, relatedFromCatalog } from '@/lib/related';
 import { blocksText, metaDescription, pageMetadata } from '@/lib/seo';
 import { cruiseTrip } from '@/lib/structured-data';
@@ -29,7 +29,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 async function loadCruise(slug: string): Promise<Cruise> {
   const cruise = isStrapiSlug(slug) ? await getCruiseBySlug(slug) : null;
-  if (!cruise) notFound();
+  if (!cruise) return movedOrNotFound('du-thuyen', slug);
   return cruise;
 }
 

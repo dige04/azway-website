@@ -18,10 +18,11 @@ const slugsOf = async (strapi: Core.Strapi, uid: string, documentId: string): Pr
   return [...new Set(rows.map((row: { slug?: string }) => row.slug).filter((slug): slug is string => Boolean(slug)))];
 };
 
-const send = async (strapi: Core.Strapi, tags: string[]) => {
+/** Also awaited on its own by scripts that exit right after writing (import-redirects). */
+export const revalidateWeb = async (strapi: Core.Strapi, tags: string[]): Promise<string> => {
   const url = process.env.WEB_REVALIDATE_URL;
   const secret = process.env.REVALIDATE_SECRET;
-  if (!url || !secret) return;
+  if (!url || !secret) return 'not sent: WEB_REVALIDATE_URL or REVALIDATE_SECRET is not set';
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -31,8 +32,10 @@ const send = async (strapi: Core.Strapi, tags: string[]) => {
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     strapi.log.info(`[revalidate] ${tags.join(', ')}`);
+    return 'sent';
   } catch (error) {
     strapi.log.error(`[revalidate] ${tags.join(', ')} failed: ${(error as Error).message}`);
+    return `failed: ${(error as Error).message}`;
   }
 };
 
@@ -40,9 +43,9 @@ const send = async (strapi: Core.Strapi, tags: string[]) => {
 // webhook sent before the commit would let the web re-read the old data.
 // A nested transaction shares the outer one's commit callbacks.
 const sendAfterCommit = async (strapi: Core.Strapi, tags: string[]) => {
-  if (!strapi.db.inTransaction()) return void send(strapi, tags);
+  if (!strapi.db.inTransaction()) return void revalidateWeb(strapi, tags);
   await strapi.db.transaction(async ({ onCommit }) => {
-    onCommit(() => void send(strapi, tags));
+    onCommit(() => void revalidateWeb(strapi, tags));
   });
 };
 

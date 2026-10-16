@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 
 // FR-BLG-02/03 on a seeded article: its table of contents leads to its
 // headings, and the hand-picked tours show. Seed: tour-trung-quoc-cua-khau

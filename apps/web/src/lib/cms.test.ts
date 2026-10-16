@@ -43,7 +43,7 @@ describe('cache tags', () => {
     ['getArticleCategoryBySlug', () => cms.getArticleCategoryBySlug('x'), ['article-category', 'article-category:x']],
     ['getSiteSetting', () => cms.getSiteSetting(), ['site-setting']],
     ['getHomepage', () => cms.getHomepage(), ['article', 'article-category', 'cruise', 'destination', 'homepage', 'tour']],
-    ['getRedirect', () => cms.getRedirect('/a'), ['redirect']],
+    ['getRedirects', () => cms.getRedirects(), ['redirect']],
   ] as const)('%s', async (_name, call, expected) => {
     await call();
     expect(lastCall().tags).toEqual([...expected].sort());
@@ -101,7 +101,6 @@ describe('missing content', () => {
   it('an unknown slug is null, a single type never saved is null', async () => {
     respond({ data: [] });
     await expect(cms.getTourBySlug('missing')).resolves.toBeNull();
-    await expect(cms.getRedirect('/missing')).resolves.toBeNull();
     respond(notFoundError, 404);
     await expect(cms.getHomepage()).resolves.toBeNull();
   });
@@ -118,7 +117,6 @@ describe('missing content', () => {
   it('a 404 on a collection endpoint is an error', async () => {
     respond(notFoundError, 404);
     await expect(cms.getTourBySlug('x')).rejects.toThrow('CMS responded 404');
-    await expect(cms.getRedirect('/x')).rejects.toThrow('CMS responded 404');
     await expect(cms.getTourCatalog()).rejects.toThrow('CMS responded 404');
   });
 });

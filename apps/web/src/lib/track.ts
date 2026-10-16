@@ -1,7 +1,7 @@
 /**
- * Analytics events (BRD §9, AN-xx). Stub until GA4 lands (WP-14): every event
- * is dispatched as a `azway:track` DOM event, which GA4 wiring (and tests)
- * can listen to without touching the call sites.
+ * Analytics events (BRD §9, AN-xx): every event is dispatched as a
+ * `azway:track` DOM event, which components/layout/GtagEvents.tsx forwards to
+ * GA4 (and tests can listen to) without touching the call sites.
  */
 export type TrackEvent = 'click_call' | 'click_zalo' | 'click_messenger' | 'filter_apply' | 'lead_submit';
 
