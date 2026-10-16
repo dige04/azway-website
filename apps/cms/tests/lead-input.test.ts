@@ -32,6 +32,8 @@ describe('lead input', () => {
       expect(validateLeadInput({ fullName: 'A', phone: '0912345678', groupSize }), JSON.stringify(groupSize)).toMatchObject({ ok: false });
     }
 
+    expect(validateLeadInput({ fullName: 'A', phone: '0912345678', groupSize: '  ' })).toMatchObject({ ok: true, value: { groupSize: null } });
+
     // Tracking data never costs the lead: an ad-click URL longer than the limit is cut, not rejected.
     const ok = validateLeadInput({
       fullName: 'Nguyễn\r\nVăn A',

@@ -103,9 +103,11 @@ export const validateLeadInput = (body: unknown): ValidationResult => {
 
   // Type first: String() of an arbitrary JSON object can throw.
   const rawGroupSize = src.groupSize;
-  const groupSize = typeof rawGroupSize === 'string' || typeof rawGroupSize === 'number' ? String(rawGroupSize).trim() : '';
+  const isText = typeof rawGroupSize === 'string' || typeof rawGroupSize === 'number';
+  const groupSize = isText ? String(rawGroupSize).trim() : '';
   out.groupSize = groupSize ? Number(groupSize) : null;
-  const given = rawGroupSize !== undefined && rawGroupSize !== null && rawGroupSize !== '';
+  // Blank is "not given", like the other optional fields.
+  const given = isText ? groupSize !== '' : rawGroupSize !== undefined && rawGroupSize !== null;
   if (given && !(/^\d+$/.test(groupSize) && Number(groupSize) >= 1 && Number(groupSize) <= 10000)) {
     errors.groupSize = 'số nguyên 1–10000';
   }

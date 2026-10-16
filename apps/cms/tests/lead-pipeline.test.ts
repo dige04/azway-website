@@ -1,3 +1,4 @@
+import type { Core } from '@strapi/strapi';
 import { describe, expect, it, vi } from 'vitest';
 import { SheetsError, type SheetsConfig } from '../src/services/google-sheets';
 import {
@@ -5,6 +6,7 @@ import {
   MAX_SYNC_ROUNDS,
   NOTIFY_WINDOW_MS,
   pendingWork,
+  retryDueLeads,
   syncLeadToSheets,
   type LeadRecord,
   type SyncDeps,
@@ -79,5 +81,35 @@ describe('pendingWork', () => {
     expect(pendingWork(lead({ sheetsStatus: 'synced', notifiedAt: '2026-10-16T09:00:05Z' }), now)).toEqual({ notify: false, sync: false });
     // No backlog of old notifications once Resend gets configured.
     expect(pendingWork(lead(), now + NOTIFY_WINDOW_MS).notify).toBe(false);
+  });
+});
+
+describe('retryDueLeads', () => {
+  it('gives up, once, on a lead that left the 24h window unnotified', async () => {
+    type Query = { filters: { $or?: unknown; createdAt?: { $lte?: Date } } };
+    const stored = { documentId: 'old', notifiedAt: null, notifyAttempts: 0 };
+    const expiryQueries: Query[] = [];
+    const warn = vi.fn();
+    // Only what the cron touches: the retry query ($or) finds nothing, the expiry query finds `stored` until marked.
+    const strapi = {
+      documents: () => ({
+        findMany: async (query: Query) => {
+          if (query.filters.$or) return [];
+          expiryQueries.push(query);
+          return stored.notifyAttempts < MAX_NOTIFY_ATTEMPTS ? [stored] : [];
+        },
+        update: async ({ data }: { data: object }) => Object.assign(stored, data),
+      }),
+      log: { info: vi.fn(), warn, error: vi.fn() },
+    } as unknown as Core.Strapi;
+
+    await retryDueLeads(strapi);
+    await retryDueLeads(strapi);
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(stored.notifyAttempts).toBe(MAX_NOTIFY_ATTEMPTS);
+    // "Older than 24h" is the database's job: check the cut-off it is given.
+    const cutoff = expiryQueries[0].filters.createdAt!.$lte!.getTime();
+    expect(Math.abs(cutoff - (Date.now() - NOTIFY_WINDOW_MS))).toBeLessThan(5000);
   });
 });

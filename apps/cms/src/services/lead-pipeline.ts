@@ -226,13 +226,17 @@ const retryDue = async (strapi: Core.Strapi) => {
 
   // FR-LEAD-06 leaves a trace when a lead ages out of the window unnotified:
   // one warning, then notifyAttempts = MAX marks it as given up.
-  const expired = await strapi.documents(LEAD).findMany({
-    filters: { notifiedAt: { $null: true }, notifyAttempts: { $lt: MAX_NOTIFY_ATTEMPTS }, createdAt: { $lte: notifySince } },
-    fields: ['documentId'],
-    limit: 50,
-  });
-  for (const { documentId } of expired) {
-    strapi.log.warn(`[lead] ${documentId} not notified within 24h, notification given up (check RESEND_API_KEY and recipients)`);
-    await strapi.documents(LEAD).update({ documentId, data: { notifyAttempts: MAX_NOTIFY_ATTEMPTS } });
+  try {
+    const expired = await strapi.documents(LEAD).findMany({
+      filters: { notifiedAt: { $null: true }, notifyAttempts: { $lt: MAX_NOTIFY_ATTEMPTS }, createdAt: { $lte: notifySince } },
+      fields: ['documentId'],
+      limit: 50,
+    });
+    for (const { documentId } of expired) {
+      strapi.log.warn(`[lead] ${documentId} not notified within 24h, notification given up (check RESEND_API_KEY and recipients)`);
+      await strapi.documents(LEAD).update({ documentId, data: { notifyAttempts: MAX_NOTIFY_ATTEMPTS } });
+    }
+  } catch (error) {
+    strapi.log.error(`[lead] notification expiry sweep failed: ${(error as Error).message}`);
   }
 };
