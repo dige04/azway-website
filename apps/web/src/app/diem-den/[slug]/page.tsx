@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { REGION_LABEL } from '@/components/DestinationCard';
@@ -12,6 +13,7 @@ import type { Destination } from '@/lib/cms-types';
 import { imageProps } from '@/lib/media';
 import { isStrapiSlug } from '@/lib/present';
 import { loadSiteSetting } from '@/lib/site-setting';
+import { tourHref } from '@/lib/tour-filter';
 
 // ISR (NFR-03, D4): rendered on first request, cached until the webhook
 // revalidates `destination:<slug>`, `tour` or `cruise`.
@@ -19,6 +21,9 @@ export const revalidate = 3600;
 export const generateStaticParams = async (): Promise<{ slug: string }[]> => [];
 
 type Props = { params: Promise<{ slug: string }> };
+
+/** Cards per section; the rest is one link away (a 16-cruise column is too long on phones). */
+const SHOWN = 8;
 
 async function loadDestination(slug: string): Promise<Destination> {
   const destination = isStrapiSlug(slug) ? await getDestinationBySlug(slug) : null;
@@ -61,10 +66,11 @@ export default async function Page({ params }: Props) {
         {(tours) => (
           <DetailSection title={`Tour đi ${destination.name}`}>
             <div className={grid}>
-              {tours.map((tour) => (
+              {tours.slice(0, SHOWN).map((tour) => (
                 <ProductCard key={tour.documentId} product={tourCard(tour)} />
               ))}
             </div>
+            {tours.length > SHOWN && <MoreLink href={tourHref({ region: destination.region })}>{`Xem thêm tour ${REGION_LABEL[destination.region]}`}</MoreLink>}
           </DetailSection>
         )}
       </Show>
@@ -73,10 +79,11 @@ export default async function Page({ params }: Props) {
         {(cruises) => (
           <DetailSection title={`Du thuyền ${destination.name}`}>
             <div className={grid}>
-              {cruises.map((cruise) => (
+              {cruises.slice(0, SHOWN).map((cruise) => (
                 <ProductCard key={cruise.documentId} product={cruiseCard(cruise)} />
               ))}
             </div>
+            {cruises.length > SHOWN && <MoreLink href="/du-thuyen">{`Xem tất cả ${cruises.length} du thuyền`}</MoreLink>}
           </DetailSection>
         )}
       </Show>
@@ -92,5 +99,13 @@ export default async function Page({ params }: Props) {
         />
       </div>
     </div>
+  );
+}
+
+function MoreLink({ href, children }: { href: string; children: string }) {
+  return (
+    <Link href={href} className="mt-6 inline-flex min-h-12 items-center rounded-button border border-line bg-white px-5 font-bold text-navy hover:text-red">
+      {children}
+    </Link>
   );
 }
