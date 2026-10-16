@@ -6,6 +6,9 @@ import { formatPrice, hasContent, safeHref, telHref } from '@/lib/present';
 
 // Building blocks shared by the product detail pages (tour, cruise, ...).
 
+/** `RichText` className for a product or destination description (RichText sets the rest). */
+export const DESCRIPTION = 'text-ink-2 [&_h2]:text-xl [&>:first-child]:mt-0 [&>:last-child]:mb-0';
+
 /** A titled section; only rendered inside <Show>, so never empty (FR-PRD-05). */
 export function Block({ title, plain = false, children }: { title: string; plain?: boolean; children: ReactNode }) {
   return (

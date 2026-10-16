@@ -22,6 +22,9 @@ export const ROUTES = [
   '/tim-kiem',
   // Tours and an article, accents typed or not.
   '/tim-kiem?q=ha+long',
+  '/teambuilding',
+  // 12 games, packages, a combined tour, the other programme.
+  '/teambuilding/teambuilding',
 ];
 
 /**
@@ -41,6 +44,7 @@ export const LISTS: Partial<Record<string, { cards?: string[] }>> = {
   // No query: featured products.
   '/tim-kiem': {},
   '/tim-kiem?q=ha+long': { cards: ['HL-1N', 'HT-BDHL-2N1D', 'Hạ Long 2 ngày 1 đêm'] },
+  '/teambuilding': {},
 };
 
 /** Text each route must show in <main> (seed data), so a page is never empty. */
@@ -49,6 +53,8 @@ export const TEXTS: Partial<Record<string, string[]>> = {
   '/diem-den': ['Hạ Long', 'Đông Hưng'],
   '/diem-den/ha-long': ['Tour đi Hạ Long', 'Du thuyền Hạ Long'],
   '/lien-he': ['033.202.8585', 'info@azway.vn'],
+  '/teambuilding': ['Teambuilding & Gala Dinner'],
+  '/teambuilding/teambuilding': ['Mò cua bắt ốc', 'Xếp tháp niềm tin', 'MC và nhân sự điều phối'],
 };
 
 /**
@@ -56,4 +62,4 @@ export const TEXTS: Partial<Record<string, string[]>> = {
  * pages after WP-07). Next prefetches those links and gets 404s; the smoke
  * test tolerates exactly those. Remove a path when its page lands.
  */
-export const NOT_BUILT = ['/teambuilding'];
+export const NOT_BUILT: string[] = [];

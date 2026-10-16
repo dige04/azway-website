@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { REGION_LABEL } from '@/components/DestinationCard';
-import { DetailSection, RequestBlock } from '@/components/product/Detail';
+import { DESCRIPTION, DetailSection, RequestBlock } from '@/components/product/Detail';
 import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
 import { RichText } from '@/components/RichText';
 import { Show } from '@/components/Show';
@@ -52,7 +52,7 @@ export default async function Page({ params }: Props) {
               <p className="mb-3 text-kicker font-extrabold uppercase text-red">{REGION_LABEL[destination.region]}</p>
               <h1 className="text-[32px] font-bold leading-[1.08] tracking-[-0.05em] text-navy sm:text-[clamp(32px,3.4vw,48px)]">{destination.name}</h1>
               {hasContent(destination.description) && (
-                <RichText content={destination.description} className="mt-4 grid max-w-[640px] gap-3 text-[17px] text-ink-2 [&_a]:underline [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-navy [&_h3]:font-bold [&_h3]:text-navy [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5" />
+                <RichText content={destination.description} className={`mt-4 max-w-[640px] text-[17px] ${DESCRIPTION}`} />
               )}
             </div>
             {image && (
@@ -72,7 +72,7 @@ export default async function Page({ params }: Props) {
                 <ProductCard key={tour.documentId} product={tourCard(tour)} />
               ))}
             </div>
-            {tours.length > SHOWN && <MoreLink href={toursInRegion(destination.region)}>{`Xem thêm tour ${REGION_LABEL[destination.region]}`}</MoreLink>}
+            {tours.length > SHOWN && <MoreLink href={toursInRegion(destination.region)}>{`Xem tất cả tour ${REGION_LABEL[destination.region]}`}</MoreLink>}
           </DetailSection>
         )}
       </Show>
