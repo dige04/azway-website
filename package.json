@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.28.0",
   "engines": {
-    "node": ">=22"
+    "node": "^22.12.0"
   },
   "scripts": {
     "dev:cms": "pnpm --filter @azway/cms develop",
@@ -11,6 +11,7 @@
     "build:cms": "pnpm --filter @azway/cms build",
     "build:web": "pnpm --filter @azway/web build",
     "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
     "lint": "pnpm -r lint"
   }
 }

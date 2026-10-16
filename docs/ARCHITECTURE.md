@@ -54,6 +54,7 @@ flowchart LR
 | `HOST`, `PORT` | | Mặc định `0.0.0.0`, `1337` |
 | `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`, `TRANSFER_TOKEN_SALT`, `JWT_SECRET`, `ENCRYPTION_KEY` | ✓ | Secrets Strapi |
 | `PUBLIC_URL` | ✓ prod | `https://cms.<domain>` |
+| `ADMIN_PATH` | | Đường dẫn admin (NFR-07), mặc định `/admin`. Đọc lúc `strapi build` → phải có khi build image |
 | `DATABASE_CLIENT` | | `sqlite` (dev) / `postgres` (prod) |
 | `DATABASE_URL` hoặc `DATABASE_HOST/PORT/NAME/USERNAME/PASSWORD` | ✓ prod | |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_URL` | prod | Thiếu → upload local |
@@ -62,7 +63,7 @@ flowchart LR
 | `RESEND_API_KEY`, `MAIL_FROM` | prod | Thiếu → log |
 | `ALERT_EMAILS` | prod | Nhận cảnh báo Sheets lỗi |
 | `WEB_REVALIDATE_URL`, `REVALIDATE_SECRET` | prod | `https://<domain>/api/revalidate` |
-| `CORS_ORIGINS` | | Danh sách origin, phân tách dấu phẩy |
+| `CORS_ORIGINS` | | Danh sách origin, phân tách dấu phẩy; trống → `http://localhost:3000` |
 
 ### `apps/web` (`.dev.vars` local, `wrangler secret` / vars trên Cloudflare)
 
