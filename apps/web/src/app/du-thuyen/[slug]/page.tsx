@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { Block, DESCRIPTION, DetailSection, Inclusions, PriceBox, RequestBlock } from '@/components/product/Detail';
+import { JsonLd } from '@/components/JsonLd';
 import { Gallery } from '@/components/product/Gallery';
 import { cruiseCard, ProductCard } from '@/components/ProductCard';
 import { RichText } from '@/components/RichText';
@@ -14,6 +15,8 @@ import { lowestGuestPrice, optionSummary, sortedOptions } from '@/lib/cruise';
 import { galleryImages } from '@/lib/gallery';
 import { formatPrice, isStrapiSlug } from '@/lib/present';
 import { catalogForRelated, relatedFromCatalog } from '@/lib/related';
+import { blocksText, metaDescription, pageMetadata } from '@/lib/seo';
+import { cruiseTrip } from '@/lib/structured-data';
 import { loadSiteSetting } from '@/lib/site-setting';
 
 // ISR (NFR-03, D4): rendered on first request, cached until the webhook
@@ -29,9 +32,18 @@ async function loadCruise(slug: string): Promise<Cruise> {
   return cruise;
 }
 
+/** Description from content when `seo.metaDescription` is empty. */
+const contentSummary = (cruise: Cruise) => blocksText(cruise.description) || `Du thuyền ${cruise.name}: ${optionSummary(cruise.options)}.`;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const cruise = await loadCruise((await params).slug);
-  return { title: cruise.seo?.metaTitle ?? `Du thuyền ${cruise.name}`, description: cruise.seo?.metaDescription ?? undefined };
+  return pageMetadata({
+    title: `Du thuyền ${cruise.name}`,
+    description: contentSummary(cruise),
+    path: `/du-thuyen/${cruise.slug}`,
+    image: cruise.thumbnail,
+    seo: cruise.seo,
+  });
 }
 
 export default async function Page({ params }: Props) {
@@ -42,6 +54,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <div className="bg-paper pb-16">
+      <JsonLd data={cruiseTrip(cruise, metaDescription(cruise.seo, contentSummary(cruise)))} />
       <div className="shell pb-6 pt-5">
         <Breadcrumb items={[{ name: 'Du thuyền', href: '/du-thuyen' }, { name: cruise.name }]} />
       </div>

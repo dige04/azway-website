@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArticleCard } from '@/components/ArticleCard';
@@ -10,17 +9,15 @@ import { SearchBox } from '@/components/SearchBox';
 import { getArticleCatalog, getCruiseCatalog, getTourCatalog } from '@/lib/cms';
 import { telHref } from '@/lib/present';
 import { search, searchTerm, type SearchCatalogs } from '@/lib/search';
+import { pageMetadata } from '@/lib/seo';
 import { loadSiteSetting } from '@/lib/site-setting';
 import { tourHref } from '@/lib/tour-filter';
 
 /** Tours shown here; the rest are one click away on /tour, which pages them. */
 const TOUR_LIMIT = 8;
 
-export const metadata: Metadata = {
-  title: 'Tìm kiếm',
-  // Results pages are thin and endless (one per query): kept out of the index.
-  robots: { index: false, follow: true },
-};
+// Results pages are thin and endless (one per query): kept out of the index.
+export const generateMetadata = () => pageMetadata({ title: 'Tìm kiếm', path: '/tim-kiem', noIndex: true });
 
 // Rendered per request (it reads ?q=); the catalogs are cached fetches, so the query never reaches Strapi.
 async function loadCatalogs(): Promise<SearchCatalogs> {

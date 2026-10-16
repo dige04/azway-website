@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { Block, Check, DetailSection, Inclusions, PriceBox, RequestBlock } from '@/components/product/Detail';
+import { JsonLd } from '@/components/JsonLd';
 import { Gallery } from '@/components/product/Gallery';
 import { ProductCard, tourCard } from '@/components/ProductCard';
 import { Show } from '@/components/Show';
@@ -14,6 +15,8 @@ import type { Tour } from '@/lib/cms-types';
 import { galleryImages } from '@/lib/gallery';
 import { formatDuration, groupSize, isStrapiSlug } from '@/lib/present';
 import { catalogForRelated, relatedFromCatalog } from '@/lib/related';
+import { metaDescription, pageMetadata } from '@/lib/seo';
+import { touristTrip } from '@/lib/structured-data';
 import { loadSiteSetting } from '@/lib/site-setting';
 
 // ISR (NFR-03, D4): each tour is rendered on its first request, then served
@@ -29,9 +32,21 @@ async function loadTour(slug: string): Promise<Tour> {
   return tour;
 }
 
+/** Description from content when `seo.metaDescription` is empty (the seed has none for most tours). */
+function contentSummary(tour: Tour): string {
+  const facts = [formatDuration(tour.durationDays, tour.durationNights), tour.departure && `khởi hành từ ${tour.departure}`].filter(Boolean).join(', ');
+  return [`${tour.name}: ${facts}.`, ...(tour.highlights ?? []).map((item) => item.text)].join(' ');
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tour = await loadTour((await params).slug);
-  return { title: tour.seo?.metaTitle ?? tour.name, description: tour.seo?.metaDescription ?? undefined };
+  return pageMetadata({
+    title: tour.name,
+    description: contentSummary(tour),
+    path: `/tour/${tour.slug}`,
+    image: tour.thumbnail,
+    seo: tour.seo,
+  });
 }
 
 export default async function Page({ params }: Props) {
@@ -49,6 +64,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <div className="bg-paper pb-16">
+      <JsonLd data={touristTrip(tour, metaDescription(tour.seo, contentSummary(tour)))} />
       <div className="shell pb-6 pt-5">
         <Breadcrumb items={[{ name: 'Tour', href: '/tour' }, { name: tour.name }]} />
       </div>

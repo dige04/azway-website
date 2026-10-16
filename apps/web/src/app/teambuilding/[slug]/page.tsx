@@ -13,6 +13,7 @@ import { galleryImages } from '@/lib/gallery';
 import { imageProps } from '@/lib/media';
 import { groupSize, hasContent, isStrapiSlug } from '@/lib/present';
 import { catalogForRelated, relatedFromCatalog } from '@/lib/related';
+import { blocksText, pageMetadata } from '@/lib/seo';
 import { loadSiteSetting } from '@/lib/site-setting';
 
 // ISR (NFR-03, D4): rendered on first request, cached until the webhook
@@ -30,7 +31,13 @@ async function loadProgramme(slug: string): Promise<Teambuilding> {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const programme = await loadProgramme((await params).slug);
-  return { title: programme.seo?.metaTitle ?? programme.name, description: programme.seo?.metaDescription ?? undefined };
+  return pageMetadata({
+    title: programme.name,
+    description: blocksText(programme.description) || [programme.theme, groupSize(programme.groupSizeMin, programme.groupSizeMax)].filter(Boolean).join(' · '),
+    path: `/teambuilding/${programme.slug}`,
+    image: programme.thumbnail,
+    seo: programme.seo,
+  });
 }
 
 export default async function Page({ params }: Props) {

@@ -7,6 +7,7 @@ import { Show } from '@/components/Show';
 import { getArticleCategories, getArticleCategoryBySlug, getArticles } from '@/lib/cms';
 import { pageFromSegment, pageHref } from '@/lib/pagination';
 import { isStrapiSlug } from '@/lib/present';
+import { pageMetadata } from '@/lib/seo';
 
 const PAGE_SIZE = 9;
 const ALL = { title: 'Cẩm nang du lịch', description: 'Kinh nghiệm, gợi ý lịch trình và lưu ý cho chuyến đi của bạn và đoàn.' };
@@ -30,12 +31,14 @@ async function resolve({ category, page: segment }: GuideListParams) {
 export async function guideListMetadata(params: GuideListParams): Promise<Metadata> {
   const { page, category, base } = await resolve(params);
   const title = category ? category.seo?.metaTitle || `${category.name} – Cẩm nang` : ALL.title;
-  return {
+  return pageMetadata({
+    // Resolved here so every page keeps its "– Trang N"; the rest of `seo` (image, noIndex) still applies.
     title: page > 1 ? `${title} – Trang ${page}` : title,
-    description: (category ? category.seo?.metaDescription || category.description : ALL.description) ?? undefined,
+    description: category ? category.seo?.metaDescription || category.description || `${category.name}: kinh nghiệm và lưu ý cho chuyến đi từ AZway.` : ALL.description,
     // Each page has its own articles, so its own canonical (only filters point at the base, SEO-06).
-    alternates: { canonical: pageHref(base, page) },
-  };
+    path: pageHref(base, page),
+    seo: category?.seo && { ...category.seo, metaTitle: null, metaDescription: null, canonicalUrl: page > 1 ? null : category.seo.canonicalUrl },
+  });
 }
 
 /** FR-BLG-01: guide articles, newest first, by category, paged. */
