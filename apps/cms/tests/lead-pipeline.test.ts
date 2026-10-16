@@ -20,12 +20,11 @@ const lead = (over: Partial<LeadRecord> = {}): LeadRecord => ({
   notifyAttempts: 0,
   ...over,
 });
-const deps = (append: SyncDeps['append'], over: Partial<SyncDeps> = {}) => ({
-  config,
+const deps = (append: SyncDeps['append'], sheets: SheetsConfig | null = config) => ({
+  config: sheets,
   append: vi.fn(append),
-  sleep: vi.fn(async () => {}),
+  sleep: vi.fn(async (_ms: number) => {}),
   alert: vi.fn(async () => {}),
-  ...over,
 });
 
 describe('syncLeadToSheets', () => {
@@ -63,7 +62,7 @@ describe('syncLeadToSheets', () => {
   });
 
   it('skips without Google configuration', async () => {
-    const d = deps(async () => {}, { config: null });
+    const d = deps(async () => {}, null);
     expect(await syncLeadToSheets(lead(), d)).toEqual({ sheetsStatus: 'skipped', sheetsAttempts: 0, sheetsError: null });
     expect(d.append).not.toHaveBeenCalled();
   });
