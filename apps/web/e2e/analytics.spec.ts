@@ -42,6 +42,7 @@ test('page views and clicks reach GA4, the search term never does', async ({ pag
   ]);
 
   const call = page.locator('main a[href^="tel:"]').first();
+  const phone = await call.getAttribute('href');
   await call.click();
   // A client-side navigation is a page view too, referred by the search page.
   await page.getByRole('banner').getByRole('link', { name: 'AZway trang chủ' }).click();
@@ -54,6 +55,6 @@ test('page views and clicks reach GA4, the search term never does', async ({ pag
 
   const calls = await gtagCalls(page);
   expect(calls).toContainEqual(['config', process.env.NEXT_PUBLIC_GA_ID, { send_page_view: false }]);
-  expect(calls).toContainEqual(['event', 'click_call', { link_url: await call.getAttribute('href') }]);
+  expect(calls).toContainEqual(['event', 'click_call', { link_url: phone }]);
   expect(JSON.stringify(calls)).not.toContain(TERM);
 });

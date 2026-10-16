@@ -74,3 +74,13 @@ test('smoke 404', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow, 'horizontal overflow (px) on the 404 page').toBeLessThanOrEqual(0);
 });
+
+// NFR-08: pages and API routes alike.
+test('security headers on a page and an API response', async ({ request }) => {
+  for (const res of [await request.get('/'), await request.post('/api/revalidate', { data: {} })]) {
+    const headers = res.headers();
+    expect(headers['content-security-policy'], res.url()).toContain("frame-ancestors 'none'");
+    expect(headers['x-content-type-options'], res.url()).toBe('nosniff');
+    expect(headers['x-frame-options'], res.url()).toBe('DENY');
+  }
+});
