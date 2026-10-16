@@ -18,6 +18,7 @@ export const destinations = [
 // Ha Long cruises: the design's 16 cards (2026-09-09 update), options merged
 // per ship. Prices are AZway's listed rates from the design, kept as is; a
 // range keeps its lower bound as `price` and the range in the description.
+// `price` is per guest, so charter (per-trip) rates live in the description only.
 const OPTION_NAME = { ve_du_ngoan: 'Vé du ngoạn trong ngày', thue_nguyen_tau: 'Thuê nguyên tàu', an_toi: 'Du thuyền ăn tối' };
 const PRIVATE = 'Thuê nguyên tàu cho đoàn. Giá theo chuyến, phụ thuộc tuyến, thời gian thuê và dịch vụ bổ sung.';
 const DINNER = 'Du thuyền ăn tối kết hợp chương trình giải trí. Xác nhận giờ khởi hành và thực đơn cho ngày sử dụng.';
@@ -30,7 +31,7 @@ const option = (type, price, description, range) => ({
   description: range ? `${description} Giá tham khảo ${range}.` : description,
 });
 const day = (price, description, range) => option('ve_du_ngoan', price, description, range);
-const charter = (price, range) => option('thue_nguyen_tau', price, PRIVATE, range);
+const charter = (range) => option('thue_nguyen_tau', null, PRIVATE, range);
 const dinner = (price) => option('an_toi', price, DINNER);
 
 const cruise = (slug, name, capacity, about, options) => ({ slug, name, capacity, about, options });
@@ -38,7 +39,7 @@ const cruise = (slug, name, capacity, about, options) => ({ slug, name, capacity
 export const cruises = [
   cruise('ambassador', 'Ambassador', 500, 'Buffet trưa và chương trình âm nhạc; khởi hành từ cảng Sunworld.', [
     day(1390000, 'Buffet trưa và chương trình âm nhạc; khởi hành từ cảng Sunworld.'),
-    charter(310000000),
+    charter('310.000.000đ/chuyến'),
     dinner(980000),
   ]),
   cruise('luna', 'Luna', 550, 'Bể bơi ngoài trời, bữa sáng nhẹ và bữa trưa theo chương trình.', [
@@ -47,12 +48,12 @@ export const cruises = [
   ]),
   cruise('sea-octopus', 'Sea Octopus', 300, 'Buffet trưa, trà chiều tại Echo Bar; khởi hành từ cảng Sunworld.', [
     day(1190000, 'Buffet trưa, trà chiều tại Echo Bar; khởi hành từ cảng Sunworld.', '1.190.000–1.350.000đ/khách'),
-    charter(279000000),
+    charter('279.000.000đ/chuyến'),
     dinner(980000),
   ]),
   cruise('saquila', 'Saquila', 150, 'Du ngoạn thành phố, bữa trưa và trải nghiệm The Bay Harmony.', [
     day(900000, 'Du ngoạn thành phố, bữa trưa và trải nghiệm The Bay Harmony.'),
-    charter(110000000),
+    charter('110.000.000đ/chuyến'),
     dinner(null),
   ]),
   cruise('phoenix', 'Phoenix', 99, 'Lựa chọn tuyến 1 hoặc tuyến 2, buffet trưa và hoạt động dưới nước theo gói.', [
@@ -77,12 +78,12 @@ export const cruises = [
   ]),
   cruise('tau-48-cho', 'Tàu 48 chỗ', 48, 'Hai lựa chọn tuyến tham quan, phục vụ bữa trưa trên tàu; có thể thuê riêng cho đoàn.', [
     day(670000, 'Hai lựa chọn tuyến tham quan, phục vụ bữa trưa trên tàu.', '670.000–720.000đ/khách'),
-    charter(3000000, '3.000.000–5.000.000đ/chuyến'),
+    charter('3.000.000–5.000.000đ/chuyến'),
   ]),
   cruise('alova', 'Alova', 72, UNPRICED, [day(null, UNPRICED)]),
   cruise('wego', 'Wego', 48, UNPRICED, [day(null, UNPRICED)]),
-  cruise('tau-rieng-72-cho', 'Tàu riêng 72 chỗ', 72, PRIVATE, [charter(null)]),
-  cruise('tau-rieng-99-cho', 'Tàu riêng 99 chỗ', 99, PRIVATE, [charter(5000000, '5.000.000–6.000.000đ/chuyến')]),
+  cruise('tau-rieng-72-cho', 'Tàu riêng 72 chỗ', 72, PRIVATE, [charter()]),
+  cruise('tau-rieng-99-cho', 'Tàu riêng 99 chỗ', 99, PRIVATE, [charter('5.000.000–6.000.000đ/chuyến')]),
 ];
 
 // The 12 games of AZway_Teambuilding.html. Names kept; how-to-play rewritten
