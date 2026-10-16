@@ -57,6 +57,9 @@ const PAGES: { path: string; jsonLd: string[] }[] = [
   { path: '/cam-nang/danh-muc/trung-quoc', jsonLd: ['TravelAgency', 'BreadcrumbList'] },
 ];
 
+// Absolute URL, normalized: Next writes the root canonical without its trailing slash.
+const href = (value: string | null) => value && new URL(value).href;
+
 test('every page type: own title and description, canonical, Open Graph, JSON-LD', async ({ page, baseURL }) => {
   desktopOnly();
   const titles = new Set<string>();
@@ -65,8 +68,8 @@ test('every page type: own title and description, canonical, Open Graph, JSON-LD
     const tags = await meta(page);
     const url = new URL(path, baseURL).toString();
     expect(tags.description, `description on ${path}`).toBeTruthy();
-    expect(tags.canonical, `canonical on ${path}`).toBe(url);
-    expect(tags.ogUrl, `og:url on ${path}`).toBe(url);
+    expect(href(tags.canonical), `canonical on ${path}`).toBe(url);
+    expect(href(tags.ogUrl), `og:url on ${path}`).toBe(url);
     expect(tags.title.startsWith(tags.ogTitle ?? '-'), `<title> "${tags.title}" vs og:title "${tags.ogTitle}" on ${path}`).toBe(true);
     expect(tags.ogDescription, `og:description on ${path}`).toBe(tags.description);
     expect(tags.ogImage, `og:image on ${path}`).toMatch(/^https?:\/\//);
@@ -82,6 +85,6 @@ test('a filtered tour list is canonical to /tour and noindex, follow', async ({ 
   desktopOnly();
   await page.goto('/tour?loai=trung-quoc&sap-xep=gia-tang');
   const tags = await meta(page);
-  expect(tags.canonical).toBe(new URL('/tour', baseURL).toString());
+  expect(href(tags.canonical)).toBe(new URL('/tour', baseURL).toString());
   expect(tags.robots).toBe('noindex, follow');
 });
