@@ -88,7 +88,7 @@ export function slugify(text: string): string {
 
 /** Lower case without Vietnamese accents: "Hạ Long" and "ha long" both read "ha long". */
 function foldText(text: string): string {
-  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase();
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase();
 }
 
 type RawParams = Record<string, string | string[] | undefined> | URLSearchParams;
@@ -224,10 +224,21 @@ export function relaxations(tours: Tour[], query: TourQuery): { key: ConditionKe
     .sort((a, b) => b.count - a.count);
 }
 
+const MAX_TRACKED_TERM = 50;
+
+/**
+ * NFR-10: what a visitor types may be their phone number or email, which must
+ * not go to GA4. Tour codes have a digit or two; 7 digits is a phone number.
+ */
+function trackedTerm(q: string | undefined): string | undefined {
+  if (!q || (q.match(/\d/g)?.length ?? 0) >= 7 || q.includes('@')) return undefined;
+  return q.slice(0, MAX_TRACKED_TERM);
+}
+
 /** AN-04 `filter_apply` parameters: the active conditions and sort, in GA4 snake_case. */
 export function filterEventParams(query: TourQuery, results: number): Record<string, string> {
   const params: Record<string, string | number | undefined> = {
-    search_term: query.q,
+    search_term: trackedTerm(query.q),
     category: query.category,
     region: query.region,
     gate: query.gate,

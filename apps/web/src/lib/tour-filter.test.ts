@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Region, Tour } from './cms-types';
-import { filterTours, parseTourQuery, relaxations, tourHref, type TourQuery } from './tour-filter';
+import { filterEventParams, filterTours, parseTourQuery, relaxations, tourHref, type TourQuery } from './tour-filter';
 
 const tour = (code: string, over: Partial<Tour> & { regions?: Region[] } = {}): Tour =>
   ({
@@ -85,5 +85,16 @@ describe('tour filters', () => {
       { key: 'duration', count: 2 },
       { key: 'category', count: 1 },
     ]);
+  });
+});
+
+// AN-04 + NFR-10
+describe('filter_apply event', () => {
+  it('never sends a phone number or email the visitor typed into search', () => {
+    const term = (q: string) => filterEventParams({ q }, 0).search_term;
+    expect(term('tour hạ long 0912 345 678')).toBeUndefined();
+    expect(term('an@example.com')).toBeUndefined();
+    expect(term('HT-BDHL-2N1D')).toBe('HT-BDHL-2N1D');
+    expect(term('x'.repeat(100))).toHaveLength(50);
   });
 });
