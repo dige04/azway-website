@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 
 // SEO (M7) on the seeded site. Metadata does not depend on the viewport: run once.
-test.skip(({}, testInfo) => testInfo.project.name !== 'desktop-1440', 'viewport-independent');
+const desktopOnly = () => test.skip(test.info().project.name !== 'desktop-1440', 'viewport-independent');
 
 // AC-15: published pages of every type, never a draft (seed: JP-6N5D stays a draft).
 test('sitemap.xml lists published pages and no drafts; robots.txt points to it', async ({ request, baseURL }) => {
+  desktopOnly();
   const sitemap = await request.get('/sitemap.xml');
   expect(sitemap.ok()).toBe(true);
   const xml = await sitemap.text();
@@ -57,6 +58,7 @@ const PAGES: { path: string; jsonLd: string[] }[] = [
 ];
 
 test('every page type: own title and description, canonical, Open Graph, JSON-LD', async ({ page, baseURL }) => {
+  desktopOnly();
   const titles = new Set<string>();
   for (const { path, jsonLd } of PAGES) {
     await page.goto(path);
@@ -77,6 +79,7 @@ test('every page type: own title and description, canonical, Open Graph, JSON-LD
 
 // SEO-06: a filtered list points at its base page and stays out of the index.
 test('a filtered tour list is canonical to /tour and noindex, follow', async ({ page, baseURL }) => {
+  desktopOnly();
   await page.goto('/tour?loai=trung-quoc&sap-xep=gia-tang');
   const tags = await meta(page);
   expect(tags.canonical).toBe(new URL('/tour', baseURL).toString());
