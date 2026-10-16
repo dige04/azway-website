@@ -5,6 +5,7 @@
  * never passed on. Filtering runs on the catalog from `getTourCatalog`.
  */
 import type { Region, Tour, TourCategory } from './cms-types';
+import { foldText, slugify } from './text';
 
 export const PAGE_SIZE = 12;
 
@@ -80,16 +81,6 @@ export type ConditionKey = (typeof CONDITION_KEYS)[number];
 
 const MAX_GROUP_SIZE = 10_000;
 const MAX_QUERY_LENGTH = 100;
-
-/** "Lào Cai – Hà Khẩu" -> "lao-cai-ha-khau". */
-export function slugify(text: string): string {
-  return foldText(text).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
-/** Lower case without Vietnamese accents: "Hạ Long" and "ha long" both read "ha long". */
-function foldText(text: string): string {
-  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase();
-}
 
 type RawParams = Record<string, string | string[] | undefined> | URLSearchParams;
 

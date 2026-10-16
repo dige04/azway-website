@@ -250,12 +250,16 @@ export const getArticles = ({ category, page, pageSize }: { category?: string; p
     pagination: pagination(page, pageSize),
   });
 
+/** An article with its hand-picked products (FR-BLG-03), fields as their cards show them. */
 export const getArticleBySlug = (slug: string) =>
   findBySlug<Article>('article', 'articles', slug, {
     cover: true,
     category: card,
-    tours: { fields: ['name', 'slug', 'code', 'priceFrom', 'durationDays', 'durationNights'], populate: { thumbnail: true } },
-    cruises: { fields: ['name', 'slug'], populate: { thumbnail: true } },
+    tours: {
+      fields: ['name', 'slug', 'code', 'category', 'departure', 'priceFrom', 'durationDays', 'durationNights'],
+      populate: { thumbnail: true },
+    },
+    cruises: { fields: ['name', 'slug', 'starRating', 'capacity'], populate: { thumbnail: true, options: true } },
     seo,
   });
 
