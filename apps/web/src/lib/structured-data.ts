@@ -11,7 +11,11 @@ const CONTEXT = 'https://schema.org';
 const ORGANIZATION_ID = () => siteUrl('/#organization');
 /** The agency where another item names it (provider, seller, author, publisher). */
 const organizationRef = () => ({ '@type': 'TravelAgency', '@id': ORGANIZATION_ID(), name: SITE_NAME, url: siteUrl('/'), logo: siteUrl('/logo-azway.png') });
-const images = (...urls: (string | null | undefined)[]) => urls.map(mediaUrl).filter((url): url is string => !!url);
+/** Absolute image URLs; undefined (no `image` field) when there are none. */
+const images = (...urls: (string | null | undefined)[]) => {
+  const list = urls.map(mediaUrl).filter((url): url is string => !!url);
+  return list.length > 0 ? list : undefined;
+};
 
 export function travelAgency(setting: SiteSetting | null) {
   const sameAs = [setting?.facebookUrl, setting?.youtubeUrl, setting?.tiktokUrl].map(safeHref).filter(Boolean);

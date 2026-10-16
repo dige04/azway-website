@@ -21,8 +21,14 @@ const PATH: Record<PageType, (slug: string) => string> = {
   'article-category': (slug) => `/cam-nang/danh-muc/${slug}`,
 };
 
+/** Absolute URL without a trailing slash, so `/tour/a`, `/tour/a/` and the full URL compare equal. */
+const normalized = (url: string) => siteUrl(url).replace(/(?<=.)\/$/, '');
+
 /** A page search engines should index: not noindex, and not pointing its canonical elsewhere. */
-const indexable = (doc: PageDocument, path: string) => !doc.seo?.noIndex && (!doc.seo?.canonicalUrl || doc.seo.canonicalUrl === siteUrl(path));
+const indexable = (doc: PageDocument, path: string) => {
+  const canonical = doc.seo?.canonicalUrl?.trim();
+  return !doc.seo?.noIndex && (!canonical || normalized(canonical) === normalized(path));
+};
 
 /** AC-15: every published page (the CMS client asks for published documents only). */
 export async function sitemapEntries(): Promise<SitemapEntry[]> {
@@ -52,9 +58,9 @@ export function urlsetXml(entries: SitemapEntry[]): string {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;
 }
 
-/** /sitemap.xml past SITEMAP_SIZE URLs: an index of /sitemap/1.xml, /sitemap/2.xml, ... */
+/** /sitemap.xml past SITEMAP_SIZE URLs: an index of /sitemap-1.xml, /sitemap-2.xml, ... (at the root, see next.config). */
 export function sitemapIndexXml(files: number): string {
-  const items = Array.from({ length: files }, (_, index) => `<sitemap><loc>${escape(siteUrl(`/sitemap/${index + 1}.xml`))}</loc></sitemap>`);
+  const items = Array.from({ length: files }, (_, index) => `<sitemap><loc>${escape(siteUrl(`/sitemap-${index + 1}.xml`))}</loc></sitemap>`);
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${items.join('\n')}\n</sitemapindex>\n`;
 }
 

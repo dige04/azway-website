@@ -21,6 +21,10 @@ test('sitemap.xml lists published pages and no drafts; robots.txt points to it',
     expect(xml, path).toContain(`<loc>${new URL(path, baseURL)}</loc>`);
   }
   expect(xml).not.toContain('tokyo-phu-si-kyoto-osaka-6n5d');
+  // Child sitemaps live at the root (next.config rewrite); with one file it holds every URL.
+  const child = await request.get('/sitemap-1.xml');
+  expect(child.ok()).toBe(true);
+  expect(await child.text()).toBe(xml);
 
   const robots = await (await request.get('/robots.txt')).text();
   expect(robots).toContain(`Sitemap: ${new URL('/sitemap.xml', baseURL)}`);
@@ -38,7 +42,7 @@ async function meta(page: Page) {
       ogDescription: content('meta[property="og:description"]'),
       ogImage: content('meta[property="og:image"]'),
       ogUrl: content('meta[property="og:url"]'),
-      jsonLd: [...document.querySelectorAll('script[type="application/ld+json"]')].map((script) => JSON.parse(script.textContent ?? '')['@type']),
+      jsonLd: [...document.querySelectorAll('script[type="application/ld+json"]')].map((script) => JSON.parse(script.textContent ?? '')),
     };
   });
 }
@@ -74,7 +78,13 @@ test('every page type: own title and description, canonical, Open Graph, JSON-LD
     expect(tags.ogDescription, `og:description on ${path}`).toBe(tags.description);
     expect(tags.ogImage, `og:image on ${path}`).toMatch(/^https?:\/\//);
     expect(tags.robots, `robots on ${path}`).toBeNull();
-    expect([...tags.jsonLd].sort(), `JSON-LD on ${path}`).toEqual([...jsonLd].sort());
+    expect(tags.jsonLd.map((data) => data['@type']).sort(), `JSON-LD on ${path}`).toEqual([...jsonLd].sort());
+    // Google needs at least two crumbs; the trail starts at the home page.
+    const breadcrumb = tags.jsonLd.find((data) => data['@type'] === 'BreadcrumbList');
+    if (breadcrumb) {
+      expect(breadcrumb.itemListElement.length, `breadcrumb on ${path}`).toBeGreaterThanOrEqual(2);
+      expect(href(breadcrumb.itemListElement[0].item), `breadcrumb on ${path}`).toBe(new URL('/', baseURL).href);
+    }
     titles.add(tags.title);
   }
   expect(titles.size, 'titles are unique').toBe(PAGES.length);

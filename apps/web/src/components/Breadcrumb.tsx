@@ -15,7 +15,7 @@ export function Breadcrumb({ items, className = '' }: { items: Crumb[]; classNam
   const trail = [HOME, ...items];
   return (
     <nav aria-label="Breadcrumb" className={className}>
-      <JsonLd data={breadcrumbJsonLd(items)} />
+      <JsonLd data={breadcrumbJsonLd(trail)} />
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
         {trail.map((crumb, index) => {
           const last = index === trail.length - 1;
@@ -39,12 +39,12 @@ export function Breadcrumb({ items, className = '' }: { items: Crumb[]; classNam
   );
 }
 
-/** schema.org BreadcrumbList for the same trail; the current page (no href) is the last item, without a URL. */
-function breadcrumbJsonLd(items: Crumb[]) {
+/** schema.org BreadcrumbList of the visible trail; the current page (no href) is the last item, without a URL. */
+function breadcrumbJsonLd(trail: Crumb[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: [HOME, ...items].map((crumb, index) => ({
+    itemListElement: trail.map((crumb, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       name: crumb.name,

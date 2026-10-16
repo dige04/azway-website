@@ -1,18 +1,21 @@
 import type { Metadata } from 'next';
-import { getSiteSetting } from './cms';
 import type { BlocksContent, Media, Seo } from './cms-types';
 import { mediaUrl } from './media';
 import { SITE_NAME } from './site';
+import { loadSiteSetting } from './site-setting';
+
 /** Google cuts descriptions around 155–160 characters. */
 const DESCRIPTION_LENGTH = 160;
 /** Last share-image fallback: the logo in public/. */
 const LOGO = '/logo-azway.png';
 
-/** Plain text of Strapi blocks (paragraphs, headings, lists, quotes). */
+/** Plain text of Strapi blocks (paragraphs, headings, lists, quotes): a space between blocks, none inside a line. */
 export function blocksText(blocks: BlocksContent | null | undefined): string {
-  type Node = { text?: string; children?: Node[] };
-  const walk = (nodes: Node[] = []): string => nodes.map((node) => node.text ?? walk(node.children)).join(' ');
-  return walk((blocks ?? []) as Node[]);
+  type Node = { type?: string; text?: string; children?: Node[] };
+  const inline = (node: Node) => node.text !== undefined || node.type === 'link';
+  const text = (node: Node): string => node.text ?? join(node.children ?? []);
+  const join = (nodes: Node[]) => nodes.map(text).join(nodes.every(inline) ? '' : ' ');
+  return join((blocks ?? []) as Node[]);
 }
 
 /** A meta description from content: spaces collapsed, cut at a word with "…" past 160 characters. */
@@ -79,8 +82,11 @@ export async function pageMetadata(page: PageSeo): Promise<Metadata> {
   };
 }
 
-/** The editor's site-wide share image; the logo when there is none or the CMS fails. */
+/**
+ * The editor's site-wide share image, else the logo. A CMS failure falls back
+ * only in a per-request render (loadSiteSetting), never in a cached one.
+ */
 async function defaultShareImage(): Promise<string> {
-  const setting = await getSiteSetting().catch(() => null);
+  const setting = await loadSiteSetting();
   return mediaUrl(setting?.defaultSeo?.shareImage?.url) ?? LOGO;
 }
