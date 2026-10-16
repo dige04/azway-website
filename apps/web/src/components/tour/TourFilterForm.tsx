@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, type ComponentProps, type CSSProperties, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, type ComponentProps, type CSSProperties, type FormEvent, type MouseEvent, type ReactNode } from 'react';
 import { track } from '@/lib/track';
 import { CATEGORIES, DURATIONS, parseTourQuery, REGIONS, SORTS, tourHref, type TourQuery } from '@/lib/tour-filter';
 
@@ -33,14 +33,25 @@ function useSubmitToUrl() {
     event.preventDefault();
     const data = new URLSearchParams();
     for (const [key, value] of new FormData(event.currentTarget)) if (typeof value === 'string') data.append(key, value);
-    applying = tourHref(parseTourQuery(data));
-    router.push(applying, { scroll: false });
+    const target = tourHref(parseTourQuery(data));
+    // Resubmitting what is shown changes nothing, so it is not an apply.
+    const current = tourHref({ ...parseTourQuery(new URLSearchParams(window.location.search)), page: undefined });
+    if (target !== current) applying = target;
+    router.push(target, { scroll: false });
   };
 }
 
-/** A link to other /tour conditions (chips, suggestions): applying them is a `filter_apply`. */
-export function FilterLink({ href, ...props }: Omit<ComponentProps<typeof Link>, 'href'> & { href: string }) {
-  return <Link href={href} scroll={false} {...props} onClick={() => (applying = href)} />;
+/**
+ * A link to other /tour conditions (chips, suggestions): following it is a
+ * `filter_apply`. A click that opens a new tab or window applies nothing here.
+ */
+export function FilterLink({ href, onClick, ...props }: Omit<ComponentProps<typeof Link>, 'href'> & { href: string }) {
+  const follow = (event: MouseEvent<HTMLAnchorElement>) => {
+    onClick?.(event);
+    const plain = event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+    if (plain && !event.defaultPrevented) applying = href;
+  };
+  return <Link href={href} scroll={false} {...props} onClick={follow} />;
 }
 
 /** Filter fields (FR-SRC-01, FR-SRC-03); the page keys them by the current URL. */
@@ -52,9 +63,10 @@ export function TourFilterForm({ query, gates }: { query: TourQuery; gates: { va
         <Field label="Tên hoặc mã tour" htmlFor="tour-q" className="col-span-2 lg:col-span-1">
           <input id="tour-q" name="q" type="search" defaultValue={query.q} placeholder="VD: Hạ Long hoặc mã tour" maxLength={100} className={control} />
         </Field>
-        <Select label="Loại tour" name="loai" value={query.category} all="Tất cả loại" options={CATEGORIES} />
+        {/* Phones: the two with the longest values get a full row. */}
+        <Select label="Loại tour" name="loai" value={query.category} all="Tất cả loại" options={CATEGORIES} className="max-sm:col-span-2" />
+        {gates.length > 0 && <Select label="Cửa khẩu" name="cua-khau" value={query.gate} all="Mọi cửa khẩu" options={gates} className="max-sm:col-span-2" />}
         <Select label="Khu vực" name="khu-vuc" value={query.region} all="Mọi khu vực" options={REGIONS} />
-        {gates.length > 0 && <Select label="Cửa khẩu" name="cua-khau" value={query.gate} all="Mọi cửa khẩu" options={gates} />}
         <Select label="Thời lượng" name="thoi-luong" value={query.duration} all="Mọi thời lượng" options={DURATIONS} />
         <Field label="Số khách trong đoàn" htmlFor="tour-group">
           <input id="tour-group" name="so-khach" type="number" inputMode="numeric" min={1} max={10000} defaultValue={query.groupSize} placeholder="VD: 30" className={control} />
@@ -62,7 +74,7 @@ export function TourFilterForm({ query, gates }: { query: TourQuery; gates: { va
         {/* The sort select lives in the result bar; it belongs to this form via `form`. */}
         <button
           type="submit"
-          className={`min-h-[52px] rounded-button bg-red px-6 font-bold text-white shadow-red hover:bg-red-hover lg:col-span-1 ${gates.length > 0 ? '' : 'col-span-2'}`}
+          className={`min-h-[52px] rounded-button bg-red px-6 font-bold text-white shadow-red hover:bg-red-hover lg:col-span-1 ${gates.length > 0 ? '' : 'sm:col-span-2'}`}
         >
           Lọc tour
         </button>
@@ -80,7 +92,13 @@ export function TourSortSelect({ sort }: { sort: TourQuery['sort'] }) {
         name="sap-xep"
         form={FORM_ID}
         defaultValue={sort ?? ''}
-        onChange={(event) => event.currentTarget.form?.requestSubmit()}
+        onChange={(event) => {
+          const form = event.currentTarget.form;
+          if (!form) return;
+          // An invalid field may sit in the closed phone panel: open it so its message shows.
+          if (!form.checkValidity()) form.closest('details')?.setAttribute('open', '');
+          form.requestSubmit();
+        }}
         className={`${control} min-h-11 py-2 font-normal`}
         style={{ ...chevron, backgroundPosition: 'calc(100% - 18px) 18px,calc(100% - 13px) 18px' }}
       >
@@ -108,6 +126,13 @@ export function FilterApplyTracker({ href, params }: { href: string; params: Rec
     applying = null;
     if (asked) track('filter_apply', params);
   }, [href, params]);
+  // Leaving /tour drops a request that never arrived.
+  useEffect(
+    () => () => {
+      applying = null;
+    },
+    [],
+  );
   return null;
 }
 
@@ -122,10 +147,24 @@ function Field({ label, htmlFor, className = '', children }: { label: string; ht
   );
 }
 
-function Select({ label, name, value, all, options }: { label: string; name: string; value?: string; all: string; options: { value: string; label: string }[] }) {
+function Select({
+  label,
+  name,
+  value,
+  all,
+  options,
+  className,
+}: {
+  label: string;
+  name: string;
+  value?: string;
+  all: string;
+  options: { value: string; label: string }[];
+  className?: string;
+}) {
   const id = `tour-${name}`;
   return (
-    <Field label={label} htmlFor={id}>
+    <Field label={label} htmlFor={id} className={className}>
       <select id={id} name={name} defaultValue={value ?? ''} className={control} style={chevron}>
         <option value="">{all}</option>
         {options.map((option) => (

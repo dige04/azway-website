@@ -55,7 +55,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           </h1>
           {/*
             Phones: a closed <details>, so the first screen reaches the results
-            (the active chips stay in the result bar). From 640px the panel is
+            (the active chips stay in the result bar). From `sm` (681px) it is
             always open; browsers without ::details-content keep the toggle.
             Keyed by the URL: fields show what the list shows, and the panel
             closes again after a filter is applied.
@@ -66,7 +66,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           >
             <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between px-[18px] font-bold text-navy supports-[selector(::details-content)]:sm:hidden [&::-webkit-details-marker]:hidden">
               Bộ lọc{Object.keys(labels).length > 0 && ` (${Object.keys(labels).length})`}
-              <span aria-hidden="true" className="text-sm transition-transform group-open:rotate-180">
+              <span aria-hidden="true" className="inline-block text-sm transition-transform group-open:rotate-180">
                 ▾
               </span>
             </summary>
