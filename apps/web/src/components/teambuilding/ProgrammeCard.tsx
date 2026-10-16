@@ -1,17 +1,16 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Check } from '@/components/product/Detail';
-import { RichText } from '@/components/RichText';
 import { Show } from '@/components/Show';
 import type { Teambuilding } from '@/lib/cms-types';
 import { imageProps } from '@/lib/media';
-import { groupSize, hasContent } from '@/lib/present';
+import { groupSize } from '@/lib/present';
+import { firstParagraph } from '@/lib/text';
 
 /** A programme on /teambuilding (the design's `.package`): theme, summary and bundled services. */
 export function ProgrammeCard({ programme, number }: { programme: Teambuilding; number: number }) {
   const href = `/teambuilding/${programme.slug}`;
   const image = imageProps(programme.thumbnail, programme.name);
-  const size = groupSize(programme.groupSizeMin, programme.groupSizeMax);
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-card border border-line bg-white transition-shadow hover:shadow-card">
@@ -25,9 +24,9 @@ export function ProgrammeCard({ programme, number }: { programme: Teambuilding; 
             className="size-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none"
           />
         )}
-        {programme.theme && (
-          <span className="absolute left-4 top-4 rounded-sm bg-white px-2.5 py-1 text-xs font-bold uppercase text-navy">{programme.theme}</span>
-        )}
+        <Show when={programme.theme}>
+          {(theme) => <span className="absolute left-4 top-4 rounded-sm bg-white px-2.5 py-1 text-xs font-bold uppercase text-navy">{theme}</span>}
+        </Show>
       </Link>
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <p className="text-xs font-extrabold tracking-[0.1em] text-red">CHƯƠNG TRÌNH {String(number).padStart(2, '0')}</p>
@@ -36,10 +35,10 @@ export function ProgrammeCard({ programme, number }: { programme: Teambuilding; 
             {programme.name}
           </Link>
         </h3>
-        {hasContent(programme.description) && (
-          <RichText content={programme.description} className="line-clamp-3 text-[15px] text-muted [&_p]:mb-0" />
-        )}
-        {size && <p className="mt-3 text-sm font-semibold text-ink-2">Quy mô {size}</p>}
+        <Show when={firstParagraph(programme.description)}>{(summary) => <p className="line-clamp-3 text-[15px] text-muted">{summary}</p>}</Show>
+        <Show when={groupSize(programme.groupSizeMin, programme.groupSizeMax)}>
+          {(size) => <p className="mt-3 text-sm font-semibold text-ink-2">Quy mô {size}</p>}
+        </Show>
         <Show when={programme.packages}>
           {(items) => (
             <ul className="mt-5 grid gap-2.5 text-[15px]">

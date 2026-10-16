@@ -1,17 +1,11 @@
 import type { BlocksContent } from './cms-types';
 import { PAGE_IDS } from './page-ids';
-import { slugify } from './text';
+import { type InlineNode, plainText, slugify } from './text';
 
 export interface TocEntry {
   id: string;
   text: string;
   level: 2 | 3;
-}
-
-type InlineNode = { type?: string; text?: string; children?: InlineNode[] };
-
-function plainText(nodes: InlineNode[] | undefined): string {
-  return (nodes ?? []).map((node) => node.text ?? plainText(node.children)).join('');
 }
 
 /**

@@ -11,7 +11,7 @@ import { getTeambuildingBySlug, getTeambuildingCatalog } from '@/lib/cms';
 import type { Teambuilding, TeambuildingGame } from '@/lib/cms-types';
 import { galleryImages } from '@/lib/gallery';
 import { imageProps } from '@/lib/media';
-import { groupSize, isStrapiSlug } from '@/lib/present';
+import { groupSize, hasContent, isStrapiSlug } from '@/lib/present';
 import { catalogForRelated, relatedFromCatalog } from '@/lib/related';
 import { loadSiteSetting } from '@/lib/site-setting';
 
@@ -41,7 +41,7 @@ export default async function Page({ params }: Props) {
   const photos = programme.album?.filter((media) => media.mime.startsWith('image/'));
   const games = programme.games ?? [];
   // Game photos credit their source in the CMS caption; shown once under the grid.
-  const credits = [...new Set(games.map((game) => game.image?.caption).filter((caption): caption is string => !!caption))];
+  const credits = [...new Set(games.map((game) => game.image?.caption).filter((caption): caption is string => hasContent(caption)))];
 
   return (
     <div className="bg-paper pb-16">
@@ -52,7 +52,7 @@ export default async function Page({ params }: Props) {
       {/* Phones: title, price box, then the blocks. Desktop: price box in the right column. */}
       <div className="shell grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <header className="min-w-0 lg:col-start-1">
-          <p className="text-kicker font-extrabold uppercase text-red">{programme.theme ?? 'Teambuilding'}</p>
+          <p className="text-kicker font-extrabold uppercase text-red">{hasContent(programme.theme) ? programme.theme : 'Teambuilding'}</p>
           <h1 className="mt-2 text-[32px] font-bold leading-[1.1] tracking-[-0.035em] text-navy sm:text-[clamp(32px,3.4vw,48px)]">{programme.name}</h1>
         </header>
 
@@ -152,7 +152,7 @@ function GameCard({ game }: { game: TeambuildingGame }) {
       </div>
       <div className="p-4">
         <h3 className="font-bold leading-snug text-navy sm:text-lg">{game.name}</h3>
-        {game.howToPlay && <p className="mt-1.5 text-sm text-muted">{game.howToPlay}</p>}
+        <Show when={game.howToPlay}>{(howToPlay) => <p className="mt-1.5 text-sm text-muted">{howToPlay}</p>}</Show>
       </div>
     </li>
   );

@@ -35,7 +35,7 @@ export default async function Page() {
           <p className="mb-4 mt-10 text-[13px] font-extrabold tracking-[0.14em] text-red-on-navy">TEAMBUILDING · GALA DINNER · COMPANY TRIP</p>
           <h1 className="max-w-[760px] text-[44px] font-extrabold leading-[1.08] tracking-[-0.045em] sm:text-[clamp(44px,4.7vw,68px)]">
             Cùng một đội.
-            <span className="block text-[#ff4c66]">Chung một hành trình.</span>
+            <span className="block text-red-on-navy">Chung một hành trình.</span>
           </h1>
           <p className="mt-6 max-w-[560px] text-base leading-[1.8] text-navy-mist sm:text-lg">
             Rời bàn làm việc, mở những kết nối mới. Cùng AZway tạo nên chuyến đi mà mỗi thành viên đều có câu chuyện để mang về.
