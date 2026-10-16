@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 
 // AC-09 / FR-PRD-05: a block without data has no heading at all.
 test('a tour without exclusions or cancellation rules shows neither block', async ({ page }) => {

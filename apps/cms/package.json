@@ -9,6 +9,7 @@
     "develop": "strapi develop",
     "start": "strapi start",
     "seed": "node scripts/seed.mjs",
+    "import-redirects": "node scripts/import-redirects.mjs",
     "strapi": "strapi",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "vitest run"

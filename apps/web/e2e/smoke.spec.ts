@@ -1,4 +1,5 @@
-import { expect, test, type ConsoleMessage } from '@playwright/test';
+import type { ConsoleMessage } from '@playwright/test';
+import { expect, test } from './test';
 import { CALLS, LISTS, NOT_BUILT, ROUTES, TEXTS } from './routes';
 
 /** A 404 prefetch (`?_rsc=`) of a link to a page that does not exist yet. */

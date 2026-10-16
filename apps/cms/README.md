@@ -47,3 +47,11 @@ Ca kiểm thử:
 - Các tour Trung Quốc: không có lịch trình (đang chờ ảnh lịch trình của AZway).
 
 Ảnh: chỉ dùng ảnh Wikimedia Commons (tác giả, giấy phép, link gốc ghi trong `caption`), logo AZway, và ảnh teambuilding. Ảnh teambuilding có caption "chưa xác nhận quyền sử dụng". Ảnh base64 không rõ nguồn trong file HTML không được dùng.
+
+## Nhập danh sách URL cũ (SEO-07)
+
+```sh
+pnpm --filter @azway/cms import-redirects <file.csv>   # đường dẫn tương đối tính từ apps/cms
+```
+
+CSV có dòng tiêu đề `from,to,statusCode` (mẫu: `scripts/redirects.sample.csv`); `statusCode` là 301 hoặc 302, bỏ trống = 301. Script nạp Strapi trong tiến trình như seed (cùng DB và `.env`), khớp theo `from` đã chuẩn hoá (ARCHITECTURE D8): chạy lại không nhân đôi, đổi `to`/`statusCode` thì cập nhật. Có dòng sai (thiếu cột, mã khác 301/302, hai dòng cùng một URL cũ) thì in số dòng và không nhập gì. Khi đặt `WEB_REVALIDATE_URL`, web nhận thay đổi ngay qua webhook.

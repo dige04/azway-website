@@ -349,12 +349,5 @@ export const getHomepage = () =>
     featuredArticles: { populate: { cover: true, category: card } },
   });
 
-/** Redirect for a legacy path, e.g. "/tour-ha-long.html" (D8). */
-export async function getRedirect(path: string): Promise<Redirect | null> {
-  const res = await request<ListResponse<Redirect>>(
-    'redirect',
-    'redirects',
-    { filters: { from: { $eq: path } }, pagination: { pageSize: 1 } },
-  );
-  return res?.data[0] ?? null;
-}
+/** Every redirect (D8): one cached list that lib/redirect.ts searches in memory. */
+export const getRedirects = () => findAll<Redirect>('redirect', 'redirects', { fields: ['from', 'to', 'statusCode'] });

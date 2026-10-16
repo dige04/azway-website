@@ -2,7 +2,7 @@
 // a second run creates nothing and changes no counts, the draft tour stays off
 // the public API, and a non-local target is refused.
 import { randomBytes } from 'node:crypto';
-import { copyFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -99,5 +99,26 @@ describe('seed', () => {
       expect(() => assertLocalTarget(env), JSON.stringify(env)).toThrow('refusing to seed');
       expect(() => assertLocalTarget({ ...env, SEED_ALLOW_REMOTE: '1' })).not.toThrow();
     }
+  });
+});
+
+// TASKS M7: the legacy URL list (scripts/import-redirects.mjs) can be imported again safely.
+describe('import-redirects', () => {
+  type Result = { summary?: Record<string, number>; errors?: string[] };
+  const importCsv = (text: string) =>
+    (strapi.service('api::redirect.redirect') as unknown as { importCsv(text: string): Promise<Result> }).importCsv(text);
+  const total = () => strapi.db.query('api::redirect.redirect').count();
+
+  it('a rerun or the same old URL typed another way creates nothing; a bad file imports nothing', async () => {
+    const sample = readFileSync(path.join(__dirname, '../scripts/redirects.sample.csv'), 'utf8');
+    expect(await importCsv(sample)).toEqual({ summary: { created: 5, updated: 0, kept: 0 } });
+    expect(await importCsv(sample)).toEqual({ summary: { created: 0, updated: 0, kept: 5 } });
+    expect(await importCsv('from,to\n/tour-sapa.html/?ref=x,/tour\n')).toEqual({ summary: { created: 0, updated: 1, kept: 0 } });
+
+    const before = await total();
+    expect(await importCsv('from,to,statusCode\n/moi,/tour,301\n/x,/a,303\n/moi/,/b,301\n')).toEqual({
+      errors: ['line 3: statusCode must be 301 or 302', 'line 4: /moi is already on line 2'],
+    });
+    expect(await total()).toBe(before);
   });
 });

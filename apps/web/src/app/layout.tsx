@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { JsonLd } from '@/components/JsonLd';
+import { Analytics } from '@/components/layout/Analytics';
 import { ContactDock } from '@/components/layout/ContactDock';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
@@ -39,6 +40,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <SiteFooter setting={setting} />
         <ContactDock contacts={contacts} />
         <AttributionCookies />
+        <Analytics />
       </body>
     </html>
   );

@@ -1,4 +1,5 @@
-import { expect, test, type APIRequestContext } from '@playwright/test';
+import type { APIRequestContext } from '@playwright/test';
+import { expect, test } from './test';
 
 /**
  * TASKS M6 "Xong khi" (AC-13, FR-LEAD-07/08): a lead sent from a tour page

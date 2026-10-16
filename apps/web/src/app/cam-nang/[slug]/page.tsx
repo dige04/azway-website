@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { ArticleCard } from '@/components/ArticleCard';
 import { ArticleBody } from '@/components/article/ArticleBody';
 import { TableOfContents } from '@/components/article/TableOfContents';
@@ -16,6 +15,7 @@ import type { Article, SiteSetting } from '@/lib/cms-types';
 import { imageProps } from '@/lib/media';
 import { PAGE_IDS } from '@/lib/page-ids';
 import { isStrapiSlug, safeHref, telHref } from '@/lib/present';
+import { movedOrNotFound } from '@/lib/redirect';
 import { pickRelated } from '@/lib/related';
 import { blocksText, metaDescription, pageMetadata } from '@/lib/seo';
 import { articleLd } from '@/lib/structured-data';
@@ -30,9 +30,8 @@ type Props = { params: Promise<{ slug: string }> };
 
 async function load(params: Props['params']) {
   const { slug } = await params;
-  if (!isStrapiSlug(slug)) notFound();
-  const article = await getArticleBySlug(slug);
-  if (!article) notFound();
+  const article = isStrapiSlug(slug) ? await getArticleBySlug(slug) : null;
+  if (!article) return movedOrNotFound('cam-nang', slug);
   return article;
 }
 

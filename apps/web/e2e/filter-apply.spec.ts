@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './test';
 
 // AN-04: `filter_apply` counts the changes the visitor makes on /tour, never
 // history moves. Seed: Chinese tours, some of them 4N3Đ.

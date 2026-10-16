@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { LeadForm } from '@/components/lead/LeadForm';
@@ -15,6 +14,7 @@ import { getTourBySlug, getTourCatalog } from '@/lib/cms';
 import type { Tour } from '@/lib/cms-types';
 import { galleryImages } from '@/lib/gallery';
 import { formatDuration, groupSize, isStrapiSlug } from '@/lib/present';
+import { movedOrNotFound } from '@/lib/redirect';
 import { catalogForRelated, relatedFromCatalog } from '@/lib/related';
 import { metaDescription, pageMetadata } from '@/lib/seo';
 import { touristTrip } from '@/lib/structured-data';
@@ -29,7 +29,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 async function loadTour(slug: string): Promise<Tour> {
   const tour = isStrapiSlug(slug) ? await getTourBySlug(slug) : null;
-  if (!tour) notFound();
+  if (!tour) return movedOrNotFound('tour', slug);
   return tour;
 }
 

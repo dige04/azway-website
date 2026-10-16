@@ -26,6 +26,48 @@ const toPattern = (url: URL, pathname: string): RemotePattern => ({
   pathname,
 });
 
+// GA4 (AN-01): gtag.js and its collection endpoints, per Google's CSP guide.
+const GA = {
+  script: 'https://www.googletagmanager.com',
+  connect: 'https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com',
+  img: 'https://*.google-analytics.com https://*.googletagmanager.com',
+};
+
+/**
+ * NFR-08, on every response (pages and /api). The CSP is one static header so
+ * pages stay ISR (NFR-03): App Router streams each page's data in inline
+ * scripts that change per page and per revalidation, and a nonce would make
+ * every page render per request. So inline scripts are allowed ('unsafe-inline');
+ * the CSP still blocks scripts from any other origin, plugins, <base>
+ * hijacking, form posts elsewhere and framing. JSON-LD is not executed and
+ * Zalo/Messenger are plain links, so neither needs an entry.
+ */
+function securityHeaders({ dev, https, images }: { dev: boolean; https: boolean; images: string[] }) {
+  const csp = [
+    "default-src 'self'",
+    // React needs eval in dev only.
+    `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ''} ${GA.script}`,
+    // style="" attributes (next/image, the filter selects).
+    "style-src 'self' 'unsafe-inline'",
+    ['img-src', "'self'", 'data:', 'blob:', ...images, GA.img].join(' '),
+    "font-src 'self'",
+    `connect-src 'self' ${GA.connect}${dev ? ' ws:' : ''}`,
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    ...(https ? ['upgrade-insecure-requests'] : []),
+  ].join('; ');
+  return [
+    { key: 'Content-Security-Policy', value: csp },
+    { key: 'X-Content-Type-Options', value: 'nosniff' },
+    { key: 'X-Frame-Options', value: 'DENY' },
+    { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+    { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+    ...(https ? [{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }] : []),
+  ];
+}
+
 export default function config(phase: string): NextConfig {
   // Read at build time (see ARCHITECTURE "Biến môi trường"): NEXT_PUBLIC_* is
   // inlined into the bundle and remotePatterns is fixed in the build output.
@@ -48,7 +90,14 @@ export default function config(phase: string): NextConfig {
     ...(cms ? [toPattern(cms, '/uploads/**')] : []),
   ];
 
+  const headers = securityHeaders({
+    dev: phase === PHASE_DEVELOPMENT_SERVER,
+    https: siteUrl?.protocol === 'https:',
+    images: [media, cms].flatMap((url) => (url ? [url.origin] : [])),
+  });
+
   return {
+    headers: async () => [{ source: '/:path*', headers }],
     images: {
       remotePatterns,
       formats: ['image/avif', 'image/webp'],

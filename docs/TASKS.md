@@ -64,7 +64,7 @@ Nhánh: `m4/web-scaffold`
 - [x] `apps/web`: Next.js **16.4.x**, App Router, TypeScript strict, `@opennextjs/cloudflare` **1.20.x**, wrangler 4. Package `@azway/web`.
 - [x] `wrangler.jsonc` + `open-next.config.ts`; scripts `dev`, `build` (`next build`), `build:worker` (`opennextjs-cloudflare build`), `preview` (`opennextjs-cloudflare build && preview`), `deploy`.
 - [x] Styling: Tailwind CSS 4, design tokens trong `src/styles/tokens.css` (navy–đỏ từ thiết kế đã duyệt, nguồn trong `design/`).
-- [x] `src/lib/cms.ts`: client REST có kiểu (types sinh tay từ schema M2), `fetch` với `next: { tags, revalidate: 3600 }`, hàm `getTours(filters)`, `getTourBySlug`, `getCruises`, …, `getSiteSetting`, `getRedirect(path)`.
+- [x] `src/lib/cms.ts`: client REST có kiểu (types sinh tay từ schema M2), `fetch` với `next: { tags, revalidate: 3600 }`, hàm `getTours(filters)`, `getTourBySlug`, `getCruises`, …, `getSiteSetting`, `getRedirects()`.
 - [x] `src/lib/media.ts`: chuẩn hoá URL ảnh; `next.config` `images.remotePatterns` theo `CMS_MEDIA_URL`; loader phù hợp Workers (loader mặc định của Next, `/_next/image` chạy qua binding Cloudflare Images).
 - [x] `app/api/revalidate/route.ts`: kiểm secret, `revalidateTag` từng tag.
 - [x] Seed script `apps/cms/scripts/seed.mjs`: 10 tour (đủ loại, có 1 tour "trải nghiệm học tập" dựa trên lịch trình Hà Nội – Bạch Đằng Giang – Hạ Long 2N1Đ), 3 du thuyền, 2 teambuilding, 5 điểm đến, 5 bài viết, cấu hình chung. Dữ liệu là mẫu, ghi rõ trong README. (`pnpm --filter @azway/cms seed`, xem `apps/cms/README.md`.)
@@ -113,12 +113,12 @@ Nhánh: `m7/seo`
 - [x] `app/sitemap.xml/route.ts` + `app/sitemap/[file]/route.ts` (thành sitemap index nếu > 1000 URL), `app/robots.ts` (SEO-03).
 - [x] JSON-LD: TravelAgency (layout), BreadcrumbList, Article, TouristTrip (SEO-04).
 - [x] Trang có query lọc → canonical về URL gốc + `robots: noindex, follow` (SEO-06).
-- [ ] Redirect theo ARCHITECTURE D8: `app/[...legacy]/page.tsx` + nhánh notFound của trang chi tiết gọi `getRedirect(pathname)` → `permanentRedirect` (301) / `redirect` (302).
-- [ ] Script `apps/cms/scripts/import-redirects.mjs` nhập CSV `from,to,statusCode`.
-- [ ] GA4 tải sau tương tác/idle, helper `track(event, params)`.
-- [ ] Security headers (NFR-08) qua `next.config` `headers()`.
+- [x] Redirect theo ARCHITECTURE D8: `app/[...legacy]/page.tsx` + nhánh notFound của trang chi tiết tra danh sách `getRedirects()` → `permanentRedirect` (308, ứng với 301 trong CMS) / `redirect` (307, ứng với 302).
+- [x] Script `apps/cms/scripts/import-redirects.mjs` nhập CSV `from,to,statusCode`.
+- [x] GA4 tải sau tương tác/idle, helper `track(event, params)`.
+- [x] Security headers (NFR-08) qua `next.config` `headers()`.
 
-**Xong khi:** test kiểm `/sitemap.xml` chứa slug seed; URL cũ mẫu trả 301 đúng đích (AC-16); Rich Results Test không lỗi với 1 tour + 1 bài (ghi lại kết quả trong PR).
+**Xong khi:** test kiểm `/sitemap.xml` chứa slug seed; URL cũ mẫu trả 308 (vĩnh viễn, xem D8) đúng đích, mục 302 trả 307 (AC-16); Rich Results Test không lỗi với 1 tour + 1 bài (ghi lại kết quả trong PR).
 
 ---
 
