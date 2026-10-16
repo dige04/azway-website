@@ -60,3 +60,14 @@ for (const route of ROUTES) {
     expect(errors).toEqual([]);
   });
 }
+
+// SEO-08: an unknown URL answers 404 with a search box and featured products.
+test('smoke 404', async ({ page }) => {
+  const response = await page.goto('/khong-co-trang-nay', { waitUntil: 'load' });
+  expect(response?.status()).toBe(404);
+  await expect(page.locator('h1').first()).toBeVisible();
+  await expect(page.getByRole('search').getByRole('searchbox')).toBeVisible();
+  await expect(page.locator('main article').first(), 'featured products').toBeVisible();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow, 'horizontal overflow (px) on the 404 page').toBeLessThanOrEqual(0);
+});
