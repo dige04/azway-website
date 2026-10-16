@@ -174,7 +174,8 @@ export const getTourBySlug = (slug: string) =>
     exclusions: true,
     cancellationRules: true,
     destinations: card,
-    articles: { fields: ['title', 'slug', 'excerpt'], populate: { cover: true } },
+    // ArticleCard: category chip and reading time, as on the home page.
+    articles: { fields: ['title', 'slug', 'excerpt', 'readingMinutes'], populate: { cover: true, category: card } },
     teambuildings: card,
     feedbacks: { populate: { album: true } },
     seo,

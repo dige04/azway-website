@@ -7,8 +7,6 @@ export interface GalleryImage {
   src: string;
   alt: string;
   caption: string | null;
-  width: number;
-  height: number;
 }
 
 /**

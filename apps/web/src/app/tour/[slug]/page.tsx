@@ -9,7 +9,8 @@ import { Show } from '@/components/Show';
 import { ContactLink } from '@/components/layout/ContactLink';
 import { Itinerary } from '@/components/tour/Itinerary';
 import { type GalleryImage, TourGallery } from '@/components/tour/TourGallery';
-import { getTourBySlug, getTours } from '@/lib/cms';
+import { cancellationWindows } from '@/lib/cancellation';
+import { getTourBySlug, getTourCatalog } from '@/lib/cms';
 import type { Media, TextItem, Tour } from '@/lib/cms-types';
 import { mediaUrl } from '@/lib/media';
 import { formatDuration, formatPrice, groupSize, hasContent, isStrapiSlug, safeHref, telHref } from '@/lib/present';
@@ -36,13 +37,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const tour = await loadTour((await params).slug);
-  const destination = tour.destinations?.[0]?.slug;
-  const [setting, sameDestination, sameType] = await Promise.all([
-    loadSiteSetting(),
-    destination ? getTours({ destination, pageSize: 5 }) : null,
-    getTours({ category: tour.category, pageSize: 6 }),
-  ]);
-  const related = pickRelated(tour.documentId, sameDestination?.data ?? [], sameType.data);
+  // Related tours are optional: a failure hides the block, not the page.
+  const [setting, catalog] = await Promise.all([loadSiteSetting(), getTourCatalog().catch(() => null)]);
+  const tourPlaces = new Set(tour.destinations?.map((place) => place.slug));
+  const sameDestination = (catalog ?? []).filter((item) => item.destinations?.some((place) => tourPlaces.has(place.slug)));
+  const sameType = (catalog ?? []).filter((item) => item.category === tour.category);
+  const related = pickRelated(tour.documentId, sameDestination, sameType);
 
   const price = tour.priceFrom && tour.priceFrom > 0 ? tour.priceFrom : null;
   const facts = [
@@ -136,17 +136,15 @@ export default async function Page({ params }: Props) {
                     </tr>
                   </thead>
                   <tbody>
-                    {[...rules]
-                      .sort((a, b) => b.daysBefore - a.daysBefore)
-                      .map((rule) => (
-                        <tr key={rule.id} className="border-t border-line">
-                          <td className="py-2.5 pr-4">
-                            Trước {rule.daysBefore} ngày khởi hành
-                            {rule.note && <span className="block text-sm text-muted">{rule.note}</span>}
-                          </td>
-                          <td className="py-2.5 font-bold text-navy">{rule.feePercent}% giá tour</td>
-                        </tr>
-                      ))}
+                    {cancellationWindows(rules).map((rule) => (
+                      <tr key={rule.id} className="border-t border-line">
+                        <td className="py-2.5 pr-4">
+                          {rule.label}
+                          {rule.note && <span className="block text-sm text-muted">{rule.note}</span>}
+                        </td>
+                        <td className="py-2.5 font-bold text-navy">{rule.feePercent}% giá tour</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </Block>
@@ -268,6 +266,6 @@ function galleryImages(tour: Tour): GalleryImage[] {
     const src = mediaUrl(media?.url);
     if (!media || !src || seen.has(src)) return [];
     seen.add(src);
-    return [{ src, alt: media.alternativeText ?? tour.name, caption: media.caption, width: media.width ?? 1200, height: media.height ?? 800 }];
+    return [{ src, alt: media.alternativeText ?? tour.name, caption: media.caption }];
   });
 }

@@ -29,7 +29,7 @@ describe('cache tags', () => {
   // Explicit per getter so a typo in a populate key (untagged relation) fails.
   it.each([
     ['getTourCatalog', () => cms.getTourCatalog(), ['destination', 'tour']],
-    ['getTourBySlug', () => cms.getTourBySlug('x'), ['article', 'destination', 'feedback', 'teambuilding', 'tour', 'tour:x']],
+    ['getTourBySlug', () => cms.getTourBySlug('x'), ['article', 'article-category', 'destination', 'feedback', 'teambuilding', 'tour', 'tour:x']],
     ['getCruiseBySlug', () => cms.getCruiseBySlug('x'), ['article', 'cruise', 'cruise:x', 'destination']],
     ['getTeambuildingBySlug', () => cms.getTeambuildingBySlug('x'), ['teambuilding', 'teambuilding:x', 'tour']],
     ['getDestinationBySlug', () => cms.getDestinationBySlug('x'), ['cruise', 'destination', 'destination:x', 'tour']],
