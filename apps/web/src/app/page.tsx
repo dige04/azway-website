@@ -1,40 +1,229 @@
 import Image from 'next/image';
-import { getTours } from '@/lib/cms';
-import { imageProps } from '@/lib/media';
+import Link from 'next/link';
+import type { ReactNode } from 'react';
+import { HeroCarousel, type Slide } from '@/components/home/HeroCarousel';
+import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
+import { Show } from '@/components/Show';
+import { getDestinations, getFeedbacks, getHomepage } from '@/lib/cms';
+import type { Article, Destination, Feedback, Region } from '@/lib/cms-types';
+import { imageProps, mediaUrl } from '@/lib/media';
 
-// Temporary page proving the CMS -> Workers data path (WP-05); replaced by the
-// real homepage in M5. Rendered per request so `next build` needs no CMS.
+// Rendered per request so `next build` needs no CMS; the CMS fetches
+// themselves are cached by tag (lib/cms.ts).
 export const dynamic = 'force-dynamic';
 
-const vnd = new Intl.NumberFormat('vi-VN');
+const REGION: Record<Region, string> = {
+  mien_bac: 'Miền Bắc',
+  mien_trung: 'Miền Trung',
+  mien_nam: 'Miền Nam',
+  trung_quoc: 'Trung Quốc',
+  quoc_te: 'Quốc tế',
+};
 
 export default async function Page() {
-  const { data: tours, meta } = await getTours({ pageSize: 6 });
+  const [homepage, destinations, feedbacks] = await Promise.all([getHomepage(), getDestinations(), getFeedbacks({ pageSize: 4 })]);
+
+  const slides: Slide[] = (homepage?.heroSlides ?? []).flatMap((slide) => {
+    const src = mediaUrl(slide.image?.url);
+    return src ? [{ src, alt: slide.image?.alternativeText ?? slide.title ?? '', ...slide }] : [];
+  });
+  // Destinations with a photo first; the grid shows one large and four small.
+  const shownDestinations = [...destinations.data].sort((a, b) => Number(!a.image) - Number(!b.image)).slice(0, 5);
 
   return (
-    <main className="shell py-section">
-      <p className="text-kicker font-extrabold uppercase text-red">AZway</p>
-      <h1 className="text-h2 font-bold text-navy">Tour mới cập nhật</h1>
-      <p className="mt-3 text-muted">{meta.pagination.total} tour đã xuất bản</p>
-      <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {tours.map((tour) => {
-          const image = imageProps(tour.thumbnail, tour.name);
-          return (
-            <li key={tour.documentId} className="overflow-hidden rounded-card border border-line bg-white">
-              {image && (
-                <Image {...image} width={image.width ?? 800} height={image.height ?? 600} sizes="(min-width: 1181px) 440px, 100vw" className="h-56 w-full object-cover" />
-              )}
-              <div className="p-5">
-                <p className="text-sm text-muted">{tour.code}</p>
-                <h2 className="text-card-title font-bold text-navy">{tour.name}</h2>
-                <p className="mt-4 font-bold text-red">
-                  {tour.priceFrom ? `${vnd.format(tour.priceFrom)} đ/khách` : 'Liên hệ báo giá'}
-                </p>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+    <main id="main">
+      <section className="relative overflow-hidden bg-navy pb-16 pt-14 text-white md:pb-[72px] md:pt-8">
+        <div className="shell relative grid items-center gap-10 md:grid-cols-[1.3fr_0.7fr]">
+          <div>
+            <p className="mb-3 text-[13px] font-extrabold tracking-[0.16em] text-red-on-navy">AZWAY TRAVEL AGENCY</p>
+            <h1 className="text-[34px] font-bold leading-[1.12] tracking-[-0.035em] sm:text-[clamp(32px,3.6vw,52px)]">
+              <span className="block">Du lịch cùng AZway.</span>
+              <span className="block text-[#ff4054]">Chọn nhanh, đi đúng ý.</span>
+            </h1>
+            <p className="mt-4 max-w-[640px] text-base text-navy-mist sm:text-[17px]">
+              Du thuyền, khách sạn, xe di chuyển tại Việt Nam; tour Trung Quốc theo cửa khẩu và những hành trình quốc tế. Chọn điểm đến, AZway tư vấn hành trình phù hợp.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2.5 sm:gap-4">
+              <Link href="/tour" className="inline-flex min-h-[52px] items-center rounded-button bg-red px-5 font-bold text-white shadow-red hover:bg-red-hover">
+                Khám phá tour
+              </Link>
+              <Link href="/tim-kiem" className="inline-flex min-h-[52px] items-center rounded-button bg-white px-5 font-bold text-navy">
+                Tìm tour nhanh
+              </Link>
+            </div>
+          </div>
+          <Show when={slides}>{(items) => <HeroCarousel slides={items} />}</Show>
+        </div>
+      </section>
+
+      <Show when={homepage?.featuredTours}>
+        {(tours) => (
+          <Section kicker="TOUR NỔI BẬT" title="Hành trình được chọn nhiều" action={{ href: '/tour', label: 'Xem tất cả tour' }}>
+            <ProductGrid>{tours.map((tour) => <ProductCard key={tour.documentId} product={tourCard(tour)} />)}</ProductGrid>
+          </Section>
+        )}
+      </Show>
+
+      <Show when={homepage?.featuredCruises}>
+        {(cruises) => (
+          <Section kicker="DU THUYỀN HẠ LONG" title="Du thuyền trong ngày và thuê tàu" action={{ href: '/du-thuyen', label: 'Xem tất cả du thuyền' }} tone="paper">
+            <ProductGrid>{cruises.map((cruise) => <ProductCard key={cruise.documentId} product={cruiseCard(cruise)} />)}</ProductGrid>
+          </Section>
+        )}
+      </Show>
+
+      <Show when={shownDestinations}>
+        {(items) => (
+          <Section kicker="ĐIỂM ĐẾN" title="Chọn nơi bạn muốn đến" action={{ href: '/diem-den', label: 'Tất cả điểm đến' }}>
+            <div className="grid auto-rows-[218px] grid-cols-1 gap-4 xs:grid-cols-2 lg:auto-rows-[245px] lg:grid-cols-12">
+              {items.map((destination, index) => (
+                <DestinationCard key={destination.documentId} destination={destination} featured={index === 0} />
+              ))}
+            </div>
+          </Section>
+        )}
+      </Show>
+
+      <Show when={feedbacks.data}>
+        {(items) => (
+          <Section kicker="FEEDBACK KHÁCH HÀNG" title="Những đoàn đã đi cùng AZway" tone="paper">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {items.map((feedback) => (
+                <FeedbackCard key={feedback.documentId} feedback={feedback} />
+              ))}
+            </div>
+          </Section>
+        )}
+      </Show>
+
+      <Show when={homepage?.featuredArticles}>
+        {(articles) => (
+          <Section kicker="CẨM NANG" title="Kinh nghiệm trước chuyến đi" action={{ href: '/cam-nang', label: 'Đọc thêm cẩm nang' }}>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {articles.map((article) => (
+                <ArticleCard key={article.documentId} article={article} />
+              ))}
+            </div>
+          </Section>
+        )}
+      </Show>
     </main>
+  );
+}
+
+function Section({
+  kicker,
+  title,
+  action,
+  tone = 'white',
+  children,
+}: {
+  kicker: string;
+  title: string;
+  action?: { href: string; label: string };
+  tone?: 'white' | 'paper';
+  children: ReactNode;
+}) {
+  return (
+    <section className={`py-[46px] sm:py-16 ${tone === 'paper' ? 'bg-paper' : 'bg-white'}`}>
+      <div className="shell">
+        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p className="mb-3 text-kicker font-extrabold text-red">{kicker}</p>
+            <h2 className="text-[32px] font-bold leading-[1.08] tracking-[-0.05em] text-navy sm:text-[clamp(30px,3.1vw,44px)]">{title}</h2>
+          </div>
+          {action && (
+            <Link href={action.href} className="shrink-0 text-sm font-bold text-navy underline underline-offset-4 hover:text-red">
+              {action.label}
+            </Link>
+          )}
+        </div>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function ProductGrid({ children }: { children: ReactNode }) {
+  return <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{children}</div>;
+}
+
+function DestinationCard({ destination, featured }: { destination: Destination; featured: boolean }) {
+  const image = imageProps(destination.image, destination.name);
+  return (
+    <Link
+      href={`/diem-den/${destination.slug}`}
+      className={`group relative isolate flex items-end overflow-hidden rounded-card bg-navy-2 p-5 text-white ${featured ? 'xs:col-span-2 lg:col-span-6 lg:row-span-2' : 'lg:col-span-3'}`}
+    >
+      {image && (
+        <Image
+          src={image.src}
+          alt={image.alt}
+          fill
+          sizes={featured ? '(min-width: 1181px) 690px, 100vw' : '(min-width: 1181px) 345px, (min-width: 451px) 50vw, 100vw'}
+          className="-z-10 object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none"
+        />
+      )}
+      <span className="absolute inset-0 -z-10 bg-linear-to-t from-[#06142ed9] via-[#06142e33] to-transparent" aria-hidden="true" />
+      <span>
+        <small className="block text-xs font-bold uppercase tracking-wider text-white/80">{REGION[destination.region]}</small>
+        <strong className="block text-h3 font-bold">{destination.name}</strong>
+      </span>
+    </Link>
+  );
+}
+
+const dateFormat = new Intl.DateTimeFormat('vi-VN', { month: '2-digit', year: 'numeric' });
+
+/** FR-GEN-03: one group, its note and its photo album. */
+function FeedbackCard({ feedback }: { feedback: Feedback }) {
+  const photos = (feedback.album ?? []).flatMap((media) => imageProps(media, feedback.groupName) ?? []).slice(0, 4);
+  return (
+    <article className="flex flex-col overflow-hidden rounded-card border border-line bg-white">
+      <Show when={photos}>
+        {(items) => (
+          <div className="grid grid-cols-2 gap-0.5">
+            {items.map((photo) => (
+              <Image key={photo.src} {...photo} width={photo.width ?? 400} height={photo.height ?? 300} sizes="(min-width: 1181px) 170px, 50vw" className="aspect-[4/3] w-full object-cover" />
+            ))}
+          </div>
+        )}
+      </Show>
+      <div className="flex flex-1 flex-col gap-2 p-5">
+        {feedback.date && <p className="text-sm font-bold text-red">{dateFormat.format(new Date(feedback.date))}</p>}
+        <h3 className="text-lg font-bold leading-snug text-navy">{feedback.groupName}</h3>
+        {feedback.organization && <p className="text-sm text-label">{feedback.organization}</p>}
+        {feedback.description && <p className="text-sm text-muted">{feedback.description}</p>}
+        {feedback.tour && (
+          <Link href={`/tour/${feedback.tour.slug}`} className="mt-auto pt-2 text-sm font-bold text-navy underline underline-offset-4 hover:text-red">
+            {feedback.tour.name}
+          </Link>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function ArticleCard({ article }: { article: Article }) {
+  const cover = imageProps(article.cover, article.title);
+  const href = `/cam-nang/${article.slug}`;
+  return (
+    <article className="flex flex-col overflow-hidden rounded-[22px] border border-line bg-white">
+      <Link href={href} className="block h-[215px] overflow-hidden bg-paper">
+        {cover && <Image {...cover} width={cover.width ?? 800} height={cover.height ?? 600} sizes="(min-width: 1181px) 450px, (min-width: 681px) 50vw, 100vw" className="size-full object-cover" />}
+      </Link>
+      <div className="flex flex-1 flex-col gap-3 p-6">
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          {article.category && <span className="rounded-full bg-[#ffe8ec] px-3 py-1 font-bold text-red-dark">{article.category.name}</span>}
+          {article.readingMinutes ? <span className="text-muted">{article.readingMinutes} phút đọc</span> : null}
+        </div>
+        <h3 className="text-[23px] font-bold leading-tight tracking-[-0.025em] text-navy">
+          <Link href={href} className="hover:text-red">
+            {article.title}
+          </Link>
+        </h3>
+        {article.excerpt && <p className="text-[15px] text-muted">{article.excerpt}</p>}
+      </div>
+    </article>
   );
 }

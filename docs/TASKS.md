@@ -64,7 +64,7 @@ Nhánh: `m4/web-scaffold`
 - [x] `apps/web`: Next.js **16.4.x**, App Router, TypeScript strict, `@opennextjs/cloudflare` **1.20.x**, wrangler 4. Package `@azway/web`.
 - [x] `wrangler.jsonc` + `open-next.config.ts`; scripts `dev`, `build` (`next build`), `build:worker` (`opennextjs-cloudflare build`), `preview` (`opennextjs-cloudflare build && preview`), `deploy`.
 - [x] Styling: Tailwind CSS 4, design tokens trong `src/styles/tokens.css` (navy–đỏ từ thiết kế đã duyệt, nguồn trong `design/`).
-- [x] `src/lib/cms.ts`: client REST có kiểu (types sinh tay từ schema M2), `fetch` với `next: { tags, revalidate: 3600 }`, hàm `getTours(filters)`, `getTourBySlug`, `getCruises`, …, `getSiteSetting`, `getRedirect(path)`. Type của `site-setting`, `homepage`, `redirect` đánh dấu `SCHEMA-PENDING` đến khi có schema.
+- [x] `src/lib/cms.ts`: client REST có kiểu (types sinh tay từ schema M2), `fetch` với `next: { tags, revalidate: 3600 }`, hàm `getTours(filters)`, `getTourBySlug`, `getCruises`, …, `getSiteSetting`, `getRedirect(path)`.
 - [x] `src/lib/media.ts`: chuẩn hoá URL ảnh; `next.config` `images.remotePatterns` theo `CMS_MEDIA_URL`; loader phù hợp Workers (loader mặc định của Next, `/_next/image` chạy qua binding Cloudflare Images).
 - [x] `app/api/revalidate/route.ts`: kiểm secret, `revalidateTag` từng tag.
 - [x] Seed script `apps/cms/scripts/seed.mjs`: 10 tour (đủ loại, có 1 tour "trải nghiệm học tập" dựa trên lịch trình Hà Nội – Bạch Đằng Giang – Hạ Long 2N1Đ), 3 du thuyền, 2 teambuilding, 5 điểm đến, 5 bài viết, cấu hình chung. Dữ liệu là mẫu, ghi rõ trong README. (`pnpm --filter @azway/cms seed`, xem `apps/cms/README.md`.)
