@@ -20,6 +20,7 @@ copyFileSync(path.join(__dirname, '../../../design/assets/logo-azway.png'), path
 
 let strapi: Core.Strapi;
 let base: string;
+let first: Awaited<ReturnType<typeof seed>>;
 
 beforeAll(async () => {
   const secret = () => randomBytes(16).toString('base64');
@@ -36,11 +37,19 @@ beforeAll(async () => {
     DATABASE_CLIENT: 'sqlite',
     DATABASE_FILENAME: dbFile,
     CRON_ENABLED: 'false',
+    // Never the real bucket, whatever apps/cms/.env says (dotenv keeps these).
+    R2_ACCOUNT_ID: '',
+    R2_ACCESS_KEY_ID: '',
+    R2_SECRET_ACCESS_KEY: '',
+    R2_BUCKET: '',
+    R2_PUBLIC_URL: '',
   });
+  assertLocalTarget(process.env);
   strapi = await createStrapi(await compileStrapi()).load();
   await strapi.listen();
   base = `http://127.0.0.1:${(strapi.server.httpServer.address() as { port: number }).port}`;
-}, 120_000);
+  first = await seed(strapi, { assetsDir });
+}, 240_000);
 
 afterAll(async () => {
   // Remove the uploaded logo (and its resized formats) from public/uploads.
@@ -58,17 +67,22 @@ afterAll(async () => {
 });
 
 describe('seed', () => {
-  it('a second run creates nothing and leaves every count unchanged', async () => {
-    const first = await seed(strapi, { assetsDir });
+  it('a second run creates nothing, changes no count and keeps the single types', async () => {
     const counts = async () =>
       Object.fromEntries(await Promise.all(Object.keys(first.summary).map(async (uid) => [uid, await strapi.db.query(uid as any).count()])));
     const before = await counts();
+    // A value an editor set after the first run: a rerun must not reset it.
+    const settings = strapi.documents('api::site-setting.site-setting');
+    const setting = await settings.findFirst();
+    await settings.update({ documentId: setting!.documentId, data: { leadNotifyEmails: 'sentinel@azway.test' } });
 
     const second = await seed(strapi, { assetsDir });
     console.table(second.summary);
     expect(Object.values(first.summary).some((row) => row.created > 0)).toBe(true);
     for (const [uid, row] of Object.entries(second.summary)) expect(row.created, uid).toBe(0);
     expect(await counts()).toEqual(before);
+    expect(second.summary['api::site-setting.site-setting']).toMatchObject({ kept: 1, updated: 0 });
+    expect((await settings.findFirst())?.leadNotifyEmails).toBe('sentinel@azway.test');
   }, 180_000);
 
   it('keeps the draft tour off the public API', async () => {

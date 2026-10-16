@@ -10,11 +10,13 @@ Strapi 5. Chạy local: `cp .env.example .env` (điền secret), `pnpm dev:cms` 
 pnpm --filter @azway/cms seed    # Node 22, cùng DB và .env với dev:cms/start
 ```
 
+Chạy đúng lệnh trên (thư mục làm việc là `apps/cms`): Strapi và lớp chặn bên dưới cùng đọc `apps/cms/.env`.
+
 Seed tự nạp Strapi trong tiến trình của nó (không cần bật `dev:cms` trước) và ghi qua Document Service, không gọi REST. Chạy lại bao nhiêu lần cũng không nhân đôi (`tests/seed.integration.test.ts` kiểm):
 
 - Entry khớp theo `code` (tour), `slug`, `groupName` (feedback), `from` (redirect). Entry đã có thì bị ghi đè bằng giá trị mẫu. Entry khác không bị đụng tới.
 - Cấu hình chung và Trang chủ chỉ được tạo khi chưa có, không bao giờ bị ghi đè (giữ `leadNotifyEmails` thật).
-- Ảnh khớp theo tên file, chỉ upload một lần.
+- Ảnh khớp theo tên file, chỉ upload một lần. Trên DB thật (`SEED_ALLOW_REMOTE=1`), file cùng tên do người khác upload sẽ bị dùng lại và bị ghi đè alt/caption.
 
 Seed từ chối chạy khi `NODE_ENV=production`, `DATABASE_CLIENT` không phải `sqlite`, hoặc có biến `R2_*` nào khác rỗng (đọc cả `.env`). Chỉ khi chắc chắn muốn nạp dữ liệu mẫu vào đó (ví dụ staging cho khách xem) mới đặt `SEED_ALLOW_REMOTE=1`.
 
