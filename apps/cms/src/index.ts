@@ -4,6 +4,7 @@ import { registerDocumentMiddlewares } from './setup/document-middlewares';
 import { configureEditorRole } from './setup/editor-role';
 import { ensureVietnameseLocale } from './setup/locale';
 import { ensurePublicPermissions } from './setup/public-permissions';
+import { registerRevalidate } from './setup/revalidate';
 import { closePublicSignUp } from './setup/sign-up';
 
 export default {
@@ -13,6 +14,7 @@ export default {
       profileController: strapi.controller('admin::authenticated-user') as never,
     });
     registerDocumentMiddlewares(strapi);
+    registerRevalidate(strapi);
   },
 
   // Idempotent: safe on every start; each step says which manual changes it keeps.

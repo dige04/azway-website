@@ -25,6 +25,7 @@
     "sheetsAttempts": { "type": "integer", "required": true, "default": 0, "min": 0 },
     "sheetsError": { "type": "text" },
     "notifiedAt": { "type": "datetime" },
+    "notifyAttempts": { "type": "integer", "required": true, "default": 0, "min": 0 },
     "ipHash": { "type": "string", "private": true }
   },
   "config": {
@@ -50,6 +51,7 @@
       "sheetsAttempts": { "edit": { "label": "Số lần đẩy Sheets" } },
       "sheetsError": { "edit": { "label": "Lỗi Sheets gần nhất" } },
       "notifiedAt": { "edit": { "label": "Đã gửi email thông báo lúc" } },
+      "notifyAttempts": { "edit": { "label": "Số lần gửi email thông báo" } },
       "ipHash": { "edit": { "label": "IP (đã băm)", "visible": false } }
     }
   }

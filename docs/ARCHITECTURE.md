@@ -61,9 +61,12 @@ flowchart LR
 | `DATABASE_URL` hoặc `DATABASE_HOST/PORT/NAME/USERNAME/PASSWORD` | ✓ prod | |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_URL` | prod | Thiếu → upload local |
 | `LEAD_INGEST_TOKEN` | ✓ | Chuỗi bí mật dùng chung với web |
-| `GOOGLE_SA_EMAIL`, `GOOGLE_SA_PRIVATE_KEY`, `GOOGLE_SHEET_ID`, `GOOGLE_SHEET_RANGE` | prod | Thiếu → lead vẫn lưu, trạng thái `skipped` |
+| `GOOGLE_SA_EMAIL`, `GOOGLE_SA_PRIVATE_KEY`, `GOOGLE_SHEET_ID`, `GOOGLE_SHEET_RANGE` | prod | Thiếu → lead vẫn lưu, trạng thái `skipped`. Key PEM một dòng, xuống dòng viết `\n`. Range mặc định `A:S` |
+| `GOOGLE_TOKEN_URL`, `GOOGLE_SHEETS_API_URL`, `RESEND_API_URL` | | Chỉ để trỏ Google/Resend về server giả khi kiểm thử |
 | `RESEND_API_KEY`, `MAIL_FROM` | prod | Thiếu → log |
 | `ALERT_EMAILS` | prod | Nhận cảnh báo Sheets lỗi |
+| `LEAD_NOTIFY_EMAILS` | | Nhận email lead mới khi `site-setting.leadNotifyEmails` trống |
+| `CRON_ENABLED`, `LEAD_RETRY_CRON` | | Bật cron (mặc định `true`), lịch quét lại lead (mặc định `*/10 * * * *`) |
 | `WEB_REVALIDATE_URL`, `REVALIDATE_SECRET` | prod | `https://<domain>/api/revalidate` |
 | `CORS_ORIGINS` | | Danh sách origin, phân tách dấu phẩy; trống → `http://localhost:3000` |
 
@@ -85,7 +88,17 @@ flowchart LR
 1. Trình duyệt `POST /api/lead` (Next route handler) với form + `hp` (honeypot) + metadata (`sourcePage`, `landingPage`, UTM đọc từ cookie `az_utm` đặt ở lần vào đầu, `device`).
 2. Route kiểm: honeypot rỗng; rate limit 5 req / 10 phút / IP (dùng Cloudflare Rate Limiting binding nếu có, fallback bộ nhớ trong isolate); validate SĐT `^0\d{9}$` (chuẩn hoá `+84`→`0`), email nếu có.
 3. Route gọi Strapi `POST /api/leads/submit` kèm `X-Lead-Token`. Trả 201 ngay khi Strapi lưu xong.
-4. Strapi: tạo lead `sheetsStatus=pending` → trả về → background: gửi email thông báo + đẩy Sheets (3 lần). Thành công → `synced`; thất bại → `failed`, ghi `sheetsError`, email `ALERT_EMAILS`.
-5. Cron mỗi 10 phút đẩy lại lead `failed` hoặc `pending` cũ hơn 5 phút, tối đa 10 lần thử mỗi lead.
+   - Body JSON phẳng: `fullName`, `phone` (bắt buộc); `email`, `organization`, `travelDate` (`YYYY-MM-DD`), `groupSize` (1–10000), `need`, `note`, `productType` (`tour|cruise|teambuilding`), `productCode`, `productName`, `sourcePage`, `landingPage`, `utm_source`, `utm_medium`, `utm_campaign`, `device`, `ipHash` (tuỳ chọn; giới hạn độ dài trong `apps/cms/src/services/lead-input.ts`).
+   - Trả về: `201 {id}` · `400 {error:{details:{errors:{<trường>: <lý do>}}}}` · `401` thiếu/sai token (token < 32 ký tự cũng bị từ chối).
+4. Strapi: tạo lead `sheetsStatus=pending` → trả về → background: gửi email thông báo (gửi được thì đánh dấu `notifiedAt`) + đẩy Sheets (thử 1 lần + 3 lần lặp lại). Thành công → `synced`; thất bại → `failed`, ghi `sheetsError`, email `ALERT_EMAILS` (không chứa dữ liệu cá nhân) ở lần lỗi đầu và khi bỏ cuộc.
+5. Cron mỗi 10 phút đẩy lại lead `failed` hoặc `pending` cũ hơn 5 phút (tối đa 10 lượt Sheets, `sheetsAttempts`), và gửi lại email cho lead cũ hơn 5 phút chưa có `notifiedAt` (tối đa 10 lần gửi lỗi, đếm riêng ở `notifyAttempts`; thiếu `RESEND_API_KEY` chỉ log, không đếm, cron không gửi lại).
 
-Cột Sheets cố định (thứ tự): `Thời điểm | Họ tên | SĐT | Email | Đơn vị | Ngày đi | Số người | Nhu cầu | Ghi chú | Loại SP | Mã SP | Tên SP | Trang nguồn | Trang vào | utm_source | utm_medium | utm_campaign | Thiết bị | ID`.
+Mọi ô chữ do khách nhập được thêm `'` phía trước (`USER_ENTERED` sẽ chạy `=…` như công thức và đổi `09…` thành số). Cột Sheets cố định (thứ tự): `Thời điểm | Họ tên | SĐT | Email | Đơn vị | Ngày đi | Số người | Nhu cầu | Ghi chú | Loại SP | Mã SP | Tên SP | Trang nguồn | Trang vào | utm_source | utm_medium | utm_campaign | Thiết bị | ID`.
+
+## Revalidate
+
+Strapi gửi `POST WEB_REVALIDATE_URL`, header `x-revalidate-secret`, body `{ "tags": [...] }` (`apps/cms/src/setup/revalidate.ts`):
+
+- Type có D&P: khi publish / unpublish / delete. Type không D&P (`redirect`, `site-setting`): khi create / update / delete. `lead` không bao giờ gửi.
+- Tag = `<type>` và `<type>:<slug>` cho mọi slug của document trước và sau thao tác (đổi slug → xoá cache cả trang cũ). Single type chỉ có `<type>`. Không gửi tag phụ thuộc (xem D4). `<type>` là singularName, cùng khoá với `RELATIONS` của web: `tour`, `cruise`, `teambuilding`, `destination`, `article`, `article-category`, `feedback`, `site-setting`, `homepage`, `redirect`.
+- Lỗi/timeout 5 s chỉ ghi log, không chặn thao tác.

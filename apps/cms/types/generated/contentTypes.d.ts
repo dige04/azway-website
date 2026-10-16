@@ -935,6 +935,15 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
     need: Schema.Attribute.Text;
     note: Schema.Attribute.Text;
     notifiedAt: Schema.Attribute.DateTime;
+    notifyAttempts: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     organization: Schema.Attribute.String;
     phone: Schema.Attribute.String & Schema.Attribute.Required;
     productCode: Schema.Attribute.String;
