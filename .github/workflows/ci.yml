@@ -110,9 +110,16 @@ jobs:
       - name: Lead token is not in the browser bundle
         working-directory: apps/web
         run: |
-          # Both must exist: grep on a missing directory exits 2 and would check nothing.
-          test -d .next/static && test -d .open-next/assets
-          if grep -rlF -e "$LEAD_INGEST_TOKEN" .next/static .open-next/assets; then echo "LEAD_INGEST_TOKEN found in client assets"; exit 1; fi
+          # Both must exist (one test per line: under bash -e only a line's own failure stops the step).
+          test -d .next/static
+          test -d .open-next/assets
+          # grep: 0 = found (leak), 1 = not found, anything else = could not check.
+          grep -rlF -e "$LEAD_INGEST_TOKEN" .next/static .open-next/assets && status=0 || status=$?
+          case "$status" in
+            1) echo "LEAD_INGEST_TOKEN is not in the client assets" ;;
+            0) echo "LEAD_INGEST_TOKEN found in the client assets above"; exit 1 ;;
+            *) echo "grep failed (exit $status)"; exit 1 ;;
+          esac
 
       - name: Playwright browser
         run: pnpm --filter @azway/web exec playwright install --with-deps chromium
