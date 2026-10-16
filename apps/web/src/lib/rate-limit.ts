@@ -6,7 +6,7 @@
  * hitting one isolate, the common case for a form, not a distributed attack.
  * The Workers Rate Limiting binding only counts per 10 or 60 seconds, so it
  * cannot express "5 per 10 minutes"; a strict limit needs a Durable Object or
- * a WAF rate-limiting rule on /api/lead (decided with deployment, M8).
+ * a WAF rate-limiting rule on /api/lead (TASKS M8).
  */
 export function createRateLimiter({ limit, windowMs }: { limit: number; windowMs: number }) {
   const windows = new Map<string, { start: number; count: number }>();

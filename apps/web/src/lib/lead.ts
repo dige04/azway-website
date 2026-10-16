@@ -28,6 +28,13 @@ export function normalizePhone(raw: string): string | null {
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** A value the page adds, not the visitor (product, page URL): cut to fit, never a reason to lose the lead. */
+const supplied = (max: number) =>
+  z
+    .string()
+    .optional()
+    .transform((value) => value?.trim().slice(0, max) || undefined);
+
 /** A blank optional field is "not given". */
 const optional = (max: number) =>
   z
@@ -54,10 +61,10 @@ export const leadSchema = z.object({
   need: optional(2000),
   note: optional(2000),
   productType: z.enum(PRODUCT_TYPES).optional(),
-  productCode: optional(100),
-  productName: optional(200),
+  productCode: supplied(100),
+  productName: supplied(200),
   /** Path and query of the page the form was sent from (FR-LEAD-07). */
-  sourcePage: optional(2000),
+  sourcePage: supplied(2000),
 });
 
 export type LeadFields = z.input<typeof leadSchema>;
@@ -76,9 +83,3 @@ export function fieldErrors(error: z.ZodError): LeadErrors {
 
 /** What POST /api/lead answers; `message` is always fit to show the visitor. */
 export type LeadResponse = { ok: true } | { ok: false; message: string; fields?: LeadErrors };
-
-// First-visit attribution (FR-LEAD-07), written by AttributionCookies, read by /api/lead.
-export const LANDING_COOKIE = 'az_landing';
-export const UTM_COOKIE = 'az_utm';
-export const ATTRIBUTION_MAX_AGE = 30 * 24 * 60 * 60;
-export const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign'] as const;

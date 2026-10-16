@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { fieldErrors, LANDING_COOKIE, type LeadErrors, type LeadResponse, leadSchema, UTM_COOKIE, UTM_KEYS } from '@/lib/lead';
+import { LANDING_COOKIE, UTM_COOKIE, UTM_KEYS } from '@/lib/attribution';
+import { fieldErrors, type LeadErrors, type LeadResponse, leadSchema } from '@/lib/lead';
 import { createRateLimiter } from '@/lib/rate-limit';
 
 /**
@@ -18,12 +19,16 @@ const FAILED = 'Chưa gửi được yêu cầu. Vui lòng thử lại sau ít p
 const reply = (body: LeadResponse, status = 200) => Response.json(body, { status });
 
 export async function POST(request: NextRequest) {
+  if (Number(request.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) return reply({ ok: false, message: FAILED }, 413);
   const raw = await request.text().catch(() => '');
   const body = raw.length <= MAX_BODY_BYTES ? parseJson(raw) : null;
   if (!body) return reply({ ok: false, message: FAILED }, 400);
 
   // A bot filled the hidden field: it is told the lead went through, nothing is stored.
-  if (typeof body.hp === 'string' && body.hp.trim() !== '') return reply({ ok: true });
+  if (typeof body.hp === 'string' && body.hp.trim() !== '') {
+    console.info('[lead] honeypot hit');
+    return reply({ ok: true });
+  }
 
   const ip = clientIp(request);
   if (!limiter.allow(ip)) {
@@ -65,7 +70,10 @@ export async function POST(request: NextRequest) {
     return reply({ ok: false, message: FAILED }, 502);
   }
 
-  if (res.status === 201) return reply({ ok: true });
+  if (res.status === 201) {
+    await res.body?.cancel();
+    return reply({ ok: true });
+  }
   if (res.status === 400) {
     // Same rules on both sides, so rare: point at the fields the CMS named.
     const details = (await res.json().catch(() => null)) as { error?: { details?: { errors?: Record<string, unknown> } } } | null;
@@ -75,6 +83,7 @@ export async function POST(request: NextRequest) {
     }
     return reply({ ok: false, message: 'Vui lòng kiểm tra lại các ô được đánh dấu.', fields }, 400);
   }
+  await res.body?.cancel();
   console.error(`[lead] CMS responded ${res.status}`);
   return reply({ ok: false, message: FAILED }, 502);
 }

@@ -110,6 +110,8 @@ jobs:
       - name: Lead token is not in the browser bundle
         working-directory: apps/web
         run: |
+          # Both must exist: grep on a missing directory exits 2 and would check nothing.
+          test -d .next/static && test -d .open-next/assets
           if grep -rlF -e "$LEAD_INGEST_TOKEN" .next/static .open-next/assets; then echo "LEAD_INGEST_TOKEN found in client assets"; exit 1; fi
 
       - name: Playwright browser

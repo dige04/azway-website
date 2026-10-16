@@ -1,14 +1,15 @@
 'use client';
 
 import { useEffect } from 'react';
-import { ATTRIBUTION_MAX_AGE, LANDING_COOKIE, UTM_COOKIE, UTM_KEYS } from '@/lib/lead';
+import { ATTRIBUTION_MAX_AGE, LANDING_COOKIE, UTM_COOKIE, UTM_KEYS } from '@/lib/attribution';
 
 const MAX_LENGTH = 1000;
 
 /**
- * FR-LEAD-07: on the first visit, remembers the landing page and the UTM
- * tags of the URL for 30 days (cookies, so pages can stay cached); a lead
- * sent later carries them. Never overwritten: first touch wins.
+ * FR-LEAD-07, for 30 days (cookies, so pages can stay cached): the landing
+ * page of the first visit, and the UTM tags of the first visit that has
+ * any (it may be a later one). Neither is overwritten; a lead sent later
+ * carries both.
  */
 export function AttributionCookies() {
   useEffect(() => {

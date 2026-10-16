@@ -87,7 +87,7 @@ flowchart LR
 ## Luồng lead chi tiết
 
 1. Trình duyệt `POST /api/lead` (Next route handler) với form + `hp` (honeypot) + metadata (`sourcePage`, `landingPage`, UTM đọc từ cookie `az_utm` đặt ở lần vào đầu, `device`).
-2. Route kiểm: honeypot rỗng; rate limit 5 req / 10 phút / IP (dùng Cloudflare Rate Limiting binding nếu có, fallback bộ nhớ trong isolate); validate SĐT `^0\d{9}$` (chuẩn hoá `+84`→`0`), email nếu có.
+2. Route kiểm: honeypot rỗng; rate limit 5 req / 10 phút / IP, đếm trong bộ nhớ của isolate (`lib/rate-limit.ts`: chỉ chặn một client trên một isolate; binding Rate Limiting chỉ đếm theo 10/60 giây nên không dùng; giới hạn chặt là việc của M8); validate SĐT `^0\d{9}$` (chuẩn hoá `+84`→`0`), email nếu có.
 3. Route gọi Strapi `POST /api/leads/submit` kèm `X-Lead-Token`. Trả 201 ngay khi Strapi lưu xong.
    - Body JSON phẳng: `fullName`, `phone` (bắt buộc); `email`, `organization`, `travelDate` (`YYYY-MM-DD`), `groupSize` (1–10000), `need`, `note`, `productType` (`tour|cruise|teambuilding`), `productCode`, `productName`, `sourcePage`, `landingPage`, `utm_source`, `utm_medium`, `utm_campaign`, `device`, `ipHash` (tuỳ chọn; giới hạn độ dài trong `apps/cms/src/services/lead-input.ts`: trường khách gõ quá dài → 400; `sourcePage`, `landingPage`, `utm_*`, `device`, `ipHash` là dữ liệu tracking, quá dài thì bị cắt, không làm mất lead).
    - Trả về: `201 {id}` · `400 {error:{details:{errors:{<trường>: <lý do>}}}}` · `401` thiếu/sai token (token < 32 ký tự cũng bị từ chối).

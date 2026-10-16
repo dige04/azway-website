@@ -19,7 +19,10 @@ const run = Date.now().toString(36);
 
 test.describe.configure({ mode: 'serial' });
 test.skip(({ isMobile }) => isMobile, 'one browser (desktop): the rate limit is per IP');
-test.skip(!CMS || !ADMIN.email || !ADMIN.password, 'needs CMS_URL, E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD');
+const configured = !!(CMS && ADMIN.email && ADMIN.password);
+// On CI the M6 check must run: a missing variable fails the run instead of skipping it.
+if (process.env.CI && !configured) throw new Error('lead.spec.ts needs CMS_URL, E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD on CI');
+test.skip(!configured, 'needs CMS_URL, E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD');
 
 type Lead = Record<string, string | number | null>;
 

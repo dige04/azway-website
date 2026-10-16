@@ -18,4 +18,11 @@ describe('leadSchema (FR-LEAD-03)', () => {
     const lead = leadSchema.parse({ ...valid, email: ' ', organization: '', groupSize: '', travelDate: '' });
     expect(lead).toEqual({ fullName: 'Nguyễn Văn A', phone: '0912345678' });
   });
+
+  it('cuts what the page adds (URL, product) to fit instead of losing the lead', () => {
+    const lead = leadSchema.parse({ ...valid, sourcePage: `/tour/x?utm_campaign=${'a'.repeat(2500)}`, productName: 'T'.repeat(250), productCode: 'C'.repeat(150) });
+    expect(lead.sourcePage).toHaveLength(2000);
+    expect(lead.productName).toHaveLength(200);
+    expect(lead.productCode).toHaveLength(100);
+  });
 });

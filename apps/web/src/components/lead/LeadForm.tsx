@@ -46,7 +46,7 @@ export function LeadForm({ product, responseTimeText, hotline }: { product?: Lea
       productCode: product?.code,
       productName: product?.name,
       sourcePage: location.pathname + location.search,
-      hp: value('hp'),
+      hp: value('az_trap'),
     } satisfies LeadFields & { hp: string };
     const checked = leadSchema.safeParse(lead);
     if (!checked.success) {
@@ -117,9 +117,10 @@ export function LeadForm({ product, responseTimeText, hotline }: { product?: Lea
 
       {/* Honeypot (FR-LEAD-08): hidden from people and screen readers; bots fill it. */}
       <div aria-hidden="true" className="absolute -left-[9999px] size-px overflow-hidden">
+        {/* A name and label autofill does not recognise, so it never fills this for a real visitor. */}
         <label>
-          Website
-          <input name="hp" tabIndex={-1} autoComplete="off" />
+          Bỏ trống ô này
+          <input name="az_trap" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
 
