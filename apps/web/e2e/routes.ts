@@ -1,11 +1,15 @@
 /** Routes the smoke test opens. Add each new page here (paths need seed data). */
 export const ROUTES = ['/', '/tour', '/tour?loai=trung-quoc&thoi-luong=4n3d&sap-xep=gia-tang', '/tour/ha-noi-ha-long-1-ngay'];
 
-/** Routes whose heading is fixed text: what must show to prove the seed data rendered. */
-export const SEED_CONTENT: Partial<Record<string, string>> = {
-  '/tour': 'main article',
-  // Seed: LC6, LC7, TK1S.
-  '/tour?loai=trung-quoc&thoi-luong=4n3d&sap-xep=gia-tang': 'main article',
+/**
+ * List routes: their heading reads the same with or without data, so the
+ * cards must show. `codes`: the exact cards, in order (tour code on each),
+ * which proves the URL state was applied.
+ */
+export const LISTS: Partial<Record<string, { codes?: string[] }>> = {
+  '/tour': {},
+  // Seed: Chinese 4N3Đ tours by price ascending, "Liên hệ báo giá" (LC6) last.
+  '/tour?loai=trung-quoc&thoi-luong=4n3d&sap-xep=gia-tang': { codes: ['LC7', 'TK1S', 'LC6'] },
 };
 
 /**

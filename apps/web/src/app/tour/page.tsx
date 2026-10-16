@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { ContactLink } from '@/components/layout/ContactLink';
 import { ProductCard, tourCard } from '@/components/ProductCard';
-import { FilterApplyTracker, TourFilterForm, TourSortSelect } from '@/components/tour/TourFilterForm';
+import { FilterApplyTracker, FilterLink, TourFilterForm, TourSortSelect } from '@/components/tour/TourFilterForm';
 import { getSiteSetting, getTourCatalog } from '@/lib/cms';
 import { telHref } from '@/lib/present';
 import {
@@ -113,13 +113,13 @@ function ActiveConditions({ query, labels }: { query: TourQuery; labels: Labels 
   return (
     <>
       {active.map(([key, label]) => (
-        <Link key={key} href={tourHref(without(query, key))} scroll={false} className={chip} aria-label={`Bỏ điều kiện ${label}`}>
+        <FilterLink key={key} href={tourHref(without(query, key))} className={chip} aria-label={`Bỏ điều kiện ${label}`}>
           {label} <span aria-hidden="true">×</span>
-        </Link>
+        </FilterLink>
       ))}
-      <Link href={tourHref({ sort: query.sort })} scroll={false} className="text-sm font-bold text-navy underline underline-offset-4 hover:text-red">
+      <FilterLink href={tourHref({ sort: query.sort })} className="text-sm font-bold text-navy underline underline-offset-4 hover:text-red">
         Xoá bộ lọc
-      </Link>
+      </FilterLink>
     </>
   );
 }
@@ -147,9 +147,9 @@ function NoResults({
           <ul className="mt-4 flex flex-wrap justify-center gap-2">
             {suggestions.map(({ key, count }) => (
               <li key={key}>
-                <Link href={tourHref(without(query, key))} scroll={false} className={chip}>
+                <FilterLink href={tourHref(without(query, key))} className={chip}>
                   Bỏ “{labels[key]}” → {count} tour
-                </Link>
+                </FilterLink>
               </li>
             ))}
           </ul>
@@ -165,9 +165,9 @@ function NoResults({
           </ContactLink>
         )}
         {hasConditions(query) && (
-          <Link href="/tour" className="inline-flex min-h-[52px] items-center rounded-button border border-line bg-white px-6 font-bold text-navy">
+          <FilterLink href="/tour" className="inline-flex min-h-[52px] items-center rounded-button border border-line bg-white px-6 font-bold text-navy">
             Xem tất cả tour
-          </Link>
+          </FilterLink>
         )}
       </div>
     </div>

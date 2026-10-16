@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, type CSSProperties, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, type ComponentProps, type CSSProperties, type FormEvent, type ReactNode } from 'react';
 import { track } from '@/lib/track';
 import { CATEGORIES, DURATIONS, parseTourQuery, REGIONS, SORTS, tourHref, type TourQuery } from '@/lib/tour-filter';
 
@@ -18,6 +19,13 @@ const chevron: CSSProperties = {
   paddingRight: 35,
 };
 
+/**
+ * The /tour URL the visitor just asked for (form, sort, chip). `filter_apply`
+ * fires when the page arrives there, so it carries the result count, and
+ * Back/Forward or paging never fire it.
+ */
+let applying: string | null = null;
+
 /** Submits to a clean, shareable /tour URL; without JavaScript it is a plain GET form. */
 function useSubmitToUrl() {
   const router = useRouter();
@@ -25,8 +33,14 @@ function useSubmitToUrl() {
     event.preventDefault();
     const data = new URLSearchParams();
     for (const [key, value] of new FormData(event.currentTarget)) if (typeof value === 'string') data.append(key, value);
-    router.push(tourHref(parseTourQuery(data)), { scroll: false });
+    applying = tourHref(parseTourQuery(data));
+    router.push(applying, { scroll: false });
   };
+}
+
+/** A link to other /tour conditions (chips, suggestions): applying them is a `filter_apply`. */
+export function FilterLink({ href, ...props }: Omit<ComponentProps<typeof Link>, 'href'> & { href: string }) {
+  return <Link href={href} scroll={false} {...props} onClick={() => (applying = href)} />;
 }
 
 /** Filter fields (FR-SRC-01, FR-SRC-03); the page keys them by the current URL. */
@@ -82,15 +96,17 @@ export function TourSortSelect({ sort }: { sort: TourQuery['sort'] }) {
 }
 
 /**
- * AN-04: one `filter_apply` per change of conditions or sort made on the
- * page. Opening a shared link is not an apply, and paging is not either.
+ * AN-04: one `filter_apply` per change of conditions or sort the visitor
+ * makes on the page (see `applying`). Opening a shared link is not an apply.
  */
 export function FilterApplyTracker({ href, params }: { href: string; params: Record<string, string> }) {
   const previous = useRef(href);
   useEffect(() => {
     if (previous.current === href) return;
     previous.current = href;
-    track('filter_apply', params);
+    const asked = applying === href;
+    applying = null;
+    if (asked) track('filter_apply', params);
   }, [href, params]);
   return null;
 }
