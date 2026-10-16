@@ -62,24 +62,25 @@ export default async function Page({ params }: Props) {
         <Breadcrumb items={[{ name: 'Tour', href: '/tour' }, { name: tour.name }]} />
       </div>
 
+      {/* Phones: title, price box, then the blocks. Desktop: price box in the right column. */}
       <div className="shell grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="grid min-w-0 gap-8">
-          <header>
-            <p className="text-kicker font-extrabold uppercase text-red">{tourCard(tour).typeLabel}</p>
-            <h1 className="mt-2 text-[32px] font-bold leading-[1.1] tracking-[-0.035em] text-navy sm:text-[clamp(32px,3.4vw,48px)]">{tour.name}</h1>
-            <Show when={tour.destinations}>
-              {(places) => (
-                <p className="mt-3 flex flex-wrap gap-x-3 text-sm text-label">
-                  {places.map((place) => (
-                    <Link key={place.documentId} href={`/diem-den/${place.slug}`} className="underline underline-offset-4 hover:text-red">
-                      {place.name}
-                    </Link>
-                  ))}
-                </p>
-              )}
-            </Show>
-          </header>
+        <header className="min-w-0 lg:col-start-1">
+          <p className="text-kicker font-extrabold uppercase text-red">{tourCard(tour).typeLabel}</p>
+          <h1 className="mt-2 text-[32px] font-bold leading-[1.1] tracking-[-0.035em] text-navy sm:text-[clamp(32px,3.4vw,48px)]">{tour.name}</h1>
+          <Show when={tour.destinations}>
+            {(places) => (
+              <p className="mt-3 flex flex-wrap gap-x-3 text-sm text-label">
+                {places.map((place) => (
+                  <Link key={place.documentId} href={`/diem-den/${place.slug}`} className="underline underline-offset-4 hover:text-red">
+                    {place.name}
+                  </Link>
+                ))}
+              </p>
+            )}
+          </Show>
+        </header>
 
+        <div className="grid min-w-0 gap-8 lg:col-start-1">
           <Show when={galleryImages(tour)}>{(images) => <TourGallery images={images} title={tour.name} />}</Show>
 
           <Show when={tour.highlights}>
@@ -173,7 +174,7 @@ export default async function Page({ params }: Props) {
           </section>
         </div>
 
-        <aside className="grid gap-4 lg:sticky lg:top-[calc(var(--spacing-header)+16px)]">
+        <aside className="row-start-2 grid gap-4 lg:sticky lg:top-[calc(var(--spacing-header)+16px)] lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <div className="rounded-card border border-line bg-white p-6">
             {price && <p className="text-xs uppercase tracking-wider text-muted">Giá từ</p>}
             <p className="text-[28px] font-extrabold leading-tight text-red-dark">{formatPrice(price)}</p>
