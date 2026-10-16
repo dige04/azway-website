@@ -7,8 +7,10 @@
 
 # [build, required for production builds] Public site URL, e.g. https://<domain>
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-# [build + runtime] Strapi base URL (no trailing slash), e.g. https://cms.<domain>
+# [build + runtime, required for production builds] Strapi base URL (no trailing slash), e.g. https://cms.<domain>
 CMS_URL=http://localhost:1337
+# [build] CI check job only: BUILD_WITHOUT_CMS=1 allows a build without CMS_URL (CMS pages then render per request)
+# BUILD_WITHOUT_CMS=1
 # [build + runtime] Public media origin (R2 custom domain), e.g. https://media.<domain>. Empty -> Strapi local /uploads
 CMS_MEDIA_URL=
 # [runtime, secret] Shared secret with the CMS

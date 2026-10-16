@@ -42,6 +42,14 @@ export function formatDuration(days: number, nights: number): string {
   return `${days}N${nights}Đ`;
 }
 
+/** "10–20 khách", "Từ 10 khách", "Đến 20 khách"; null without either bound. */
+export function groupSize(min: number | null, max: number | null): string | null {
+  if (min && max) return `${min}–${max} khách`;
+  if (min) return `Từ ${min} khách`;
+  if (max) return `Đến ${max} khách`;
+  return null;
+}
+
 /**
  * Characters a Strapi uid accepts. Capped at 200 so the `<type>:<slug>` cache
  * tag stays within Next's 256-character limit. Checked before calling the CMS
