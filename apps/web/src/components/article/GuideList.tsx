@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArticleCard } from '@/components/ArticleCard';
 import { Breadcrumb, type Crumb } from '@/components/Breadcrumb';
+import { Show } from '@/components/Show';
 import { getArticleCategories, getArticleCategoryBySlug, getArticles } from '@/lib/cms';
 import { pageFromSegment, pageHref } from '@/lib/pagination';
 import { isStrapiSlug } from '@/lib/present';
@@ -54,7 +55,7 @@ export async function GuideList(params: GuideListParams) {
       <h1 className="font-serif text-[34px] font-bold leading-[1.15] tracking-[-0.035em] text-navy sm:text-[clamp(38px,3.4vw,50px)]">
         {category?.name ?? ALL.title}
       </h1>
-      <p className="mt-3 max-w-[640px] text-muted">{category ? category.description : ALL.description}</p>
+      <Show when={category ? category.description : ALL.description}>{(text) => <p className="mt-3 max-w-[640px] text-muted">{text}</p>}</Show>
 
       {categories.data.length > 0 && (
         <nav aria-label="Chuyên mục" className="mt-7 flex flex-wrap gap-2">

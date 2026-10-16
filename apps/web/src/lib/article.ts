@@ -7,8 +7,8 @@ export interface TocEntry {
   level: 2 | 3;
 }
 
-/** Ids already on every page (the layout's skip-link target). */
-const RESERVED_IDS = ['main'];
+/** Ids the page already uses: skip-link target, mobile menu, the article page's own sections. */
+const RESERVED_IDS = ['main', 'mobile-drawer', 'san-pham-lien-quan', 'bai-lien-quan'];
 
 type InlineNode = { type?: string; text?: string; children?: InlineNode[] };
 

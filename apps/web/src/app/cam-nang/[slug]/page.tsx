@@ -107,9 +107,13 @@ export default async function Page({ params }: Props) {
             )}
           </Show>
 
-          <div className="mt-8">
-            <ArticleBody blocks={blocks} />
-          </div>
+          <Show when={blocks}>
+            {(content) => (
+              <div className="mt-8">
+                <ArticleBody blocks={content} />
+              </div>
+            )}
+          </Show>
 
           <Show when={products}>
             {(items) => (

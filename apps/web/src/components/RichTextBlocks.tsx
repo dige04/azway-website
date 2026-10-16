@@ -7,7 +7,7 @@ import { createElement, type ReactNode } from 'react';
 /** A CMS link that may go in href: http(s), tel, mailto or a path on this site. */
 function linkHref(url: string): string | null {
   const value = url.trim();
-  return /^(https?:\/\/|tel:|mailto:)/i.test(value) || /^\/(?!\/)/.test(value) ? value : null;
+  return /^(https?:\/\/|tel:|mailto:)/i.test(value) || /^\/(?![/\\])/.test(value) ? value : null;
 }
 
 /** The client half of `RichText` (the renderer is a client module); use `RichText`. */
