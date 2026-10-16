@@ -57,8 +57,10 @@ export const TEXTS: Partial<Record<string, string[]>> = {
   '/lien-he': ['033.202.8585', 'info@azway.vn'],
   '/teambuilding': ['Teambuilding & Gala Dinner'],
   '/teambuilding/teambuilding': ['Mò cua bắt ốc', 'Xếp tháp niềm tin', 'MC và nhân sự điều phối'],
-  '/tim-kiem?q=khong-co-tour-nay': ['Gọi 033.202.8585'],
 };
+
+/** Routes whose <main> must offer a call link the phone can dial (`tel:`). */
+export const CALLS = ['/lien-he', '/tim-kiem?q=khong-co-tour-nay'];
 
 /**
  * Public URLs the menu and cards already link to but no page serves yet (M5

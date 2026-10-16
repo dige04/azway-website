@@ -7,9 +7,10 @@ import { FeaturedProducts } from '@/components/FeaturedProducts';
 import { ContactLink } from '@/components/layout/ContactLink';
 import { cruiseCard, ProductCard, tourCard } from '@/components/ProductCard';
 import { SearchBox } from '@/components/SearchBox';
-import { getArticleCatalog, getCruiseCatalog, getSiteSetting, getTourCatalog } from '@/lib/cms';
+import { getArticleCatalog, getCruiseCatalog, getTourCatalog } from '@/lib/cms';
 import { telHref } from '@/lib/present';
 import { search, searchTerm, type SearchCatalogs } from '@/lib/search';
+import { loadSiteSetting } from '@/lib/site-setting';
 import { tourHref } from '@/lib/tour-filter';
 
 /** Tours shown here; the rest are one click away on /tour, which pages them. */
@@ -30,10 +31,10 @@ async function loadCatalogs(): Promise<SearchCatalogs> {
 /** FR-SRC-03: tours, cruises and guide articles by name or code. */
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const q = searchTerm((await searchParams).q);
-  const results = q ? search(q, await loadCatalogs()) : null;
+  // The hotline is for the empty state (FR-SRC-05); loadSiteSetting logs a CMS failure.
+  const [catalogs, setting] = q ? await Promise.all([loadCatalogs(), loadSiteSetting()]) : [null, null];
+  const results = catalogs && search(q, catalogs);
   const total = results ? results.tours.length + results.cruises.length + results.articles.length : 0;
-  // The hotline is only for the empty state; without it the page still renders.
-  const hotline = results && total === 0 ? ((await getSiteSetting().catch(() => null))?.hotline ?? null) : null;
 
   return (
     <div className="shell pb-section pt-6 sm:pt-8">
@@ -46,7 +47,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           {total} kết quả cho “{q}”
         </p>
       )}
-      {results && total === 0 && <NoResults q={q} hotline={hotline} />}
+      {results && total === 0 && <NoResults q={q} hotline={setting?.hotline ?? null} />}
 
       {results && results.tours.length > 0 && (
         <Group title="Tour" count={results.tours.length}>
@@ -90,7 +91,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
 function NoResults({ q, hotline }: { q: string; hotline: string | null }) {
   const phone = telHref(hotline);
   return (
-    <div role="status" className="mt-8 rounded-card border border-dashed border-[#bdc7d7] bg-white px-6 py-12 text-center sm:py-16">
+    <div className="mt-8 rounded-card border border-dashed border-[#bdc7d7] bg-white px-6 py-12 text-center sm:py-16">
       <h2 className="text-h3 font-bold text-navy">Không tìm thấy kết quả cho “{q}”</h2>
       <p className="mt-3 text-muted">Thử từ khóa ngắn hơn, tên điểm đến hoặc mã tour.</p>
       <p className="mt-6 text-muted">AZway có thể thiết kế tour riêng theo yêu cầu của đoàn.</p>
