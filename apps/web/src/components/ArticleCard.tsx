@@ -9,7 +9,8 @@ export function ArticleCard({ article }: { article: Article }) {
   const href = `/cam-nang/${article.slug}`;
   return (
     <article className="flex flex-col overflow-hidden rounded-[22px] border border-line bg-white">
-      <Link href={href} className="block h-[215px] overflow-hidden bg-paper">
+      {/* The title links to the same page: the image link stays out of the tab order and the accessibility tree. */}
+      <Link href={href} tabIndex={-1} aria-hidden="true" className="block h-[215px] overflow-hidden bg-paper">
         {cover && <Image {...cover} width={cover.width ?? 800} height={cover.height ?? 600} sizes="(min-width: 1181px) 450px, (min-width: 681px) 50vw, 100vw" className="size-full object-cover" />}
       </Link>
       <div className="flex flex-1 flex-col gap-3 p-6">

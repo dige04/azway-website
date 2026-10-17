@@ -80,7 +80,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
           className="flex h-[210px] snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] xs:h-[270px] md:h-[clamp(255px,22vw,306px)] [&::-webkit-scrollbar]:hidden"
         >
           {slides.map((slide, index) => (
-            <figure
+            <div
               key={`${index}-${slide.src}`}
               role="group"
               aria-roledescription="slide"
@@ -91,13 +91,13 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
               <Image src={slide.src} alt={slide.alt} fill priority={index === 0} sizes="(min-width: 901px) 45vw, 100vw" className="object-cover" />
               <div className="absolute inset-0 bg-linear-to-t from-[#06142ecc] via-transparent to-transparent" aria-hidden="true" />
               {(slide.title || slide.subtitle || (slide.ctaLabel && slide.ctaUrl)) && (
-                <figcaption className="absolute inset-x-[18px] bottom-[18px] z-10 grid gap-1 text-white sm:inset-x-[22px] sm:bottom-[22px]">
+                <div className="absolute inset-x-[18px] bottom-[18px] z-10 grid gap-1 text-white sm:inset-x-[22px] sm:bottom-[22px]">
                   {slide.title && <strong className="line-clamp-2 text-2xl leading-tight sm:text-[30px]">{slide.title}</strong>}
                   {slide.subtitle && <span className="hidden text-[13px] text-white/85 xs:line-clamp-2">{slide.subtitle}</span>}
                   {slide.ctaLabel && slide.ctaUrl && <SlideLink url={slide.ctaUrl} label={slide.ctaLabel} hidden={index !== current} />}
-                </figcaption>
+                </div>
               )}
-            </figure>
+            </div>
           ))}
         </div>
         {slides.length > 1 && (

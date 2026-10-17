@@ -14,7 +14,7 @@ export function FeedbackCard({ feedback, linkTour = true }: { feedback: Feedback
     <article className="flex flex-col overflow-hidden rounded-card border border-line bg-white">
       <Show when={photos}>{(items) => <FeedbackAlbum photos={items} title={feedback.groupName} />}</Show>
       <div className="flex flex-1 flex-col gap-2 p-5">
-        {feedback.date && <p className="text-sm font-bold text-red">{dateFormat.format(new Date(feedback.date))}</p>}
+        {feedback.date && <p className="text-sm font-bold text-red-dark">{dateFormat.format(new Date(feedback.date))}</p>}
         <h3 className="text-lg font-bold leading-snug text-navy">{feedback.groupName}</h3>
         {feedback.organization && <p className="text-sm text-label">{feedback.organization}</p>}
         {feedback.description && <p className="text-sm text-muted">{feedback.description}</p>}

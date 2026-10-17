@@ -75,6 +75,15 @@ test('smoke 404', async ({ page }) => {
   expect(overflow, 'horizontal overflow (px) on the 404 page').toBeLessThanOrEqual(0);
 });
 
+// Browsers and crawlers ask for /favicon.ico when a page links no icon (Safari ignores SVG icons).
+test('site icon: /favicon.ico is served and pages link an icon', async ({ page, request }) => {
+  const icon = await request.get('/favicon.ico');
+  expect(icon.status()).toBe(200);
+  expect(icon.headers()['content-type']).toMatch(/^image\//);
+  await page.goto('/');
+  await expect(page.locator('link[rel="icon"]')).not.toHaveCount(0);
+});
+
 // NFR-08: pages and API routes alike.
 test('security headers on a page and an API response', async ({ request }) => {
   for (const res of [await request.get('/'), await request.post('/api/revalidate', { data: {} })]) {

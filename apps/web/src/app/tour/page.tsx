@@ -56,7 +56,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
       <section className="bg-white pb-8 pt-6 sm:pb-10">
         <div className="shell">
           <Breadcrumb items={[{ name: 'Tour du lịch' }]} />
-          <p className="mb-3 mt-8 text-kicker font-extrabold text-red">TOUR DU LỊCH</p>
+          <p className="mb-3 mt-8 text-kicker font-extrabold text-red-dark">TOUR DU LỊCH</p>
           <h1 className="text-[32px] font-bold leading-[1.08] tracking-[-0.05em] text-navy sm:text-[clamp(30px,3.1vw,44px)]">
             Tìm tour phù hợp với đoàn của bạn
           </h1>

@@ -145,7 +145,7 @@ function Section({
       <div className="shell">
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="mb-3 text-kicker font-extrabold text-red">{kicker}</p>
+            <p className="mb-3 text-kicker font-extrabold text-red-dark">{kicker}</p>
             <h2 className="text-[32px] font-bold leading-[1.08] tracking-[-0.05em] text-navy sm:text-[clamp(30px,3.1vw,44px)]">{title}</h2>
           </div>
           {action && (
