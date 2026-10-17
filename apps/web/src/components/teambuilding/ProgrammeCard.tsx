@@ -14,7 +14,8 @@ export function ProgrammeCard({ programme, number }: { programme: Teambuilding; 
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-card border border-line bg-white transition-shadow hover:shadow-card">
-      <Link href={href} className="relative block aspect-[1.85] overflow-hidden bg-paper">
+      {/* The title links to the same page: the image link stays out of the tab order and the accessibility tree. */}
+      <Link href={href} tabIndex={-1} aria-hidden="true" className="relative block aspect-[1.85] overflow-hidden bg-paper">
         {image && (
           <Image
             {...image}
@@ -29,7 +30,7 @@ export function ProgrammeCard({ programme, number }: { programme: Teambuilding; 
         </Show>
       </Link>
       <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <p className="text-xs font-extrabold tracking-[0.1em] text-red">CHƯƠNG TRÌNH {String(number).padStart(2, '0')}</p>
+        <p className="text-xs font-extrabold tracking-[0.1em] text-red-dark">CHƯƠNG TRÌNH {String(number).padStart(2, '0')}</p>
         <h3 className="mb-3 mt-2.5 text-[25px] font-bold leading-tight tracking-[-0.03em] text-navy">
           <Link href={href} className="hover:text-red">
             {programme.name}

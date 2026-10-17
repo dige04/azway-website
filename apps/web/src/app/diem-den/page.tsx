@@ -27,7 +27,7 @@ export default async function Page() {
       <section className="bg-white pb-8 pt-6 sm:pb-10">
         <div className="shell">
           <Breadcrumb items={[{ name: 'Điểm đến' }]} />
-          <p className="mb-3 mt-8 text-kicker font-extrabold text-red">ĐIỂM ĐẾN</p>
+          <p className="mb-3 mt-8 text-kicker font-extrabold text-red-dark">ĐIỂM ĐẾN</p>
           <h1 className="text-[32px] font-bold leading-[1.08] tracking-[-0.05em] text-navy sm:text-[clamp(30px,3.1vw,44px)]">Chọn nơi bạn muốn đến</h1>
           <p className="mt-4 max-w-[720px] text-ink-2">Mỗi điểm đến gom các tour và du thuyền AZway đang có ở đó.</p>
         </div>

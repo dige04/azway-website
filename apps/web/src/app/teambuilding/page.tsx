@@ -52,7 +52,7 @@ export default async function Page() {
       </section>
 
       <section id="chuong-trinh" className="shell scroll-mt-24 pt-14 sm:pt-20">
-        <p className="mb-3 text-[13px] font-extrabold tracking-[0.14em] text-red">CHỌN CÁCH ĐI CÙNG NHAU</p>
+        <p className="mb-3 text-[13px] font-extrabold tracking-[0.14em] text-red-dark">CHỌN CÁCH ĐI CÙNG NHAU</p>
         <h2 className="max-w-[750px] text-[32px] font-bold leading-[1.1] tracking-[-0.04em] text-navy sm:text-[clamp(32px,3.4vw,48px)]">
           Một đội ngũ. Nhiều cách để gắn kết.
         </h2>
@@ -76,7 +76,7 @@ export default async function Page() {
       </section>
 
       <section className="shell pt-14 sm:pt-20">
-        <p className="mb-3 text-[13px] font-extrabold tracking-[0.14em] text-red">ĐI CÙNG AZWAY</p>
+        <p className="mb-3 text-[13px] font-extrabold tracking-[0.14em] text-red-dark">ĐI CÙNG AZWAY</p>
         <h2 className="max-w-[750px] text-[32px] font-bold leading-[1.1] tracking-[-0.04em] text-navy sm:text-[clamp(32px,3.4vw,48px)]">
           Từ ý tưởng đầu tiên đến khoảnh khắc cuối cùng.
         </h2>

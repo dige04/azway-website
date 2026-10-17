@@ -86,7 +86,7 @@ export default async function Page({ params }: Props) {
       <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-14">
         <article className="min-w-0 max-w-[820px]">
           {article.category && (
-            <Link href={`/cam-nang/danh-muc/${article.category.slug}`} className="text-xs font-extrabold uppercase tracking-[0.08em] text-red">
+            <Link href={`/cam-nang/danh-muc/${article.category.slug}`} className="text-xs font-extrabold uppercase tracking-[0.08em] text-red-dark">
               {article.category.name}
             </Link>
           )}

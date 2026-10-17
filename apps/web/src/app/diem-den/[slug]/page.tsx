@@ -56,7 +56,7 @@ export default async function Page({ params }: Props) {
           <Breadcrumb items={[{ name: 'Điểm đến', href: '/diem-den' }, { name: destination.name }]} />
           <div className={`mt-8 grid items-center gap-8 ${image ? 'md:grid-cols-[1fr_1fr]' : ''}`}>
             <div>
-              <p className="mb-3 text-kicker font-extrabold uppercase text-red">{REGION_LABEL[destination.region]}</p>
+              <p className="mb-3 text-kicker font-extrabold uppercase text-red-dark">{REGION_LABEL[destination.region]}</p>
               <h1 className="text-[32px] font-bold leading-[1.08] tracking-[-0.05em] text-navy sm:text-[clamp(32px,3.4vw,48px)]">{destination.name}</h1>
               {hasContent(destination.description) && (
                 <RichText content={destination.description} className={`mt-4 max-w-[640px] text-[17px] ${DESCRIPTION}`} />

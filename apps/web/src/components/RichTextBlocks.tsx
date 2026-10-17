@@ -56,7 +56,7 @@ function RichTextLink({ url, children }: { url: string; children: ReactNode }) {
   if (!href) return <>{children}</>;
   const external = /^https?:/i.test(href);
   return (
-    <a href={href} className="text-red underline underline-offset-2" {...(external && { target: '_blank', rel: 'noopener noreferrer' })}>
+    <a href={href} className="text-red-dark underline underline-offset-2" {...(external && { target: '_blank', rel: 'noopener noreferrer' })}>
       {children}
     </a>
   );

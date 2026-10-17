@@ -11,7 +11,7 @@ export default async function NotFound() {
   await renderPerRequestWithoutCms();
   return (
     <div className="shell pb-section pt-10 sm:pt-14">
-      <p className="mb-3 text-kicker font-extrabold text-red">LỖI 404</p>
+      <p className="mb-3 text-kicker font-extrabold text-red-dark">LỖI 404</p>
       <h1 className="text-[32px] font-bold leading-[1.08] tracking-[-0.05em] text-navy sm:text-[clamp(30px,3.1vw,44px)]">Không tìm thấy trang này</h1>
       <p className="mt-3 max-w-[640px] text-muted">Trang có thể đã đổi địa chỉ hoặc không còn nữa. Tìm tour, du thuyền hoặc bài viết bạn cần:</p>
       <SearchBox className="mt-6 max-w-[650px]" />

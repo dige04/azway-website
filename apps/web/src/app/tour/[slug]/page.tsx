@@ -82,7 +82,7 @@ export default async function Page({ params }: Props) {
       {/* Phones: title, price box, then the blocks. Desktop: price box in the right column. */}
       <div className="shell grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <header className="min-w-0 lg:col-start-1">
-          <p className="text-kicker font-extrabold uppercase text-red">{tourCard(tour).typeLabel}</p>
+          <p className="text-kicker font-extrabold uppercase text-red-dark">{tourCard(tour).typeLabel}</p>
           <h1 className="mt-2 text-[32px] font-bold leading-[1.1] tracking-[-0.035em] text-navy sm:text-[clamp(32px,3.4vw,48px)]">{tour.name}</h1>
           <Show when={tour.destinations}>
             {(places) => (

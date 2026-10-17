@@ -19,7 +19,7 @@ export function Itinerary({ days }: { days: ItineraryDay[] }) {
           <li key={day.id} className="rounded-card border border-line bg-white p-5 sm:p-6">
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
               <h3 className="text-xl font-bold text-navy">
-                <span className="mr-2 text-red">Ngày {day.dayNumber}</span>
+                <span className="mr-2 text-red-dark">Ngày {day.dayNumber}</span>
                 {day.title}
               </h3>
               {meals.length > 0 && (

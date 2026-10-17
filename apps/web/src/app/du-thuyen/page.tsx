@@ -24,7 +24,7 @@ export default async function Page() {
       <section className="bg-white pb-8 pt-6 sm:pb-10">
         <div className="shell">
           <Breadcrumb items={[{ name: 'Du thuyền' }]} />
-          <p className="mb-3 mt-8 text-kicker font-extrabold text-red">DU THUYỀN HẠ LONG</p>
+          <p className="mb-3 mt-8 text-kicker font-extrabold text-red-dark">DU THUYỀN HẠ LONG</p>
           <h1 className="text-[32px] font-bold leading-[1.08] tracking-[-0.05em] text-navy sm:text-[clamp(30px,3.1vw,44px)]">
             Du thuyền trong ngày, ăn tối và thuê nguyên tàu
           </h1>
