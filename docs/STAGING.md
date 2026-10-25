@@ -121,7 +121,7 @@ pnpm --filter @azway/cms strapi admin:reset-user-password --email=<email admin> 
   - Trước buổi demo vài phút, mở `CMS_URL/_health` (hoặc trang admin) và chờ trả về. Worker không ngủ, chỉ cần mở trang chủ web một lần.
   - Trong buổi demo, thao tác trong admin giữ cho nó thức.
   - Mỗi tháng có 750 giờ miễn phí, đủ cho một service chạy liên tục.
-- **Bộ nhớ.** Service có 512 MB. Build chạy trên máy build của Render, không bị giới hạn này. Job `cms-image` của CI chạy image với giới hạn 512 MB, trên Postgres.
+- **Bộ nhớ và CPU.** Service có 512 MB và 0,1 CPU. Build chạy trên máy build của Render, không bị giới hạn này. Job `cms-image` của CI chạy image với giới hạn 512 MB trên Postgres: sau khi khởi động, đăng nhập admin và upload, Strapi dùng khoảng 190 MB, nên không cần chỉnh `NODE_OPTIONS`. Nếu log Render báo `JavaScript heap out of memory`, đặt `NODE_OPTIONS=--max-old-space-size=384`. Trên CI Strapi khởi động trong khoảng 10 giây; với 0,1 CPU sẽ chậm hơn nhiều, nên lần thức dậy đầu có thể lâu hơn 1 phút.
 - **Postgres hết hạn.** Database miễn phí hết hạn 30 ngày sau khi tạo. Sau đó còn 14 ngày để nâng gói, quá hạn Render xoá database. Mỗi workspace chỉ có một database miễn phí. Demo kéo dài hơn thì chọn một trong hai:
   - Nâng database lên gói trả phí: giữ nguyên dữ liệu.
   - Làm lại từ đầu: xoá database cũ trên Render, mở Blueprint và chọn **Manual sync** để tạo database mới cùng tên. Render nối lại `DATABASE_URL` và deploy lại Strapi. Sau đó làm lại mục 3 bước 2 (admin) và mục 4 (seed), rồi chạy lại workflow web. Mọi sửa đổi trong CMS sẽ mất; ảnh cũ còn trên R2 nhưng seed upload bản mới.
