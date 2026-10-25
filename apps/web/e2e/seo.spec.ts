@@ -68,9 +68,11 @@ test('every page type: own title and description, canonical, Open Graph, JSON-LD
   desktopOnly();
   const titles = new Set<string>();
   for (const { path, jsonLd } of PAGES) {
-    await page.goto(path);
+    const response = await page.goto(path);
     const tags = await meta(page);
     const url = new URL(path, baseURL).toString();
+    // SITE_NOINDEX is for staging only; on a normal build no page carries it.
+    expect(response?.headers()['x-robots-tag'], `X-Robots-Tag on ${path}`).toBeUndefined();
     expect(tags.description, `description on ${path}`).toBeTruthy();
     expect(href(tags.canonical), `canonical on ${path}`).toBe(url);
     expect(href(tags.ogUrl), `og:url on ${path}`).toBe(url);

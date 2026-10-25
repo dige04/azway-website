@@ -1,0 +1,112 @@
+# Staging web on the Human's own Cloudflare account (docs/STAGING.md): the
+# `staging` env in apps/web/wrangler.jsonc on *.workers.dev.
+name: Deploy web (staging)
+
+on:
+  push:
+    branches: [main]
+    paths: ['apps/web/**', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/deploy-web.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+# Secrets and variables live in the GitHub environment `staging`, limited to
+# main (docs/STAGING.md): a manual run executes the dispatched branch's copy
+# of this file, and only main may receive the Cloudflare token. The `if`s make
+# a run from another branch skip instead of failing on that rule.
+jobs:
+  # Until every secret/variable exists the run ends green with a notice
+  # naming the missing ones, and the deploy job is skipped.
+  config:
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          LEAD_INGEST_TOKEN: ${{ secrets.LEAD_INGEST_TOKEN }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CMS_URL: ${{ vars.CMS_URL }}
+          CMS_MEDIA_URL: ${{ vars.CMS_MEDIA_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+        run: |
+          missing=()
+          for name in CLOUDFLARE_API_TOKEN LEAD_INGEST_TOKEN REVALIDATE_SECRET CLOUDFLARE_ACCOUNT_ID CMS_URL CMS_MEDIA_URL NEXT_PUBLIC_SITE_URL; do
+            [ -n "${!name}" ] || missing+=("$name")
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::notice title=Staging deploy skipped::Not set: ${missing[*]}. See docs/STAGING.md."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: config
+    if: github.ref == 'refs/heads/main' && needs.config.outputs.ready == 'true'
+    environment: staging
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CMS_URL: ${{ vars.CMS_URL }}
+      CMS_MEDIA_URL: ${{ vars.CMS_MEDIA_URL }}
+      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+      # Demo only: robots.txt disallows all, X-Robots-Tag noindex on pages and routes.
+      SITE_NOINDEX: '1'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The build prerenders pages from the CMS; a host that sleeps when idle
+      # needs about a minute to answer the first request.
+      - name: Wake the CMS
+        run: |
+          for _ in $(seq 60); do
+            curl -sf -o /dev/null "$CMS_URL/_health" && exit 0
+            sleep 5
+          done
+          echo "::error::No answer from $CMS_URL/_health after 5 minutes"
+          exit 1
+
+      - run: pnpm build:web
+
+      # Populates the R2/D1 caches, then `wrangler deploy`. CMS_URL is read at
+      # runtime, so it goes in as a var; the secrets are added to the version.
+      # Tokens live only in this step's env, never the build's (D5).
+      - name: Deploy
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          LEAD_INGEST_TOKEN: ${{ secrets.LEAD_INGEST_TOKEN }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+        run: |
+          secrets="$RUNNER_TEMP/worker-secrets.env"
+          (umask 077 && printf 'LEAD_INGEST_TOKEN=%s\nREVALIDATE_SECRET=%s\n' "$LEAD_INGEST_TOKEN" "$REVALIDATE_SECRET" > "$secrets")
+          pnpm exec opennextjs-cloudflare deploy --env staging --var "CMS_URL:$CMS_URL" --secrets-file "$secrets"
+
+      # -w reports the last attempt only (a cold first answer may be a 503).
+      - name: Site answers, not indexable
+        run: |
+          result=$(curl -s -o /dev/null --retry 10 --retry-delay 10 --retry-all-errors \
+            -w '%{http_code} %header{x-robots-tag}' "$NEXT_PUBLIC_SITE_URL/")
+          echo "GET $NEXT_PUBLIC_SITE_URL/ -> $result"
+          case "$result" in "200 noindex"*) ;; *) exit 1 ;; esac

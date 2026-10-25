@@ -65,6 +65,8 @@ function securityHeaders({ dev, https, images }: { dev: boolean; https: boolean;
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
     { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
     ...(https ? [{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }] : []),
+    // Staging demo (docs/STAGING.md): no page may be indexed.
+    ...(process.env.SITE_NOINDEX === '1' ? [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] : []),
   ];
 }
 

@@ -57,7 +57,8 @@ flowchart LR
 | `HOST`, `PORT` | | Mặc định `0.0.0.0`, `1337` |
 | `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`, `TRANSFER_TOKEN_SALT`, `JWT_SECRET`, `ENCRYPTION_KEY` | ✓ | Secrets Strapi |
 | `PUBLIC_URL` | ✓ prod | `https://cms.<domain>` |
-| `ADMIN_PATH` | | Đường dẫn admin (NFR-07), mặc định `/admin`. Đọc lúc `strapi build` → phải có khi build image |
+| `ADMIN_PATH` | | Đường dẫn admin (NFR-07), mặc định `/admin`. Đọc lúc `strapi build` → phải có khi build image (`apps/cms/Dockerfile` bắt buộc build arg này) |
+| `SERVER_PROXY` | prod | `true` khi chạy sau proxy TLS (PaaS, Caddy): tin `X-Forwarded-*`, để cookie admin có `Secure` và rate limit đăng nhập admin đếm theo IP khách thay vì IP proxy |
 | `DATABASE_CLIENT` | | `sqlite` (dev) / `postgres` (prod) |
 | `DATABASE_URL` hoặc `DATABASE_HOST/PORT/NAME/USERNAME/PASSWORD` | ✓ prod | |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_URL` | prod | Thiếu → upload local |
@@ -73,15 +74,16 @@ flowchart LR
 
 ### `apps/web` (`.dev.vars` cho `preview`, `.env.local` cho `dev`)
 
-"Build" = phải có trong môi trường chạy `next build` (CI, deploy; local là `.env.local`, kể cả bước build của `preview`): giá trị được nhúng vào bundle. "Runtime" = đọc khi chạy trên Worker: biến không bí mật khai ở `vars` trong `wrangler.jsonc` với giá trị thật (M8; `wrangler deploy` ghi đè biến trên dashboard bằng `vars` và xoá biến không khai), bí mật qua `wrangler secret put`.
+"Build" = phải có trong môi trường chạy `next build` (CI, deploy; local là `.env.local`, kể cả bước build của `preview`): giá trị được nhúng vào bundle. "Runtime" = đọc khi chạy trên Worker: biến không bí mật khai ở `vars` trong `wrangler.jsonc` với giá trị thật (M8; `wrangler deploy` ghi đè biến trên dashboard bằng `vars` và xoá biến không khai), bí mật qua `wrangler secret put`. Staging (`docs/STAGING.md`) không khai `vars`: `deploy-web.yml` truyền `CMS_URL` bằng `--var` và bí mật bằng `--secrets-file`.
 
 | Biến | Khi nào | Mô tả |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Build, bắt buộc | `https://<domain>`. Thiếu thì `next build` production dừng với lỗi |
 | `CMS_URL` | Build + runtime (`vars`) | `https://cms.<domain>`. Lúc build: allowlist ảnh `/uploads/**`, và prerender các trang đọc CMS (ISR). Build production thiếu biến này thì lỗi, trừ khi đặt `BUILD_WITHOUT_CMS=1` (chỉ job `check` của CI): khi đó các trang đó chuyển sang render theo request (`renderPerRequestWithoutCms`, `src/lib/build.ts`) thay vì cache trang rỗng. Lúc chạy: gọi API |
-| `CMS_MEDIA_URL` | Build + runtime (`vars`) | `https://media.<domain>` (R2). Allowlist ảnh lúc build |
+| `CMS_MEDIA_URL` | Build | `https://media.<domain>` (R2). Allowlist ảnh và CSP `img-src` lúc build |
 | `LEAD_INGEST_TOKEN` | Runtime, secret | Giống bên CMS |
 | `REVALIDATE_SECRET` | Runtime, secret | Giống bên CMS |
+| `SITE_NOINDEX` | Build | `1` chỉ cho staging (`deploy-web.yml`): `robots.txt` chặn mọi đường dẫn; trang và route có `X-Robots-Tag: noindex, nofollow` (file tĩnh `/_next/static` do assets phục vụ thì không qua `headers()`) |
 | `NEXT_PUBLIC_GA_ID` | Build | GA4 (`G-…`). Không đặt thì không tải GA (dev, CI). Việc cần làm khi go-live: TASKS M8 |
 
 ## Luồng lead chi tiết

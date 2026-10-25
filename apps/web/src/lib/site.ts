@@ -1,5 +1,8 @@
 export const SITE_NAME = 'AZway';
 
+/** Staging demo (docs/STAGING.md): SITE_NOINDEX=1 at build keeps the whole site out of search engines. */
+export const isNoindexSite = (): boolean => process.env.SITE_NOINDEX === '1';
+
 /** Absolute URL on this site, from NEXT_PUBLIC_SITE_URL (required for production builds, next.config.ts). */
 export function siteUrl(path = '/'): string {
   return new URL(path, process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').toString();

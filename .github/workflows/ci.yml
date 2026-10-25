@@ -49,6 +49,73 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://example.invalid
           BUILD_WITHOUT_CMS: '1'
 
+      # The staging config deploy-web.yml uses bundles, without an account.
+      # OPEN_NEXT_DEPLOY stops wrangler handing over to `opennextjs-cloudflare
+      # deploy`, which would populate the remote cache first.
+      - name: Staging deploy dry run
+        working-directory: apps/web
+        env:
+          OPEN_NEXT_DEPLOY: 'true'
+        run: pnpm exec wrangler deploy --dry-run --env staging --var CMS_URL:https://cms.example.invalid --outdir "$RUNNER_TEMP/worker"
+
+  # TASKS M8: the CMS image builds, runs as non-root on the PORT a host gives
+  # it, and serves the admin at the ADMIN_PATH baked in at build. Not pushed.
+  cms-image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: docker build -f apps/cms/Dockerfile --build-arg ADMIN_PATH=/quan-tri-ci -t azway-cms:ci .
+
+      # NFR-07: no silent fallback to the public /admin (cached layers, fails fast).
+      - name: Build without ADMIN_PATH fails
+        run: |
+          if docker build -f apps/cms/Dockerfile . > no-arg.log 2>&1; then echo "built without ADMIN_PATH"; exit 1; fi
+          # The error itself, not BuildKit's echo of the RUN line.
+          grep -F "(got '')" no-arg.log
+
+      - name: Runs as non-root
+        run: test "$(docker run --rm azway-cms:ci id -u)" != 0
+
+      - name: Start behind a simulated TLS proxy, with throwaway secrets
+        run: |
+          s() { openssl rand -base64 32; }
+          {
+            echo "APP_KEYS=$(s),$(s)"
+            for name in API_TOKEN_SALT ADMIN_JWT_SECRET TRANSFER_TOKEN_SALT JWT_SECRET ENCRYPTION_KEY LEAD_INGEST_TOKEN; do echo "$name=$(s)"; done
+            echo "CRON_ENABLED=false"
+            echo "SERVER_PROXY=true"
+          } > cms.env
+          docker run -d --name cms --env-file cms.env -e PORT=10000 -p 10000:10000 azway-cms:ci
+          timeout 180 bash -c 'until curl -sf -o /dev/null http://127.0.0.1:10000/_health; do sleep 2; done'
+
+      - name: Admin at ADMIN_PATH only
+        run: |
+          code() { curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:10000$1"; }
+          echo "/quan-tri-ci -> $(code /quan-tri-ci), /admin -> $(code /admin)"
+          test "$(code /quan-tri-ci)" = 200
+          test "$(code /admin)" = 404
+
+      # SERVER_PROXY: the proxy says the client used https, so the admin
+      # session cookie must be Secure. The admin API stays under /admin.
+      - name: Admin cookie is Secure behind the proxy
+        run: |
+          pw="$(openssl rand -hex 16)Aa1"
+          body=$(printf '{"firstname":"CI","email":"ci@azway.test","password":"%s"}' "$pw")
+          # First admin, as on a fresh host (docs/STAGING.md).
+          curl -sf -o /dev/null -H 'Content-Type: application/json' -d "$body" http://127.0.0.1:10000/admin/register-admin
+          headers=$(curl -s -D - -o /dev/null -H 'X-Forwarded-Proto: https' -H 'Content-Type: application/json' \
+            -d "$body" http://127.0.0.1:10000/admin/login)
+          # Status and cookie flags only, never the token values.
+          echo "$headers" | head -1
+          echo "$headers" | grep -i '^set-cookie:' | sed -E 's/=[^;]*/=<hidden>/'
+          echo "$headers" | head -1 | grep -q ' 200'
+          echo "$headers" | grep -i '^set-cookie: strapi_admin_refresh=' | grep -qi '; *secure'
+
+      - if: failure()
+        run: docker logs cms
+
   # TASKS M5 "Xong khi": every route renders with seed data at 375px and
   # 1440px without console errors. Seeded local Strapi + Workers preview.
   smoke:

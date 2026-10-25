@@ -9,7 +9,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Admin => 
   },
   // NFR-07: throttle /admin/login and /admin/register-admin per email + path + IP.
   // These are Strapi's defaults, kept explicit. Behind a proxy the IP is only
-  // right once server.proxy is enabled (M8).
+  // right with SERVER_PROXY=true (config/server.ts).
   rateLimit: {
     enabled: true,
     interval: 5 * 60 * 1000, // ms
