@@ -83,7 +83,7 @@ flowchart LR
 | `CMS_MEDIA_URL` | Build | `https://media.<domain>` (R2). Allowlist ảnh và CSP `img-src` lúc build |
 | `LEAD_INGEST_TOKEN` | Runtime, secret | Giống bên CMS |
 | `REVALIDATE_SECRET` | Runtime, secret | Giống bên CMS |
-| `SITE_NOINDEX` | Build | `1` chỉ cho staging (`deploy-web.yml`): `robots.txt` chặn mọi đường dẫn và mọi response có `X-Robots-Tag: noindex, nofollow` |
+| `SITE_NOINDEX` | Build | `1` chỉ cho staging (`deploy-web.yml`): `robots.txt` chặn mọi đường dẫn; trang và route có `X-Robots-Tag: noindex, nofollow` (file tĩnh `/_next/static` do assets phục vụ thì không qua `headers()`) |
 | `NEXT_PUBLIC_GA_ID` | Build | GA4 (`G-…`). Không đặt thì không tải GA (dev, CI). Việc cần làm khi go-live: TASKS M8 |
 
 ## Luồng lead chi tiết

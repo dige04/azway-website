@@ -66,7 +66,7 @@ Mỗi secret sinh bằng `openssl rand -base64 32`. Không gửi giá trị th�
 
    Lần deploy đầu là lần đầu ba việc sau chạy thật (CI chỉ dry-run): nạp cache R2, tìm D1 theo tên, gửi secret. Nên xem:
    - Log bước *Deploy* phải có `Successfully populated cache with … entries` (R2) và `Successfully created D1 table`, cuối log là URL `workers.dev`.
-   - Bước *Site answers, not indexable* in ra `200` và `x-robots-tag: noindex, nofollow`.
+   - Bước *Site answers, not indexable* in ra `200 noindex, nofollow`.
    - **Workers → azway-web-staging → Settings → Variables and Secrets** có `CMS_URL` (dạng text), `LEAD_INGEST_TOKEN` và `REVALIDATE_SECRET` (dạng secret).
    - Lỗi `Couldn't find a D1 DB named …`: chưa chạy bước 1.3, hoặc gõ sai tên.
    - Lỗi quyền (403, `Authentication error`): token thiếu quyền ở bước 1.4.

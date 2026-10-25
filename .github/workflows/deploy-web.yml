@@ -61,7 +61,7 @@ jobs:
       CMS_URL: ${{ vars.CMS_URL }}
       CMS_MEDIA_URL: ${{ vars.CMS_MEDIA_URL }}
       NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
-      # Demo only: robots.txt disallows all, X-Robots-Tag noindex on every response.
+      # Demo only: robots.txt disallows all, X-Robots-Tag noindex on pages and routes.
       SITE_NOINDEX: '1'
     steps:
       - uses: actions/checkout@v7
@@ -103,9 +103,10 @@ jobs:
           (umask 077 && printf 'LEAD_INGEST_TOKEN=%s\nREVALIDATE_SECRET=%s\n' "$LEAD_INGEST_TOKEN" "$REVALIDATE_SECRET" > "$secrets")
           pnpm exec opennextjs-cloudflare deploy --env staging --var "CMS_URL:$CMS_URL" --secrets-file "$secrets"
 
+      # -w reports the last attempt only (a cold first answer may be a 503).
       - name: Site answers, not indexable
         run: |
-          headers=$(curl -s -D - -o /dev/null --retry 10 --retry-delay 10 --retry-all-errors "$NEXT_PUBLIC_SITE_URL/")
-          echo "$headers" | grep -iE '^(HTTP/|x-robots-tag:)'
-          echo "$headers" | head -1 | grep -q ' 200'
-          echo "$headers" | grep -qi '^x-robots-tag: noindex'
+          result=$(curl -s -o /dev/null --retry 10 --retry-delay 10 --retry-all-errors \
+            -w '%{http_code} %header{x-robots-tag}' "$NEXT_PUBLIC_SITE_URL/")
+          echo "GET $NEXT_PUBLIC_SITE_URL/ -> $result"
+          case "$result" in "200 noindex"*) ;; *) exit 1 ;; esac

@@ -72,7 +72,8 @@ jobs:
       - name: Build without ADMIN_PATH fails
         run: |
           if docker build -f apps/cms/Dockerfile . > no-arg.log 2>&1; then echo "built without ADMIN_PATH"; exit 1; fi
-          grep -F "build arg ADMIN_PATH is required" no-arg.log
+          # The error itself, not BuildKit's echo of the RUN line.
+          grep -F "(got '')" no-arg.log
 
       - name: Runs as non-root
         run: test "$(docker run --rm azway-cms:ci id -u)" != 0

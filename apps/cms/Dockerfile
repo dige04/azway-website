@@ -20,9 +20,14 @@ FROM manifests AS build
 RUN pnpm install --frozen-lockfile --filter @azway/cms
 COPY apps/cms apps/cms
 # NFR-07: the admin path is baked into the admin bundle by `strapi build`.
-# Required, so a forgotten build arg cannot fall back to the public /admin.
+# Required and custom, so the image cannot serve the admin at the public /admin.
 ARG ADMIN_PATH
-RUN case "$ADMIN_PATH" in /?*) ;; *) echo "build arg ADMIN_PATH is required, e.g. /quan-tri-xyz (got '$ADMIN_PATH')" >&2; exit 1 ;; esac
+RUN case "$ADMIN_PATH" in \
+      /admin | */) ;; \
+      /?*) exit 0 ;; \
+    esac; \
+    echo "build arg ADMIN_PATH is required: a custom path such as /quan-tri-xyz, not /admin, no trailing slash (got '$ADMIN_PATH')" >&2; \
+    exit 1
 ENV NODE_ENV=production ADMIN_PATH=${ADMIN_PATH}
 RUN pnpm --filter @azway/cms build
 
