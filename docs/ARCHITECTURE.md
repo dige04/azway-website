@@ -59,6 +59,7 @@ flowchart LR
 | `PUBLIC_URL` | ✓ prod | `https://cms.<domain>` |
 | `ADMIN_PATH` | | Đường dẫn admin (NFR-07), mặc định `/admin`. Đọc lúc `strapi build` → phải có khi build image (`apps/cms/Dockerfile` bắt buộc build arg này) |
 | `SERVER_PROXY` | prod | `true` khi chạy sau proxy TLS (PaaS, Caddy): tin `X-Forwarded-*`, để cookie admin có `Secure` và rate limit đăng nhập admin đếm theo IP khách thay vì IP proxy |
+| `SERVER_PROXY_IP_HEADER` | | Header mang IP khách, mặc định `X-Forwarded-For`; chỉ lấy giá trị cuối (do proxy gần nhất ghi), không bao giờ tin phần client tự gửi. Render: `True-Client-IP` (`render.yaml`). `maxIpsCount: 1` cố định trong `config/server.ts`, đúng khi chỉ một proxy ghi header; phải xem lại cho từng host. VPS production sau Cloudflare + Caddy: giá trị cuối của XFF là IP Cloudflare, nên mọi admin chung một giới hạn theo email. Khi đó dùng `CF-Connecting-IP`, với Caddy chỉ nhận request từ dải IP Cloudflare |
 | `DATABASE_CLIENT` | | `sqlite` (dev) / `postgres` (prod) |
 | `DATABASE_URL` hoặc `DATABASE_HOST/PORT/NAME/USERNAME/PASSWORD` | ✓ prod | |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_URL` | prod | Thiếu → upload local |
