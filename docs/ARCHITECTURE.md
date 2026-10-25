@@ -57,7 +57,8 @@ flowchart LR
 | `HOST`, `PORT` | | Mặc định `0.0.0.0`, `1337` |
 | `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`, `TRANSFER_TOKEN_SALT`, `JWT_SECRET`, `ENCRYPTION_KEY` | ✓ | Secrets Strapi |
 | `PUBLIC_URL` | ✓ prod | `https://cms.<domain>` |
-| `ADMIN_PATH` | | Đường dẫn admin (NFR-07), mặc định `/admin`. Đọc lúc `strapi build` → phải có khi build image |
+| `ADMIN_PATH` | | Đường dẫn admin (NFR-07), mặc định `/admin`. Đọc lúc `strapi build` → phải có khi build image (`apps/cms/Dockerfile` bắt buộc build arg này) |
+| `SERVER_PROXY` | prod | `true` khi chạy sau proxy TLS (PaaS, Caddy): tin `X-Forwarded-*`, để cookie admin có `Secure` và rate limit đăng nhập admin đếm theo IP khách thay vì IP proxy |
 | `DATABASE_CLIENT` | | `sqlite` (dev) / `postgres` (prod) |
 | `DATABASE_URL` hoặc `DATABASE_HOST/PORT/NAME/USERNAME/PASSWORD` | ✓ prod | |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_URL` | prod | Thiếu → upload local |
@@ -82,6 +83,7 @@ flowchart LR
 | `CMS_MEDIA_URL` | Build | `https://media.<domain>` (R2). Allowlist ảnh và CSP `img-src` lúc build |
 | `LEAD_INGEST_TOKEN` | Runtime, secret | Giống bên CMS |
 | `REVALIDATE_SECRET` | Runtime, secret | Giống bên CMS |
+| `SITE_NOINDEX` | Build | `1` chỉ cho staging (`deploy-web.yml`): `robots.txt` chặn mọi đường dẫn và mọi response có `X-Robots-Tag: noindex, nofollow` |
 | `NEXT_PUBLIC_GA_ID` | Build | GA4 (`G-…`). Không đặt thì không tải GA (dev, CI). Việc cần làm khi go-live: TASKS M8 |
 
 ## Luồng lead chi tiết

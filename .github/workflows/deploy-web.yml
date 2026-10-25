@@ -5,7 +5,7 @@ name: Deploy web (staging)
 on:
   push:
     branches: [main]
-    paths: ['apps/web/**', '.github/workflows/deploy-web.yml']
+    paths: ['apps/web/**', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/deploy-web.yml']
   workflow_dispatch:
 
 permissions:
@@ -15,11 +15,18 @@ concurrency:
   group: deploy-web
   cancel-in-progress: false
 
+# Secrets and variables live in the GitHub environment `staging`, limited to
+# main (docs/STAGING.md): a manual run executes the dispatched branch's copy
+# of this file, and only main may receive the Cloudflare token. The `if`s make
+# a run from another branch skip instead of failing on that rule.
 jobs:
   # Until every secret/variable exists the run ends green with a notice
   # naming the missing ones, and the deploy job is skipped.
   config:
+    if: github.ref == 'refs/heads/main'
+    environment: staging
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       ready: ${{ steps.check.outputs.ready }}
     steps:
@@ -46,13 +53,16 @@ jobs:
 
   deploy:
     needs: config
-    if: needs.config.outputs.ready == 'true'
+    if: github.ref == 'refs/heads/main' && needs.config.outputs.ready == 'true'
+    environment: staging
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       CMS_URL: ${{ vars.CMS_URL }}
       CMS_MEDIA_URL: ${{ vars.CMS_MEDIA_URL }}
       NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+      # Demo only: robots.txt disallows all, X-Robots-Tag noindex on every response.
+      SITE_NOINDEX: '1'
     steps:
       - uses: actions/checkout@v7
 
@@ -93,8 +103,9 @@ jobs:
           (umask 077 && printf 'LEAD_INGEST_TOKEN=%s\nREVALIDATE_SECRET=%s\n' "$LEAD_INGEST_TOKEN" "$REVALIDATE_SECRET" > "$secrets")
           pnpm exec opennextjs-cloudflare deploy --env staging --var "CMS_URL:$CMS_URL" --secrets-file "$secrets"
 
-      - name: Site answers
+      - name: Site answers, not indexable
         run: |
-          code=$(curl -s -o /dev/null -w '%{http_code}' --retry 10 --retry-delay 10 --retry-all-errors "$NEXT_PUBLIC_SITE_URL/")
-          echo "GET $NEXT_PUBLIC_SITE_URL/ -> $code"
-          test "$code" = 200
+          headers=$(curl -s -D - -o /dev/null --retry 10 --retry-delay 10 --retry-all-errors "$NEXT_PUBLIC_SITE_URL/")
+          echo "$headers" | grep -iE '^(HTTP/|x-robots-tag:)'
+          echo "$headers" | head -1 | grep -q ' 200'
+          echo "$headers" | grep -qi '^x-robots-tag: noindex'

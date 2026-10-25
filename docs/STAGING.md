@@ -2,6 +2,8 @@
 
 Link tạm để khách xem, trên tài khoản Cloudflare cá nhân của người dựng; không phải production, không dùng tài khoản AZway. Web: Worker `azway-web-staging` trên `*.workers.dev` (env `staging` trong `apps/web/wrangler.jsonc`), deploy bằng workflow **Deploy web (staging)**. Strapi + Postgres: một host chạy image `apps/cms/Dockerfile`; ảnh upload nằm trên R2.
 
+Chỉ để demo với dữ liệu mẫu: không nhập dữ liệu khách thật (NFR-10: dữ liệu khách chỉ nằm trong hệ thống của AZway), và nói rõ điều này với khách. Web không được index: workflow build với `SITE_NOINDEX=1`.
+
 Các lệnh `wrangler` dưới đây chạy trong `apps/web` (`pnpm exec wrangler …`), sau khi `pnpm exec wrangler login` bằng tài khoản cá nhân.
 
 ## 1. Chuẩn bị một lần trên Cloudflare
@@ -29,25 +31,45 @@ Hai cache trên là để sửa trong CMS thì web đổi ngay: trang nằm tron
 
 | Biến | Đặt ở đâu | Giá trị |
 | --- | --- | --- |
-| `CLOUDFLARE_API_TOKEN` | GitHub secret | Token ở bước 1.4 |
-| `LEAD_INGEST_TOKEN` | GitHub secret **và** env Strapi | Cùng một chuỗi ngẫu nhiên ≥ 32 ký tự |
-| `REVALIDATE_SECRET` | GitHub secret **và** env Strapi | Cùng một chuỗi ngẫu nhiên |
-| `CLOUDFLARE_ACCOUNT_ID` | GitHub variable | Account ID (trang tổng quan Workers & Pages) |
-| `CMS_URL` | GitHub variable | URL Strapi, ví dụ `https://<cms-host>` |
-| `CMS_MEDIA_URL` | GitHub variable **và** `R2_PUBLIC_URL` của Strapi | URL `pub-….r2.dev` ở bước 1.3 |
-| `NEXT_PUBLIC_SITE_URL` | GitHub variable | `https://azway-web-staging.<subdomain>.workers.dev` |
+| `CLOUDFLARE_API_TOKEN` | GitHub env secret | Token ở bước 1.4 |
+| `LEAD_INGEST_TOKEN` | GitHub env secret **và** env Strapi | Cùng một chuỗi ngẫu nhiên ≥ 32 ký tự |
+| `REVALIDATE_SECRET` | GitHub env secret **và** env Strapi | Cùng một chuỗi ngẫu nhiên |
+| `CLOUDFLARE_ACCOUNT_ID` | GitHub env variable | Account ID (trang tổng quan Workers & Pages) |
+| `CMS_URL` | GitHub env variable | URL Strapi, ví dụ `https://<cms-host>` |
+| `CMS_MEDIA_URL` | GitHub env variable **và** `R2_PUBLIC_URL` của Strapi | URL `pub-….r2.dev` ở bước 1.3 |
+| `NEXT_PUBLIC_SITE_URL` | GitHub env variable | `https://azway-web-staging.<subdomain>.workers.dev` |
 | `WEB_REVALIDATE_URL` | env Strapi | `NEXT_PUBLIC_SITE_URL` + `/api/revalidate` |
 
-GitHub: **Settings → Secrets and variables → Actions**, tab *Secrets* hoặc *Variables*. Env Strapi: theo `apps/cms/.env.example`. Ngoài các biến trên còn có các secret Strapi, `DATABASE_CLIENT=postgres` + `DATABASE_URL` (+ `DATABASE_SSL=true` nếu host yêu cầu), `R2_*` với khoá ở bước 1.5, `PUBLIC_URL` = `CMS_URL`, `ADMIN_PATH`, `CRON_ENABLED=false`.
+GitHub env: **Settings → Environments → New environment** tên `staging`. Ở *Deployment branches and tags* chọn *Selected branches and tags* và thêm `main`, để chỉ `main` nhận được token. Secret và variable đặt trong môi trường này, không đặt ở cấp repo.
+
+Env Strapi: theo `apps/cms/.env.example`. Ngoài các biến trên còn có:
+
+- các secret Strapi;
+- `DATABASE_CLIENT=postgres` + `DATABASE_URL` (+ `DATABASE_SSL=true` nếu host yêu cầu);
+- `R2_*` với khoá ở bước 1.5;
+- `PUBLIC_URL` = `CMS_URL`;
+- `ADMIN_PATH`;
+- `SERVER_PROXY=true`: host đứng sau proxy TLS. Thiếu biến này thì cookie admin không có `Secure`, và 5 lần đăng nhập sai của một người khoá luôn mọi người;
+- `CRON_ENABLED=false`.
 
 Mỗi secret sinh bằng `openssl rand -base64 32`. Không gửi giá trị thật qua chat hay commit vào repo.
 
 ## 3. Thứ tự bật
 
-1. **Strapi.** Image build từ thư mục gốc repo: Dockerfile `apps/cms/Dockerfile`, build arg `ADMIN_PATH` (bake vào trang admin; đặt cùng giá trị cho env `ADMIN_PATH`). Image nghe ở `$PORT` mà host cấp, health check `/_health`. Đặt env theo mục 2, tạm để trống `WEB_REVALIDATE_URL`. Khi chạy xong, lấy URL của nó làm `CMS_URL`.
+1. **Strapi.** Image build từ thư mục gốc repo: Dockerfile `apps/cms/Dockerfile`, build arg `ADMIN_PATH` bắt buộc (bake vào trang admin, thiếu thì build dừng; đặt cùng giá trị cho env `ADMIN_PATH`). Image nghe ở `$PORT` mà host cấp, health check `/_health`. Đặt env theo mục 2, tạm để trống `WEB_REVALIDATE_URL`. Khi chạy xong, lấy URL của nó làm `CMS_URL`.
 2. **Tài khoản admin.** Vào ngay `CMS_URL` + `ADMIN_PATH` để tạo admin đầu tiên: ai mở trang này trước thì người đó tạo được.
 3. **Seed** (mục 4).
-4. **GitHub.** Đặt đủ secret và variable ở mục 2, rồi **Actions → Deploy web (staging) → Run workflow** trên `main`. Thiếu biến nào thì run vẫn xanh, có dòng *Staging deploy skipped* kèm tên các biến còn thiếu, và không deploy gì. Sau lần này, mỗi lần push `main` có đổi `apps/web/**` thì tự deploy lại.
+4. **GitHub.** Đặt đủ secret và variable ở mục 2, rồi **Actions → Deploy web (staging) → Run workflow** trên `main`.
+   - Thiếu biến nào thì run vẫn xanh, có dòng *Staging deploy skipped* kèm tên các biến còn thiếu, và không deploy gì.
+   - Chạy từ nhánh khác `main` thì mọi job bị bỏ qua.
+   - Sau lần này, mỗi lần push `main` có đổi `apps/web/**` hoặc lockfile thì tự deploy lại.
+
+   Lần deploy đầu là lần đầu ba việc sau chạy thật (CI chỉ dry-run): nạp cache R2, tìm D1 theo tên, gửi secret. Nên xem:
+   - Log bước *Deploy* phải có `Successfully populated cache with … entries` (R2) và `Successfully created D1 table`, cuối log là URL `workers.dev`.
+   - Bước *Site answers, not indexable* in ra `200` và `x-robots-tag: noindex, nofollow`.
+   - **Workers → azway-web-staging → Settings → Variables and Secrets** có `CMS_URL` (dạng text), `LEAD_INGEST_TOKEN` và `REVALIDATE_SECRET` (dạng secret).
+   - Lỗi `Couldn't find a D1 DB named …`: chưa chạy bước 1.3, hoặc gõ sai tên.
+   - Lỗi quyền (403, `Authentication error`): token thiếu quyền ở bước 1.4.
 5. **Webhook.** Trên Strapi đặt `WEB_REVALIDATE_URL` và `REVALIDATE_SECRET`, rồi khởi động lại.
 6. **Kiểm.** Sửa tên một tour trong admin và publish, tải lại trang tour trên web: tên mới hiện ra. Gửi thử form tư vấn: lead xuất hiện trong admin.
 
@@ -70,7 +92,7 @@ Seed chạy trước lần deploy web đầu tiên, nên bản build đã có d�
 
 ## 5. Xoá sau demo
 
-1. GitHub: xoá các secret và variable ở mục 2. Từ đó workflow chỉ báo *skipped*.
+1. GitHub: xoá môi trường `staging` (cả secret và variable của nó đi theo). Từ đó workflow chỉ báo *skipped*.
 2. Cloudflare:
 
    ```sh
