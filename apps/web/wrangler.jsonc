@@ -29,5 +29,20 @@
   // `wrangler secret put`.
   // Next.js image optimization (/_next/image) through Cloudflare Images.
   "images": { "binding": "IMAGES" },
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  "env": {
+    // Temporary demo on a personal account (docs/STAGING.md), deployed by
+    // .github/workflows/deploy-web.yml with `--env staging`. Bindings are not
+    // inherited from the top level, so each is restated here.
+    "staging": {
+      "name": "azway-web-staging",
+      "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "azway-web-staging" }],
+      // Created once by hand (docs/STAGING.md); deploy finds both by name, so
+      // no account-specific id lives here. They keep revalidateTag() working.
+      "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "azway-web-staging-cache" }],
+      "d1_databases": [{ "binding": "NEXT_TAG_CACHE_D1", "database_name": "azway-web-staging-tag-cache" }],
+      // No "images": without the binding /_next/image serves the original file
+      // unresized. No "vars": the workflow passes CMS_URL with `--var`.
+    }
+  }
 }

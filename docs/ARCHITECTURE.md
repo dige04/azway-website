@@ -73,13 +73,13 @@ flowchart LR
 
 ### `apps/web` (`.dev.vars` cho `preview`, `.env.local` cho `dev`)
 
-"Build" = phải có trong môi trường chạy `next build` (CI, deploy; local là `.env.local`, kể cả bước build của `preview`): giá trị được nhúng vào bundle. "Runtime" = đọc khi chạy trên Worker: biến không bí mật khai ở `vars` trong `wrangler.jsonc` với giá trị thật (M8; `wrangler deploy` ghi đè biến trên dashboard bằng `vars` và xoá biến không khai), bí mật qua `wrangler secret put`.
+"Build" = phải có trong môi trường chạy `next build` (CI, deploy; local là `.env.local`, kể cả bước build của `preview`): giá trị được nhúng vào bundle. "Runtime" = đọc khi chạy trên Worker: biến không bí mật khai ở `vars` trong `wrangler.jsonc` với giá trị thật (M8; `wrangler deploy` ghi đè biến trên dashboard bằng `vars` và xoá biến không khai), bí mật qua `wrangler secret put`. Staging (`docs/STAGING.md`) không khai `vars`: `deploy-web.yml` truyền `CMS_URL` bằng `--var` và bí mật bằng `--secrets-file`.
 
 | Biến | Khi nào | Mô tả |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Build, bắt buộc | `https://<domain>`. Thiếu thì `next build` production dừng với lỗi |
 | `CMS_URL` | Build + runtime (`vars`) | `https://cms.<domain>`. Lúc build: allowlist ảnh `/uploads/**`, và prerender các trang đọc CMS (ISR). Build production thiếu biến này thì lỗi, trừ khi đặt `BUILD_WITHOUT_CMS=1` (chỉ job `check` của CI): khi đó các trang đó chuyển sang render theo request (`renderPerRequestWithoutCms`, `src/lib/build.ts`) thay vì cache trang rỗng. Lúc chạy: gọi API |
-| `CMS_MEDIA_URL` | Build + runtime (`vars`) | `https://media.<domain>` (R2). Allowlist ảnh lúc build |
+| `CMS_MEDIA_URL` | Build | `https://media.<domain>` (R2). Allowlist ảnh và CSP `img-src` lúc build |
 | `LEAD_INGEST_TOKEN` | Runtime, secret | Giống bên CMS |
 | `REVALIDATE_SECRET` | Runtime, secret | Giống bên CMS |
 | `NEXT_PUBLIC_GA_ID` | Build | GA4 (`G-…`). Không đặt thì không tải GA (dev, CI). Việc cần làm khi go-live: TASKS M8 |
