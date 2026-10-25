@@ -106,7 +106,7 @@ jobs:
       # -w reports the last attempt only (a cold first answer may be a 503).
       - name: Site answers, not indexable
         run: |
-          result=$(curl -s -o /dev/null --retry 10 --retry-delay 10 --retry-all-errors \
+          result=$(curl -sS -o /dev/null --retry 10 --retry-delay 10 --retry-all-errors \
             -w '%{http_code} %header{x-robots-tag}' "$NEXT_PUBLIC_SITE_URL/")
           echo "GET $NEXT_PUBLIC_SITE_URL/ -> $result"
           case "$result" in "200 noindex"*) ;; *) exit 1 ;; esac
