@@ -15,6 +15,7 @@ services:
     buildFilter:
       paths:
         - apps/cms/**
+        - .npmrc
         - package.json
         - pnpm-lock.yaml
         - pnpm-workspace.yaml
@@ -22,6 +23,10 @@ services:
     envVars:
       # Custom admin path (NFR-07), e.g. /quan-tri-<random>; the build fails without it.
       - key: ADMIN_PATH
+        sync: false
+      # This service's onrender.com URL, known once it exists: absolute admin
+      # links (password reset, "Xem trong CMS" in lead emails).
+      - key: PUBLIC_URL
         sync: false
       - key: APP_KEYS
         generateValue: true

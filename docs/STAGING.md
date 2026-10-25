@@ -44,7 +44,7 @@ Sinh `LEAD_INGEST_TOKEN` và `REVALIDATE_SECRET` một lần (`openssl rand -bas
 | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | Khoá ở bước 1.5 |
 | `R2_PUBLIC_URL` | URL `pub-….r2.dev` ở bước 1.3 |
 | `LEAD_INGEST_TOKEN`, `REVALIDATE_SECRET` | Như trên |
-| `WEB_REVALIDATE_URL` | Để trống lúc tạo; điền ở mục 3 bước 6 |
+| `PUBLIC_URL`, `WEB_REVALIDATE_URL` | Để trống lúc tạo; điền ở mục 3 bước 6 |
 
 **GitHub**: **Settings → Environments → New environment** tên `staging`. Ở *Deployment branches and tags* chọn *Selected branches and tags* và thêm `main`, để chỉ `main` nhận được token. Secret và variable đặt trong môi trường này, không đặt ở cấp repo.
 
@@ -83,7 +83,7 @@ Sinh `LEAD_INGEST_TOKEN` và `REVALIDATE_SECRET` một lần (`openssl rand -bas
    - **Workers → azway-web-staging → Settings → Variables and Secrets** có `CMS_URL` (dạng text), `LEAD_INGEST_TOKEN` và `REVALIDATE_SECRET` (dạng secret).
    - Lỗi `Couldn't find a D1 DB named …`: chưa chạy bước 1.3, hoặc gõ sai tên.
    - Lỗi quyền (403, `Authentication error`): token thiếu quyền ở bước 1.4.
-6. **Webhook.** Trên Render, ở **azway-cms-staging → Environment**, đặt `WEB_REVALIDATE_URL` = `NEXT_PUBLIC_SITE_URL` + `/api/revalidate`, rồi lưu (Render tự deploy lại).
+6. **URL và webhook.** Trên Render, ở **azway-cms-staging → Environment**, đặt `PUBLIC_URL` = `CMS_URL` (link tuyệt đối tới admin, ví dụ link đặt lại mật khẩu) và `WEB_REVALIDATE_URL` = `NEXT_PUBLIC_SITE_URL` + `/api/revalidate`, rồi lưu (Render tự deploy lại).
 7. **Kiểm.** Sửa tên một tour trong admin và publish, tải lại trang tour trên web: tên mới hiện ra. Ảnh tour mở từ `pub-….r2.dev`. Gửi thử form tư vấn với dữ liệu giả: lead xuất hiện trong admin.
 
 ## 4. Seed dữ liệu mẫu

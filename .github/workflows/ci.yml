@@ -89,8 +89,11 @@ jobs:
       - name: Runs as non-root
         run: test "$(docker run --rm azway-cms:ci id -u)" != 0
 
-      # R2: every R2_* set switches plugins.ts to the S3 provider. Its endpoint
-      # host points at a closed local port, so nothing leaves the runner.
+      # R2: every R2_* set switches plugins.ts to the S3 provider. The bucket
+      # name is render.yaml's, so the SDK addresses it as on Render
+      # (virtual-hosted: <bucket>.<account>.r2...). Both possible hosts point
+      # at closed loopback ports, so nothing leaves the runner; the address in
+      # the error tells which one was used.
       - name: Start like render.yaml, with throwaway secrets
         run: |
           s() { openssl rand -base64 32; }
@@ -102,14 +105,17 @@ jobs:
             echo "R2_ACCOUNT_ID=ci-r2"
             echo "R2_ACCESS_KEY_ID=ci"
             echo "R2_SECRET_ACCESS_KEY=ci"
-            echo "R2_BUCKET=ci"
+            echo "R2_BUCKET=azway-cms-staging-uploads"
             echo "R2_PUBLIC_URL=https://media.example.invalid"
             echo "CRON_ENABLED=false"
             echo "SERVER_PROXY=true"
             echo "SERVER_PROXY_IP_HEADER=True-Client-IP"
+            echo "PUBLIC_URL=https://cms.example.invalid"
             echo "PORT=10000"
           } > cms.env
-          docker run -d --name cms --network host --memory 512m --memory-swap 512m --add-host ci-r2.r2.cloudflarestorage.com:127.0.0.1 \
+          docker run -d --name cms --network host --memory 512m --memory-swap 512m \
+            --add-host azway-cms-staging-uploads.ci-r2.r2.cloudflarestorage.com:127.0.0.1 \
+            --add-host ci-r2.r2.cloudflarestorage.com:127.0.0.2 \
             --env-file cms.env azway-cms:ci
           timeout 240 bash -c 'until curl -sf -o /dev/null http://127.0.0.1:10000/_health; do sleep 2; done'
 
@@ -136,18 +142,23 @@ jobs:
           echo "$headers" | head -1 | grep -q ' 200'
           echo "$headers" | grep -i '^set-cookie: strapi_admin_refresh=' | grep -qi '; *secure'
 
-      # Render appends to a client-sent X-Forwarded-For (docs/STAGING.md), so
-      # rotating it must not reset the admin login throttle (5 per 5 minutes).
+      # Render appends to a client-sent X-Forwarded-For and overwrites
+      # True-Client-IP (docs/STAGING.md): rotating XFF must not reset the admin
+      # login throttle (5 per 5 minutes), and the key is True-Client-IP.
       - name: Forged X-Forwarded-For does not bypass the login throttle
         run: |
-          codes=""
-          for i in 1 2 3 4 5 6; do
-            codes="$codes $(curl -sS -o /dev/null -w '%{http_code}' -H "X-Forwarded-For: 198.51.100.$i" \
+          login() {
+            curl -sS -o /dev/null -w '%{http_code}' -H "True-Client-IP: $1" -H "X-Forwarded-For: $2" \
               -H 'Content-Type: application/json' -d '{"email":"throttle@azway.test","password":"wrong-password-1A"}' \
-              http://127.0.0.1:10000/admin/login)"
-          done
-          echo "attempts:$codes"
-          test "${codes##* }" = 429
+              http://127.0.0.1:10000/admin/login
+          }
+          codes=""
+          for i in 1 2 3 4 5 6; do codes="$codes $(login 203.0.113.7 "198.51.100.$i")"; done
+          echo "same True-Client-IP, rotating XFF:$codes"
+          test "$codes" = " 400 400 400 400 400 429"
+          other=$(login 203.0.113.8 198.51.100.1)
+          echo "another True-Client-IP: $other"
+          test "$other" = 400
 
       # The S3 provider is the one in use: the upload tries R2 (refused here)
       # and fails, the local provider would have stored it. Strapi stays up.
@@ -157,12 +168,18 @@ jobs:
           code=$(curl -sS -o upload.json -w '%{http_code}' -H "Authorization: Bearer $token" \
             -F files=@apps/cms/favicon.png http://127.0.0.1:10000/upload)
           echo "POST /upload -> $code"
-          docker logs cms 2>&1 | grep -m 3 -iE 'ECONNREFUSED|r2\.cloudflarestorage' || true
           test "$code" = 500
+          # 127.0.0.1 = the virtual-hosted bucket host (127.0.0.2 would be path-style).
+          docker logs cms > cms.log 2>&1
+          grep -m 1 -F 'ECONNREFUSED 127.0.0.1:443' cms.log
           curl -sSf -o /dev/null http://127.0.0.1:10000/_health
 
-      - name: Memory under the 512 MB limit
-        run: docker stats --no-stream --format 'MEM {{.MemUsage}} ({{.MemPerc}})' cms
+      # docs/STAGING.md quotes this figure; well under Render's 512 MB.
+      - name: Memory under 400 MiB
+        run: |
+          usage=$(docker stats --no-stream --format '{{.MemUsage}}' cms)
+          echo "MEM $usage"
+          echo "$usage" | awk '{ v = $1 + 0; if ($1 ~ /GiB$/) v *= 1024; else if ($1 !~ /MiB$/) v = 0; exit !(v > 0 && v < 400) }'
 
       - if: failure()
         run: docker logs cms
